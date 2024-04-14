@@ -1,0 +1,42 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "babel src --out-dir dist",
+    "start": "nodemon --ignore dist/ --ignore test/ --exec babel-node ./src/bin/www.js",
+    "test": "NODE_ENV=test mocha --require @babel/register --exit"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "debug": "^4.3.4",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-validator": "^7.0.1",
+    "http-errors": "^2.0.0",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "mysql2": "^3.9.4",
+    "sequelize": "^6.37.3",
+    "swagger-ui-express": "^5.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.24.4",
+    "@babel/node": "^7.23.9",
+    "@babel/preset-env": "^7.24.4",
+    "@babel/register": "^7.23.7",
+    "babel-plugin-module-resolver": "^5.0.0",
+    "mocha": "^10.4.0",
+    "nodemon": "^2.0.3",
+    "sequelize-cli": "^6.4.1"
+  },
+  "engines": {
+    "node": "16",
+    "npm": "8"
+  }
+}
