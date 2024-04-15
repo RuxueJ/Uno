@@ -1,0 +1,243 @@
+{
+    "swagger" : "2.0",
+    "info" : {
+      "description" : "Documantation of UNO api.",
+      "version" : "1.0.0",
+      "title" : "UNO API",
+      "contact" : {
+        "email" : "xgu@sfsu.edu"
+      }
+    },
+    "securityDefinitions" : {
+      "bearer" : {
+        "type" : "apiKey",
+        "name" : "Authorization",
+        "in" : "header",
+        "description" : "JWT Authorization header using the Bearer scheme. Example: \"Bearer {token}\""
+      }
+    },
+    "tags" : [ {
+      "name" : "User"
+    } ],
+    "paths" : {
+      "/api/user/register" : {
+        "post" : {
+          "summary" : "Create new user",
+          "parameters" : [ {
+            "name" : "body",
+            "in" : "body",
+            "required" : true,
+            "schema" : {
+              "type" : "object",
+              "required" : [ "userName", "email", "password" ],
+              "properties" : {
+                "userName" : {
+                  "type" : "string"
+                },
+                "email" : {
+                  "type" : "string"
+                },
+                "password" : {
+                  "type" : "string"
+                }
+              }
+            }
+          } ],
+          "responses" : {
+            "200" : {
+              "description" : "OK",
+              "schema" : {
+                "$ref" : "#/definitions/SuccessResponseSimple"
+              }
+            },
+            "400" : {
+              "description" : "User already exists",
+              "schema" : {
+                "$ref" : "#/definitions/ErrorResponse"
+              }
+            },
+            "422" : {
+              "description" : "Unprocessable Entity",
+              "schema" : {
+                "$ref" : "#/definitions/UnprocessableEntityResponse"
+              }
+            },
+            "500" : {
+                "description" : "Internal Server Error",
+                "schema" : {
+                  "$ref" : "#/definitions/InternalErrorResponse"
+                }
+            }
+          },
+          "tags" : [ "User" ],
+          "description" : "Create new user"
+        }
+      },
+      "/api/user/login" : {
+        "post" : {
+          "summary" : "Login",
+          "parameters" : [ {
+            "name" : "body",
+            "in" : "body",
+            "required" : true,
+            "schema" : {
+              "type" : "object",
+              "required" : [ "email", "password" ],
+              "properties" : {
+                "email" : {
+                  "type" : "string"
+                },
+                "password" : {
+                  "type" : "string"
+                }
+              }
+            }
+          } ],
+          "responses" : {
+            "200" : {
+              "description" : "OK",
+              "schema" : {
+                "$ref" : "#/definitions/TokenResponse"
+              }
+            },
+            "400" : {
+              "description" : "Bad request",
+              "schema" : {
+                "$ref" : "#/definitions/ErrorResponse"
+              }
+            },
+            "422" : {
+              "description" : "Unprocessable Entity",
+              "schema" : {
+                "$ref" : "#/definitions/UnprocessableEntityResponse"
+              }
+            },
+            "500" : {
+                "description" : "Internal Server Error",
+                "schema" : {
+                  "$ref" : "#/definitions/InternalErrorResponse"
+                }
+              }
+          },
+          "tags" : [ "User" ],
+          "description" : "Login"
+        }
+      }
+    },
+    "definitions" : {
+      "User" : {
+        "type" : "object",
+        "properties" : {
+          "id" : {
+            "type" : "integer"
+          },
+          "userName" : {
+            "type" : "string"
+          },
+          "email" : {
+            "type" : "string"
+          },
+          "password" : {
+            "type" : "string"
+          },
+          "createTime" : {
+            "type" : "string",
+            "format" : "date-time"
+          },
+          "modifyTime" : {
+            "type" : "string",
+            "format" : "date-time"
+          }
+        }
+      },
+      "ErrorResponse" : {
+        "type" : "object",
+        "required" : [ "message" ],
+        "properties" : {
+          "message" : {
+            "type" : "string"
+          }
+        }
+      },
+      "InternalErrorResponse" : {
+        "type" : "object",
+        "required" : [ "message" ],
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "default" : "Internal Server Error"
+          }
+        }
+      },
+      "SuccessResponseSimple" : {
+        "type" : "object",
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "default" : "Success"
+          }
+        }
+      },
+      "TokenResponse" : {
+        "type" : "object",
+        "properties" : {
+        "message": {
+            "type": "string",
+            "default" : "Success"
+         },
+          "token" : {
+            "type" : "string"
+          },
+          "expireIn": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "userName": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "UnprocessableEntityResponse" : {
+        "type" : "object",
+        "required" : [ "message", "errors" ],
+        "properties" : {
+          "message" : {
+            "type" : "string"
+          },
+          "errors" : {
+            "type" : "array",
+            "items" : {
+              "$ref" : "#/definitions/UnprocessableEntityResponseItem"
+            }
+          }
+        }
+      },
+      "UnprocessableEntityResponseItem" : {
+        "type" : "object",
+        "properties" : {
+          "value" : {
+            "type" : "string"
+          },
+          "msg" : {
+            "type" : "string"
+          },
+          "param" : {
+            "type" : "string"
+          },
+          "location" : {
+            "type" : "string"
+          }
+        }
+      }
+    }
+}
