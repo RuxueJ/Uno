@@ -17,10 +17,10 @@
       }
     },
     "tags" : [ {
-      "name" : "user"
+      "name" : "User"
     } ],
     "paths" : {
-      "/user/register" : {
+      "/api/user/register" : {
         "post" : {
           "summary" : "Create new user",
           "parameters" : [ {
@@ -44,14 +44,14 @@
             }
           } ],
           "responses" : {
-            "201" : {
+            "200" : {
               "description" : "OK",
               "schema" : {
-                "$ref" : "#/definitions/TokenResponse"
+                "$ref" : "#/definitions/SuccessResponseSimple"
               }
             },
             "400" : {
-              "description" : "Bad request",
+              "description" : "User already exists",
               "schema" : {
                 "$ref" : "#/definitions/ErrorResponse"
               }
@@ -61,13 +61,19 @@
               "schema" : {
                 "$ref" : "#/definitions/UnprocessableEntityResponse"
               }
+            },
+            "500" : {
+                "description" : "Internal Server Error",
+                "schema" : {
+                  "$ref" : "#/definitions/InternalErrorResponse"
+                }
             }
           },
           "tags" : [ "User" ],
           "description" : "Create new user"
         }
       },
-      "/user/login" : {
+      "/api/user/login" : {
         "post" : {
           "summary" : "Login",
           "parameters" : [ {
@@ -105,38 +111,18 @@
               "schema" : {
                 "$ref" : "#/definitions/UnprocessableEntityResponse"
               }
-            }
+            },
+            "500" : {
+                "description" : "Internal Server Error",
+                "schema" : {
+                  "$ref" : "#/definitions/InternalErrorResponse"
+                }
+              }
           },
-          "tags" : [ "auth" ],
+          "tags" : [ "User" ],
           "description" : "Login"
         }
-      },
-      "/auth/me" : {
-        "get" : {
-          "summary" : "Fetch current user",
-          "security" : [ {
-            "bearer" : [ ]
-          } ],
-          "responses" : {
-            "200" : {
-              "description" : "Get current user info",
-              "schema" : {
-                "$ref" : "#/definitions/User"
-              }
-            },
-            "401" : {
-              "description" : "Unauthorized",
-              "schema" : {
-                "$ref" : "#/definitions/ErrorResponse"
-              }
-            }
-          },
-          "tags" : [ "auth" ],
-          "description" : "Fetch current user"
-        }
       }
-     
-     
     },
     "definitions" : {
       "User" : {
@@ -173,23 +159,51 @@
           }
         }
       },
-      "SuccessResponse" : {
+      "InternalErrorResponse" : {
+        "type" : "object",
+        "required" : [ "message" ],
+        "properties" : {
+          "message" : {
+            "type" : "string",
+            "default" : "Internal Server Error"
+          }
+        }
+      },
+      "SuccessResponseSimple" : {
         "type" : "object",
         "properties" : {
-          "success" : {
-            "type" : "boolean",
-            "default" : true
+          "message" : {
+            "type" : "string",
+            "default" : "Success"
           }
         }
       },
       "TokenResponse" : {
         "type" : "object",
         "properties" : {
+        "message": {
+            "type": "string",
+            "default" : "Success"
+         },
           "token" : {
             "type" : "string"
           },
-          "refreshToken" : {
-            "type" : "string"
+          "expireIn": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "integer"
+              },
+              "userName": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              }
+            }
           }
         }
       },
@@ -226,4 +240,4 @@
         }
       }
     }
-  }
+}

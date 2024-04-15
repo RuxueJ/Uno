@@ -12,7 +12,6 @@ export const login = async (req, res, next) => {
 
     // Find user by email address
     const user = await db.models.user.findOne({ where: { email } });
-    console.log(user);
     if (!user) {
       return next(createError(400, 'There is no user with this email address!'));
     }
@@ -25,10 +24,20 @@ export const login = async (req, res, next) => {
 
     // Generate and return token
     const token = user.generateToken();
-    const refreshToken = user.generateToken('2h');
-    return res.status(200).json({ token, refreshToken });
+    const response = {
+      "message": 'Success',
+      "token": token, 
+      "expiresIn": "1h",
+      "data": {
+        "id": user.id,
+        "userName": user.userName,
+        "email": user.email
+      }
+    }
+    return res.status(200).json({ response });
   } catch (err) {
-    return next(err);
+    console.error(err);  
+    return res.status(500).json({ "message": "Internal server error" });
   }
 };
 
@@ -38,6 +47,14 @@ export const login = async (req, res, next) => {
  */
 export const register = async (req, res, next) => {
   try {
+    // Check if user already exists
+    const existingUser = await db.models.user.findOne({
+      where: { email: req.body.email }
+    });
+
+    if (existingUser) {
+      return res.status(400).json({ "message": "User already exists" });
+    }
     // Create user
     const user = await db.models.user
       .create(req.body, {
@@ -45,11 +62,10 @@ export const register = async (req, res, next) => {
       });
 
     // Generate and return tokens
-    const token = user.generateToken();
-    const refreshToken = user.generateToken('2h');
-    res.status(201).json({ token, refreshToken });
+    return res.status(200).json({ "message": "Success" });
   } catch (err) {
-    next(err);
+    console.error(err);  
+    return res.status(500).json({ "message": "Internal server error" });
   }
 };
 
