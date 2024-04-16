@@ -58,20 +58,34 @@ function checkPasswordRequirements() {
 function checkPasswordMatch(){
   
     var repassword = document.getElementById("repassword").value.trim();
-    var repasswordRequirements = document.getElementById("repasswordRequirements");
+    var repasswordRequirements = document.getElementById("repasswordCheck");
+    var passwordCheckBox= document.getElementById("repassword");
+    var match = false;
     if (password === repassword){
         repasswordRequirements.innerHTML= "";
-        return true
+        match = true;
     }else{
         repasswordRequirements.innerHTML = "Password does not match";
-        return false
+       
     }
+
+    passwordCheckBox.classList.toggle("border-red-500",!match);
+    passwordCheckBox.classList.toggle("border-blue-500",match);
+    return match;
 }
 
 function clearPasswordCheck(){
-    var repasswordRequirements = document.getElementById("repasswordRequirements");
-    repasswordRequirements.innerHTML = "";
+    var repasswordCheck = document.getElementById("repasswordCheck");
+    repasswordCheck.innerHTML = "";
     
+}
+
+function clearEmailCheck(){
+    var emailCheck = document.getElementById("emailCheck");
+    emailCheck.innerHTML = "";
+    email = document.getElementById("email")
+    email.classList.remove("border-red-500");
+
 }
 
 document.getElementById("loginForm").addEventListener("submit", function(event) {
@@ -99,7 +113,26 @@ document.getElementById("loginForm").addEventListener("submit", function(event) 
     })
     .then(response => response.json())
     .then(data => {
-        console.log('Success:', data);
+        if (data.message) {
+            console.log('Message:', data.message);
+            switch(data.message){
+                case "OK": alert("Sign-in Successful!");break;
+                case "User already exists":
+                    var emailCheck = document.getElementById("emailCheck");
+                    emailCheck.innerHTML = "User already exists";
+                    emailCheck.classList.add("text-red");
+                    var email = document.getElementById("email");
+                    email.classList.add("border-red-500");
+                    break;
+                case "Unprocessable Entity":break;
+                case "Internal Server Error":break;
+
+            }
+            // Handle the message
+        } else {
+            console.error('Error: Message not found in the response');
+            // Handle the case where message is missing
+        }
         // Handle success response
     })
     .catch(error => {
