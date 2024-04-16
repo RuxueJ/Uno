@@ -111,23 +111,26 @@ document.getElementById("loginForm").addEventListener("submit", function(event) 
         },
         body: JSON.stringify(jsonObject)
     })
-    .then(response => response.json())
+    .then(response => {
+        switch(response.status){
+            case 200: alert("Sign-in Successful!");break;
+            case 400:
+                var emailCheck = document.getElementById("emailCheck");
+                emailCheck.innerHTML = "User already exists";
+                emailCheck.classList.add("text-red");
+                var email = document.getElementById("email");
+                email.classList.add("border-red-500");
+                break;
+            case 422:break;
+            case 500:break;
+
+        }
+        
+        return response.json()})
     .then(data => {
         if (data.message) {
             console.log('Message:', data.message);
-            switch(data.message){
-                case "OK": alert("Sign-in Successful!");break;
-                case "User already exists":
-                    var emailCheck = document.getElementById("emailCheck");
-                    emailCheck.innerHTML = "User already exists";
-                    emailCheck.classList.add("text-red");
-                    var email = document.getElementById("email");
-                    email.classList.add("border-red-500");
-                    break;
-                case "Unprocessable Entity":break;
-                case "Internal Server Error":break;
-
-            }
+        
             // Handle the message
         } else {
             console.error('Error: Message not found in the response');
