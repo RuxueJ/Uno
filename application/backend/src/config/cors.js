@@ -1,4 +1,5 @@
 export default {
+
     origin: '*',
     optionsSuccessStatus: 200,
     allowedHeaders: ['Content-Type', 'Authorization', 'RefreshToken'],
