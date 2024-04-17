@@ -34,7 +34,7 @@ export const login = async (req, res, next) => {
         "email": user.email
       }
     }
-    return res.status(200).json({ response });
+    return res.status(200).json({ ...response });
   } catch (err) {
     console.error(err);  
     return res.status(500).json({ "message": "Internal server error" });
