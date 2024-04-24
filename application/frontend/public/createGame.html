@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UNO Game Lobby</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="header">
+  <h1>UNO Game Lobby</h1>
+  <button class="button" id="createGameBtn">Create Game</button>
+  <button class="button" id="profileBtn">Profile / Logout</button>
+</div>
+
+<div class="games-list" id="gamesList">
+  <!-- Active game list will be populated here -->
+</div>
+
+<div class="modal" id="createGameModal">
+  <div class="modal-content">
+    <span class="close" id="closeModal">&times;</span>
+    <h2>Create Game</h2>
+    <form id="createGameForm">
+      <label for="gameTitle">Title:</label>
+      <input type="text" id="gameTitle" name="gameTitle" required><br>
+      <label for="numPlayers">Number of Players:</label>
+      <select id="numPlayers" name="numPlayers">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+      </select><br>
+      <button type="button" class="button" id="cancelBtn">Cancel</button>
+      <button type="submit" class="button" id="submitBtn">Submit</button>
+    </form>
+  </div>
+</div>
+
+<script src="createGameScript.js"></script>
+
+</body>
+</html>
