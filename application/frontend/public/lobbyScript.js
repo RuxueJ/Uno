@@ -1,14 +1,20 @@
 // JavaScript Code
 
+let i = 0;
 // Sample active game data
-const activeGames = [];
+const activeGames = [ 
+  {status : 304, data: []},
+  {status : 200, data : [{id : 1, members: 'Jin, Jiji'}]},
+  {status : 200, data : [{id : 2, members: 'Dante, Xu'}]},
+  {status : 200, data : [{id : 3, members: 'Jin, Jiji, Dante, Xu'}]},
+  {status : 200, data : [{id : 4, members: 'Jiji'}]},
+  {status : 200, data : [{id : 5, members: 'Dante, Xu'}]},
+];
 
 // Function to render active game list
-function renderGamesList() {
+function renderGamesList(data) {
   const gamesList = document.getElementById("gamesList");
-  gamesList.innerHTML = ""; // Clear existing list
-
-  activeGames.forEach((game) => {
+  data.forEach((game) => {
     const gameItem = document.createElement("div");
     gameItem.classList.add("game-item");
 
@@ -26,12 +32,21 @@ function renderGamesList() {
 
     gameItem.appendChild(gameInfo);
     gameItem.appendChild(joinButton);
-    gamesList.appendChild(gameItem);
+    gamesList.append(gameItem);
   });
 }
 
+function getGameList() {
+  return activeGames[i++ % 5];
+}
+
 // Render the initial list
-renderGamesList();
+setInterval(async() => {
+  const gameList = await getGameList(); // api call
+  if(gameList.status === 200) {
+    renderGamesList(gameList.data)
+  }
+}, 3000)
 
 // Event listeners for buttons
 document.getElementById("createGameBtn").addEventListener("click", () => {

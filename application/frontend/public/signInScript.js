@@ -19,7 +19,7 @@ async function login(email, password) {
     // localStorage.setItem("userId", data.data.id);
     // localStorage.setItem("username", data.data.userName);
     // Redirect to the dashboard or perform any other action
-    window.location.href = "dashboard.html"; // Change the URL accordingly
+    window.location.href = "lobby.html"; // Change the URL accordingly
   } catch (error) {
     console.error("Error:", error);
     alert("Login failed. Please try again.");
