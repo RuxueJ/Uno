@@ -83,7 +83,8 @@ dist/
 
 # Gatsby files
 .cache/
-# public/
+/public/
+!/application/frontend/public/
 
 # Vue CLI generated dist folder
 dist/
