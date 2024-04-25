@@ -8,8 +8,11 @@
 
 import http from 'http';
 import debugLib from 'debug';
+import { Server as SocketIOServer}  from 'socket.io';
 import app from '@/app';
 import db from '@/database';
+import * as configs from '@/config';
+import { socketSetup } from '@/socket';
 
 /**
  * Start debug library
@@ -29,6 +32,16 @@ app.set('port', port);
  */
 
 const server = http.createServer(app);
+
+/**
+ * Create SocketIO server.
+ */ 
+
+
+const io = new SocketIOServer(server, {
+  cors: configs.corsConfig
+});
+socketSetup.setUpSocketIO(io);
 
 /**
  * Listen on provided port, on all network interfaces.
