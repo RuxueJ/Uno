@@ -107,3 +107,7 @@ body {
   padding : 10px;
   min-height: 600px;
 }
+
+.scroll {
+  overflow: scroll;
+}
