@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Test</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background: #f4f4f4;
+        }
+        #messageInput {
+            width: 70%;
+            padding: 10px;
+            font-size: 16px;
+        }
+        #messages {
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background: #fff;
+            height: 300px;
+            overflow-y: scroll;
+        }
+        #sendButton {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 输入区域和发送按钮 -->
+    <input type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeypress(event)">
+    <button id="sendButton" onclick="sendMessage()">Send</button>
+
+    <!-- 消息显示区域 -->
+    <div id="messages"></div>
+
+    <script>
+        const socket = io('http://localhost:3000', { transports: ['websocket'] });
+        const messageInput = document.getElementById('messageInput');
+        const messages = document.getElementById('messages');
+        const sendButton = document.getElementById('sendButton');
+
+        // 监听从服务器接收的新消息
+        socket.on('newMessage', function(message) {
+            const messageElement = document.createElement('div');
+            messageElement.textContent = message;
+            messages.appendChild(messageElement);
+            messages.scrollTop = messages.scrollHeight; // Scroll to the bottom of the container
+        });
+
+        // 当连接成功时
+        socket.on('connect', () => {
+            console.log('Successfully connected to the server!');
+        });
+
+        // 发送消息到服务器的函数
+        function sendMessage() {
+            const message = messageInput.value.trim();
+            if (message) {
+                socket.emit('chatMessage', message);
+                messageInput.value = ''; // 清空输入框
+            }
+        }
+
+        // 允许通过按Enter键发送消息
+        function handleKeypress(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+                event.preventDefault(); // Prevent form from being submitted
+            }
+        }
+    </script>
+</body>
+</html>
