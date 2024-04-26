@@ -59,18 +59,26 @@ document.getElementById("createGameBtn").addEventListener("click", () => {
 
 document.getElementById("profileBtn").addEventListener("click", () => {
   // Add your logic to handle profile or logout
+  localStorage.removeItem('token');
+  localStorage.removeItem('username');
+  window.location.href = "SignIn.html";
   console.log("Profile / Logout clicked");
 });
 
+const token = localStorage.getItem('token');
+const userName = localStorage.getItem('userName');
 // chat system 
-const socket = io('http://localhost:3000', { transports: ['websocket'] });
+const socket = io('http://localhost:3000', { 
+  query: { token, userName },
+  transports: ['websocket'] 
+});
 const messageInput = document.getElementById('messageInput');
 const messages = document.getElementById('messages');
 const sendButton = document.getElementById('sendButton');
 
-socket.on('newMessage', function(message) {
+socket.on('newMessage', function(data) {
     const messageElement = document.createElement('div');
-    messageElement.textContent = message;
+    messageElement.textContent = `${data.userName} @ ${data.timeStamp}: ${data.message}`;
     messages.appendChild(messageElement);
     messages.scrollTop = messages.scrollHeight; 
 });

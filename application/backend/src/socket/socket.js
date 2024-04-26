@@ -2,18 +2,24 @@ export function setUpSocketIO(io) {
     io.on('connection', (socket) => {
         console.log('A user connected');
         
-        // 监听自定义事件，例如聊天消息
+        const userName = socket.handshake.query.userName || 'User';
+        const token = socket.handshake.query.token;
+        // listen to self-defined event
         socket.on('chatMessage', (message) => {
             console.log('Received message:', message);
-            // 将消息广播给所有客户端
-            io.emit('newMessage', message);
+            const timeStamp = new Date().toLocaleTimeString();
+            // broadcast message to all connected clients
+            io.emit('newMessage', {
+                userName,
+                message,
+                timeStamp
+            });
         });
 
-        // 处理断开连接
+        // handle disconnect event
         socket.on('disconnect', () => {
             console.log('User disconnected');
         });
 
-        // 这里可以添加更多的事件处理逻辑。
     });
 }

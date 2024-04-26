@@ -17,7 +17,7 @@ async function login(email, password) {
     // Store the JWT token in local storage for future requests
     localStorage.setItem("token", data.token);
     // localStorage.setItem("userId", data.data.id);
-    // localStorage.setItem("username", data.data.userName);
+    localStorage.setItem("userName", data.data.userName);
     // Redirect to the dashboard or perform any other action
     window.location.href = "lobby.html"; // Change the URL accordingly
   } catch (error) {

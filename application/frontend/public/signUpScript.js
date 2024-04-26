@@ -116,7 +116,7 @@ document
       .then((response) => {
         switch (response.status) {
           case 200:
-            alert("Sign-in Successful!");
+            alert("Sign-up Successfully!");
             window.location.href = "SignIn.html";
             break;
           case 400:
