@@ -21,6 +21,12 @@ const defaultConfig = {
   define: {
     paranoid: true,
   },
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false 
+    }
+  }
 };
 
 export const development = {
