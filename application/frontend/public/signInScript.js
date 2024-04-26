@@ -35,17 +35,17 @@ document
     login(email, password);
   });
 
-  window.addEventListener("load", (event) => {
-    const token = localStorage.getItem("token");
-    if(!token) {
-      return;
-    }
+window.addEventListener("load", (event) => {
+  const token = localStorage.getItem("token");
+  if(!token) {
+    return;
+  }
 
-    // call API to check if a user was playing a game before
-    const roomId = "dummy";
-    if(roomId) {
-      window.location.href = `/game/${roomId}`;
-    }else {
-      localStorage.removeItem("token")
-    }
-  });
+  // todo : call API to check if a user was playing a game before
+  const roomId = null;
+  if(roomId) {
+    window.location.href = `/game/${roomId}`;
+  }else {
+    window.location.href = 'lobby.html';
+  }
+});
