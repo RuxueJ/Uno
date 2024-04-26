@@ -40,13 +40,15 @@ function getGameList() {
   return activeGames[i++ % 5];
 }
 
-// Render the initial list
-setInterval(async() => {
-  const gameList = await getGameList(); // api call
-  if(gameList.status === 200) {
-    renderGamesList(gameList.data)
-  }
-}, 3000)
+const dummyData = [{id : 1, members: 'Jin, Jiji'}, {id : 2, members: 'Dante, Xu'}, {id : 3, members: 'Jin, Jiji, Dante, Xu'}]
+
+renderGamesList(dummyData);
+// setInterval(async() => {
+//   const gameList = await getGameList(); // api call
+//   if(gameList.status === 200) {
+//     renderGamesList(gameList.data)
+//   }
+// }, 3000)
 
 // Event listeners for buttons
 document.getElementById("createGameBtn").addEventListener("click", () => {
@@ -59,3 +61,32 @@ document.getElementById("profileBtn").addEventListener("click", () => {
   // Add your logic to handle profile or logout
   console.log("Profile / Logout clicked");
 });
+
+// chat system 
+const socket = io('http://localhost:3000', { transports: ['websocket'] });
+const messageInput = document.getElementById('messageInput');
+const messages = document.getElementById('messages');
+const sendButton = document.getElementById('sendButton');
+
+socket.on('newMessage', function(message) {
+    const messageElement = document.createElement('div');
+    messageElement.textContent = message;
+    messages.appendChild(messageElement);
+    messages.scrollTop = messages.scrollHeight; 
+});
+socket.on('connect', () => {
+    console.log('Successfully connected to the server!');
+});
+function sendMessage() {
+    const message = messageInput.value.trim();
+    if (message) {
+        socket.emit('chatMessage', message);
+        messageInput.value = ''; 
+    }
+}
+function handleKeypress(event) {
+    if (event.key === "Enter") {
+        sendMessage();
+        event.preventDefault(); // Prevent form from being submitted
+    }
+}

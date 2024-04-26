@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UNO Game Lobby</title>
+<script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -20,15 +21,11 @@
       <h2 class="text-2xl mb-6">Game List</h2>
       <div id="gamesList"></div>
     </div>
-    <div class="flex-1 gray-border m-6 max-h-screen scroll">
-      <h2 class="text-xl">Chat</h2>
-      <div id="chatMessages">
-        <!-- Chat messages will be displayed here -->
-      </div>
-      <div>
-        <input type="text" id="messageInput" placeholder="Type your message...">
-        <button id="sendMessageBtn">Send</button>
-      </div>
+    <div class="flex-1 m-6">
+      <h2 class="text-2xl mb-6">Chat</h2>
+      <input class="gray-border" type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeypress(event)">
+      <button id="sendButton" onclick="sendMessage()">Send</button>
+      <div id="messages"></div>
     </div>
   </div>
 
