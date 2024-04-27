@@ -2,13 +2,13 @@
 
 let i = 0;
 // Sample active game data
-const activeGames = [ 
-  {status : 304, data: []},
-  {status : 200, data : [{id : 1, members: 'Jin, Jiji'}]},
-  {status : 200, data : [{id : 2, members: 'Dante, Xu'}]},
-  {status : 200, data : [{id : 3, members: 'Jin, Jiji, Dante, Xu'}]},
-  {status : 200, data : [{id : 4, members: 'Jiji'}]},
-  {status : 200, data : [{id : 5, members: 'Dante, Xu'}]},
+const activeGames = [
+  { status: 304, data: [] },
+  { status: 200, data: [{ id: 1, members: "Jin, Jiji" }] },
+  { status: 200, data: [{ id: 2, members: "Dante, Xu" }] },
+  { status: 200, data: [{ id: 3, members: "Jin, Jiji, Dante, Xu" }] },
+  { status: 200, data: [{ id: 4, members: "Jiji" }] },
+  { status: 200, data: [{ id: 5, members: "Dante, Xu" }] },
 ];
 
 // Function to render active game list
@@ -40,7 +40,11 @@ function getGameList() {
   return activeGames[i++ % 5];
 }
 
-const dummyData = [{id : 1, members: 'Jin, Jiji'}, {id : 2, members: 'Dante, Xu'}, {id : 3, members: 'Jin, Jiji, Dante, Xu'}]
+const dummyData = [
+  { id: 1, members: "Jin, Jiji" },
+  { id: 2, members: "Dante, Xu" },
+  { id: 3, members: "Jin, Jiji, Dante, Xu" },
+];
 
 renderGamesList(dummyData);
 // setInterval(async() => {
@@ -59,42 +63,49 @@ document.getElementById("createGameBtn").addEventListener("click", () => {
 
 document.getElementById("profileBtn").addEventListener("click", () => {
   // Add your logic to handle profile or logout
-  localStorage.removeItem('token');
-  localStorage.removeItem('username');
+  localStorage.removeItem("token");
+  localStorage.removeItem("username");
   window.location.href = "SignIn.html";
   console.log("Profile / Logout clicked");
 });
 
-const token = localStorage.getItem('token');
-const userName = localStorage.getItem('userName');
-// chat system 
-const socket = io('http://localhost:3000', { 
-  query: { token, userName },
-  transports: ['websocket'] 
-});
-const messageInput = document.getElementById('messageInput');
-const messages = document.getElementById('messages');
-const sendButton = document.getElementById('sendButton');
+const token = localStorage.getItem("token");
+const userName = localStorage.getItem("userName");
 
-socket.on('newMessage', function(data) {
-    const messageElement = document.createElement('div');
-    messageElement.textContent = `${data.userName} @ ${data.timeStamp}: ${data.message}`;
-    messages.appendChild(messageElement);
-    messages.scrollTop = messages.scrollHeight; 
+if (token && userName) {
+  const greeting = document.getElementById("greeting");
+  greeting.textContent = `Hello, ${userName} ！`;
+  greeting.style.display = "block";
+}
+
+// chat system
+const socket = io("http://localhost:3000", {
+  query: { token, userName },
+  transports: ["websocket"],
 });
-socket.on('connect', () => {
-    console.log('Successfully connected to the server!');
+const messageInput = document.getElementById("messageInput");
+const messages = document.getElementById("messages");
+const sendButton = document.getElementById("sendButton");
+
+socket.on("newMessage", function (data) {
+  const messageElement = document.createElement("div");
+  messageElement.textContent = `${data.userName} @ ${data.timeStamp}: ${data.message}`;
+  messages.appendChild(messageElement);
+  messages.scrollTop = messages.scrollHeight;
+});
+socket.on("connect", () => {
+  console.log("Successfully connected to the server!");
 });
 function sendMessage() {
-    const message = messageInput.value.trim();
-    if (message) {
-        socket.emit('chatMessage', message);
-        messageInput.value = ''; 
-    }
+  const message = messageInput.value.trim();
+  if (message) {
+    socket.emit("chatMessage", message);
+    messageInput.value = "";
+  }
 }
 function handleKeypress(event) {
-    if (event.key === "Enter") {
-        sendMessage();
-        event.preventDefault(); // Prevent form from being submitted
-    }
+  if (event.key === "Enter") {
+    sendMessage();
+    event.preventDefault(); // Prevent form from being submitted
+  }
 }
