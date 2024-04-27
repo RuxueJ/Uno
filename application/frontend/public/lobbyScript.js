@@ -55,11 +55,11 @@ renderGamesList(dummyData);
 // }, 3000)
 
 // Event listeners for buttons
-document.getElementById("createGameBtn").addEventListener("click", () => {
-  // Add your logic to create a new game
-  window.location.href = "createGame.html";
-  console.log("Creating a new game");
-});
+// document.getElementById("createGameBtn").addEventListener("click", () => {
+//   // Add your logic to create a new game
+//   window.location.href = "createGame.html";
+//   console.log("Creating a new game");
+// });
 
 document.getElementById("profileBtn").addEventListener("click", () => {
   // Add your logic to handle profile or logout
@@ -77,6 +77,41 @@ if (token && userName) {
   greeting.textContent = `Hello, ${userName} ！`;
   greeting.style.display = "block";
 }
+
+// create game system
+
+document.getElementById("createGameBtn").addEventListener("click", () => {
+  // Toggle the visibility of the form container
+  const formContainer = document.querySelector(".create-game-form-container");
+  const overlay = document.querySelector(".overlay");
+  formContainer.style.display = "block";
+  overlay.style.display = "block";
+});
+
+document.getElementById("cancelBtn").addEventListener("click", () => {
+  const form = document.getElementById("createGameForm");
+
+  // Reset the form to clear input values
+  form.reset();
+
+  const formContainer = document.querySelector(".create-game-form-container");
+  const overlay = document.querySelector(".overlay");
+  
+  // Hide the form container
+  formContainer.style.display = "none";
+  
+  // Hide the overlay
+  overlay.style.display = "none";
+});
+
+// Prevent form submission for testing
+document
+  .getElementById("createGameForm")
+  .addEventListener("submit", (event) => {
+    event.preventDefault();
+    console.log("Form submitted");
+    // Add your logic to handle form submission (e.g., create game)
+  });
 
 // chat system
 const socket = io("http://localhost:3000", {

@@ -19,6 +19,32 @@
   </div>
 </div>
 
+<div class="create-game-form-container" style="display: none;">
+  <form id="createGameForm" class="form">
+    <h2>Create New Game</h2>
+    <div class="form-group">
+      <label for="gameTitle">Game Title:</label>
+      <input type="text" id="gameTitle" name="gameTitle" placeholder="Enter game title" required>
+    </div>
+    <div class="form-group">
+      <label for="numPlayers">Number of Players:</label>
+      <select id="numPlayers" name="numPlayers">
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4">4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+      </select>
+    </div>
+    <div class="button-group">
+      <button type="button" class="button button-secondary" id="cancelBtn">Cancel</button>
+      <button type="submit" class="button button-primary" id="submitBtn">Create Game</button>
+    </div>
+  </form>
+</div>
+
+<div class="overlay" style="display: none;"></div>
+
 <div class="p-10 flex">
     <div class="flex-1 m-6 max-h-screen scroll">
       <h2 class="text-2xl mb-6">Game List</h2>
