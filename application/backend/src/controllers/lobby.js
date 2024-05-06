@@ -28,7 +28,8 @@ export async function getLobbiesData(req, res) {
                 return {
                     userId: user.userId,
                     userName: userInfo ? userInfo.userName : null, // 找到玩家名称      find player name
-                    isHost: user.isHost
+                    isHost: user.isHost,
+                    score: user.score
                 };
             });
 
@@ -69,13 +70,14 @@ export async function getLobbiesData(req, res) {
 // 创建房间的控制器     controller for creating rooms
 export async function createLobby(req, res) {
     try {
-        const { name, userId } = req.body;
+        const { name, userId, password } = req.body;
 
         // 创建房间     create room
         const lobby = await db.models.lobby.create({
             name,
             status: 'waiting',
             maxPlayers: 4,
+            password: password ? password: null,        //if a password is provided
         });
 
         // 创建房间用户     create room user

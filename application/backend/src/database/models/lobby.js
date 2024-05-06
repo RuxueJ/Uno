@@ -33,11 +33,6 @@ export default function (sequelize) {
           type: DataTypes.STRING,
           allowNull: true,
         },
-        currplayers: {
-          type: DataTypes.INTEGER,
-          allowNull: false,
-          defaultValue: 0,
-        },
       }, {
         modelName: 'lobby',
         tableName: 'lobby',
