@@ -20,6 +20,12 @@ export default function (sequelize) {
     }
 
     User.init({
+      userId: {
+          type: DataTypes.INTEGER,
+          primaryKey: true,
+          autoIncrement: true,
+          allowNull: false,
+      },
         userName: {
           type: DataTypes.STRING(20),
           allowNull: false,
