@@ -1,6 +1,6 @@
 export function setUpSocketIO(io) {
     io.on('connection', (socket) => {
-        console.log('A user connected');
+        console.log('A user connected. Socket ID: ', socket.id);
         
         const userName = socket.handshake.query.userName || 'User';
         const token = socket.handshake.query.token;
@@ -18,7 +18,7 @@ export function setUpSocketIO(io) {
 
         // handle disconnect event
         socket.on('disconnect', () => {
-            console.log('User disconnected');
+            console.log('User disconnected. Socket ID: ', socket.id);
         });
 
     });
