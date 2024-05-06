@@ -9,6 +9,7 @@ export default function (sequelize) {
             type: DataTypes.INTEGER,
             allowNull: false,
             unique: true,
+            primaryKey: true,
             autoIncrement: true,
         },
         lobbyId: {
@@ -26,7 +27,7 @@ export default function (sequelize) {
             defaultValue: 1,
         },
         playerOrder: {
-            type: DataTypes.ARRAY,
+            type: DataTypes.ARRAY(DataTypes.INTEGER),
             allowNull: true,
         },
         drawAmount: {

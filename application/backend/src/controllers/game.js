@@ -46,19 +46,60 @@ export function drawCard(deck) {
     if(deck.length === 0) {
         return null;
     }
-    return deck.shift();        //remove and return first card
+    return deck.shift();        //remove first card from deck array
 }
 
 
-//function to setup game_state entry to beginning state for this game
-export async function startGame(req, res) {
+export async function initalizePlayer(userId, lobbyId) {
     try {
-        const { name, userId, password } = req.body;
-
-
-
+        //check for lobby
+        const lobbyUser = await db.models.lobbyUser.findOne({ where: { lobbyId, userId } });
+        if (!lobbyUser) {
+            console.log("user: " + userid, " in: " + lobbyId + " not found");
+            res.status(500).json({ error: ("user: " + userid + " in: ", lobbyId + " not found")});
+        }
+ 
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: err.message });
     }
 }
+
+
+//function to setup game_state entry to beginning state for this game
+export async function initalizeGameState(lobbyId, players) {
+    try {
+        //initalize drawDeck and discardDeck
+        try {
+            newDeck = createUnoDeck();
+            newDeck = shuffle(newDeck);
+            card = drawCard(newDeck)
+            newDiscardDeck = []
+            newDiscardDeck.unshift(card)    //add card to beginning of the discardDeck array
+            newplayerOrder = shuffle(players)
+        } catch (err) {
+            console.log(err);
+            res.status(500).json({ error: err.message });
+        }
+        
+        const game = await db.models.gameState.create({
+            lobbyId: lobbyId,
+            currentPlayerTurn: 0,
+            direction: 1,
+            playerOrder: newplayerOrder,
+            drawAmount: 1,
+            drawDeck: newDeck,
+            discardDeck: newDiscardDeck,
+            discardDeckTopCard: card,
+        });
+
+        res.status(201).json(game);
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message });
+    }
+}
+
+
+
+

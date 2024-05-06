@@ -23,6 +23,7 @@ export default function (sequelize) {
         userId: {
           type: DataTypes.INTEGER,
           unique: true,
+          primaryKey: true,
           autoIncrement: true,
           allowNull: false,
         },

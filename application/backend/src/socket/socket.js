@@ -1,7 +1,20 @@
+import gameController from '../controllers/game.js'
+
+
 export function setUpSocketIO(io) {
     io.on('connection', (socket) => {
         console.log('A user connected. Socket ID: ', socket.id);
+
         
+
+
+
+        socket.on('joinLobby', (userId, lobbyId) => {
+            
+
+        })
+
+
         const userName = socket.handshake.query.userName || 'User';
         const token = socket.handshake.query.token;
         // listen to self-defined event

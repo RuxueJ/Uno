@@ -12,6 +12,7 @@ export default function (sequelize) {
           type: DataTypes.INTEGER,
           allowNull: false,
           unique: true,
+          primaryKey: true,
           autoIncrement: true,
         },
         name: {
@@ -30,9 +31,13 @@ export default function (sequelize) {
           defaultValue: 4
         },
         password: {
-          type: DataTypes.STRING,
+          type: DataTypes.STRING(255),
           allowNull: true,
         },
+        createtime: {
+          type: DataTypes.DATE,
+          allowNull: false,
+        }
       }, {
         modelName: 'lobby',
         tableName: 'lobby',

@@ -93,3 +93,33 @@ export async function createLobby(req, res) {
         res.status(500).json({ error: err.message });
     }
 }
+
+
+export async function joinLobby(req, res) {
+    try {
+        const { userId, lobbyId } = req.body;
+
+        const lobby = await db.models.lobby.findOne({ where: { id: lobbyId } });
+        if (!lobby) {
+            console.log("lobby does not exist");
+            res.status(500).json({ error: "lobby does not exist"});
+        }
+
+        const existingLobbyUser = await db.models.lobbyUser.findOne({ where: { lobbyId, userId } });
+        if (!existingLobbyUser) {
+            console.log("user already in lobby");
+            res.status(500).json({ error: "user already in lobby"});
+        }
+
+        const lobbyUser = await db.models.lobbyUser.create({
+            lobbyId: lobbyId,
+            userId: userId,
+            isHost: false,
+        });
+        res.status(201).json(lobbyUser)
+
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message });
+    }
+}

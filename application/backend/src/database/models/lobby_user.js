@@ -9,6 +9,7 @@ export default function (sequelize) {
           type: DataTypes.INTEGER,
           allowNull: false,
           unique: true,
+          primaryKey: true,
           autoIncrement: true,
         },
         lobbyId: {
@@ -28,9 +29,13 @@ export default function (sequelize) {
           allowNull: false,
           defaultValue: 0,
         },
+        socketId: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+        }
       }, {
         modelName: 'lobbyUser',
-        tableName: 'lobby_player',
+        tableName: 'lobby_user',
         sequelize,
         timestamps: false
       });
