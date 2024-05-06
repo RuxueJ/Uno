@@ -11,6 +11,10 @@ export default function (sequelize) {
             unique: true,
             autoIncrement: true,
         },
+        lobbyId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
         currentPlayerTurn: {
             type: DataTypes.INTEGER,
             allowNull: false,
