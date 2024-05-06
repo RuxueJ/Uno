@@ -35,8 +35,8 @@ const server = http.createServer(app);
 
 /**
  * Create SocketIO server.
+ * and attach to HTTP server
  */ 
-
 
 const io = new SocketIOServer(server, {
   cors: configs.corsConfig
