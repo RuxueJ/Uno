@@ -5,6 +5,12 @@ export default function (sequelize) {
     }
 
     LobbyUser.init({
+      lobbyUserId: {
+          type: DataTypes.INTEGER,
+          primaryKey: true,
+          autoIncrement: true,
+          allowNull: false,
+      },
         lobbyId: {
           type: DataTypes.INTEGER,
           allowNull: false
@@ -19,7 +25,7 @@ export default function (sequelize) {
         }
       }, {
         modelName: 'lobbyUser',
-        tableName: 'lobby_player',
+        tableName: 'lobby_user',
         sequelize,
         timestamps: false
       });

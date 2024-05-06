@@ -68,21 +68,67 @@ export async function getLobbiesData(req, res) {
 
 // 创建房间的控制器
 export async function createLobby(req, res) {
+    const transaction = await db.transaction();
     try {
-        const { name, userId } = req.body;
+        const { name, userId, numPlayer } = req.body;
 
         // 创建房间
         const lobby = await db.models.lobby.create({
             name,
             status: 'waiting',
-            maxPlayers: 4,
-        });
+            numPlayer,
+        }, { transaction });
 
         // 创建房间用户
         await db.models.lobbyUser.create({
-            lobbyId: lobby.id,
+            lobbyId: lobby.lobbyId,
             userId: userId,
             isHost: true,
+        }, { transaction });
+
+        await transaction.commit();
+
+        res.status(201).json(lobby);
+    } catch (err) {
+        await transaction.rollback();
+        console.log(err);
+        res.status(500).json({ error: err.message });
+    }
+}
+
+// 加入房间的控制器
+export async function joinLobby(req, res) {
+    try {
+        const { lobbyId, userId } = req.body;
+        console.log("lobbyId", lobbyId);
+        console.log("userId", userId);
+
+        // 查询房间
+        const lobby = await db.models.lobby.findOne({ where: { lobbyId } });
+
+        if (!lobby) {
+            return res.status(404).json({ error: 'Lobby not found' });
+        }
+
+        // 查询房间用户
+        const lobbyUser = await db.models.lobbyUser.findOne({ where: { lobbyId, userId } });
+
+        if (lobbyUser) {
+            return res.status(409).json({ error: 'User already in lobby' });
+        }
+
+        // 查询房间用户数量
+        const lobbyUsers = await db.models.lobbyUser.findAll({ where: { lobbyId } });
+
+        if (lobbyUsers.length >= lobby.maxPlayer) {
+            return res.status(409).json({ error: 'Lobby is full' });
+        }
+
+        // 创建房间用户
+        await db.models.lobbyUser.create({
+            lobbyId,
+            userId,
+            isHost: false,
         });
 
         res.status(201).json(lobby);
