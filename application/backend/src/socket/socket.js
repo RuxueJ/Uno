@@ -22,7 +22,13 @@ export function setUpSocketIO(io) {
                 if(joinAttempt == null) {
                     throw new Error("error joining lobby inside sockets.js")
                 }
+
+                //this seems to not actually join the lobby
+                //im not sure why yet
                 socket.join(lobbyId);
+                console.log("---------")
+                console.log(socket.rooms)
+                console.log("---------")
                 console.log(`Socket ${socket.id} user ${email} joined lobby ${lobbyId}`)
                 emitToLobby(io, lobbyId, 'user join', 'user joined the lobby')
             } catch (err) {
@@ -51,6 +57,7 @@ export function setUpSocketIO(io) {
         // listen to self-defined event
         socket.on('chatMessage', (message) => {
             console.log('Received message:', message);
+            console.log(socket.rooms)
             const timeStamp = new Date().toLocaleTimeString();
             // broadcast message to all connected clients
             io.emit('newMessage', {
@@ -64,11 +71,10 @@ export function setUpSocketIO(io) {
         socket.on('disconnect', async () => {
             //when a socket disconnects it disconnects from all rooms that socket was in
             console.log('User disconnected. Socket ID: ', socket.id);
-            const userId = socket.userId;
             console.log('UserId: ' + userId + ' disconnected');
             //get the list of lobbyIds this socket was joined to
             const lobbyIds = Object.keys(socket.rooms);
-
+            console.log("lobby IDS: ", lobbyIds);
             if(userId) {
                 try {
                     for(const lobbyId of lobbyIds) {
