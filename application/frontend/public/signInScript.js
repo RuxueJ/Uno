@@ -14,11 +14,13 @@ async function login(email, password) {
 
     const data = await response.json();
 
+
     // Store the JWT token in local storage for future requests
     localStorage.setItem("token", data.token);
     localStorage.setItem("email", data.data.email);
     localStorage.setItem("userName", data.data.userName);
     localStorage.setItem("userId", data.data.userId)
+
     // Redirect to the dashboard or perform any other action
     window.location.href = "lobby.html"; // Change the URL accordingly
   } catch (error) {

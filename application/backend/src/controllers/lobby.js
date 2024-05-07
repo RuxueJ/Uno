@@ -191,6 +191,7 @@ export async function disconnect(userId, lobbyId) {
     //if lobby status is playing then set their connected to false
     //logic is when its their turn if they are not connected then
     //have them draw or something and go next turn
+    console.log("starting disconnect in lobby.js");
     try {
         const lobby = await db.models.lobby.findOne({ where: { lobbyId: lobbyId } });
         if (!lobby) {

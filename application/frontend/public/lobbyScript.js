@@ -28,9 +28,8 @@ function renderGamesList(data) {
     joinButton.textContent = "Join";
     joinButton.addEventListener("click", () => {
       // Add your logic to join the game
-      const email = localStorage.getItem('email');
       const lobbyId = game.id;
-      socket.emit('joinLobby', email, lobbyId );
+      socket.emit('joinLobby', lobbyId );
       console.log(`Joining game ${game.id}`);
     });
 
@@ -39,9 +38,8 @@ function renderGamesList(data) {
     leaveButton.textContent = "Leave";
     leaveButton.addEventListener("click", () => {
       // Add your logic to leave the game
-      const email = localStorage.getItem('email');
       const lobbyId = game.id;
-      socket.emit('leaveLobby', email, lobbyId );
+      socket.emit('leaveLobby', lobbyId );
       console.log(`Leaving game ${game.id}`);
     });
 
@@ -87,6 +85,8 @@ document.getElementById("profileBtn").addEventListener("click", () => {
 
 const token = localStorage.getItem("token");
 const userName = localStorage.getItem("userName");
+const userId = localStorage.getItem('userId');
+const email = localStorage.getItem('email');
 
 if (token && userName) {
   const greeting = document.getElementById("greeting");
@@ -129,9 +129,9 @@ document
     // Add your logic to handle form submission (e.g., create game)
   });
 
-// chat system
+// chat system also where we make the socket connection for meow
 const socket = io("http://localhost:3000", {
-  query: { token, userName },
+  query: { token, userName, email, userId },
   transports: ["websocket"],
 });
 const messageInput = document.getElementById("messageInput");

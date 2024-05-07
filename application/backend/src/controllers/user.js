@@ -1,8 +1,6 @@
 import createError from 'http-errors';
 import db from '@/database';
 
-//used to attach userId to socket instance
-import { io } from '@/bin/www';
 
 /**
  * POST /user/login
@@ -36,9 +34,6 @@ export const login = async (req, res, next) => {
         "email": user.email
       }
     }
-
-    //so we can attach userId to the socket instance
-    io.emit('login_success', { userId: user.userId });
 
     return res.status(200).json({ ...response });
   } catch (err) {
