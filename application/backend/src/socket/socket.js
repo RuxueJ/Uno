@@ -52,8 +52,6 @@ export function setUpSocketIO(io) {
         // listen to self-defined event
         socket.on('chatMessage', (message) => {
             console.log('Received message:', message);
-            const lobbyIds = Array.from(socket.rooms).filter(lobbyId => lobbyId !== socket.id);
-            console.log(lobbyIds);
             const timeStamp = new Date().toLocaleTimeString();
             // broadcast message to all connected clients
             io.emit('newMessage', {
@@ -66,8 +64,6 @@ export function setUpSocketIO(io) {
         socket.on('disconnecting', () => {
             const lobbyIds = Array.from(socket.rooms).filter(lobbyId => lobbyId !== socket.id);
             console.log(lobbyIds);
-            //before the socket disconnects you can manage its rooms
-            //these rooms are the rooms corresponding to this socket
             lobbyIds.forEach(async lobbyId => {
                 try {
                     const lobbyDisconnectionAttempt =  await lobbyController.disconnect(userId, lobbyId);
@@ -87,8 +83,15 @@ export function setUpSocketIO(io) {
             console.log('User disconnected. Socket ID: ', socket.id);
         });
 
+
+        socket.on('reconnecting', (attemptNumber) => {
+            console.log(`Attempting to reconnect (attempt ${attemptNumber})`);
+        });
+
+
         socket.on('reconnect', () => {
             console.log('User reconnected. Socket ID: ', socket.id);
+            console.log(socket.rooms);
         });
 
     });
