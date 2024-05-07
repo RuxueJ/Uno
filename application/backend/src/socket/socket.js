@@ -23,12 +23,7 @@ export function setUpSocketIO(io) {
                     throw new Error("error joining lobby inside sockets.js")
                 }
 
-                //this seems to not actually join the lobby
-                //im not sure why yet
                 socket.join(lobbyId);
-                console.log("---------")
-                console.log(socket.rooms)
-                console.log("---------")
                 console.log(`Socket ${socket.id} user ${email} joined lobby ${lobbyId}`)
                 emitToLobby(io, lobbyId, 'user join', 'user joined the lobby')
             } catch (err) {
@@ -57,7 +52,8 @@ export function setUpSocketIO(io) {
         // listen to self-defined event
         socket.on('chatMessage', (message) => {
             console.log('Received message:', message);
-            console.log(socket.rooms)
+            const lobbyIds = Array.from(socket.rooms).filter(lobbyId => lobbyId !== socket.id);
+            console.log(lobbyIds);
             const timeStamp = new Date().toLocaleTimeString();
             // broadcast message to all connected clients
             io.emit('newMessage', {
@@ -67,35 +63,32 @@ export function setUpSocketIO(io) {
             });
         });
 
-        // handle disconnect event
-        socket.on('disconnect', async () => {
-            //when a socket disconnects it disconnects from all rooms that socket was in
-            console.log('User disconnected. Socket ID: ', socket.id);
-            console.log('UserId: ' + userId + ' disconnected');
-            //get the list of lobbyIds this socket was joined to
-            const lobbyIds = Object.keys(socket.rooms);
-            console.log("lobby IDS: ", lobbyIds);
-            if(userId) {
+        socket.on('disconnecting', () => {
+            const lobbyIds = Array.from(socket.rooms).filter(lobbyId => lobbyId !== socket.id);
+            console.log(lobbyIds);
+            //before the socket disconnects you can manage its rooms
+            //these rooms are the rooms corresponding to this socket
+            lobbyIds.forEach(async lobbyId => {
                 try {
-                    for(const lobbyId of lobbyIds) {
-                        //disconnect will either remove the lobbyUser records if the 
-                        //lobby is in the waiting state
-                        //or it will set all the lobbyUser records assocaited with this socket
-                        //to connected = false
-                        disconnectAttempt = await lobbyController.disconnect(userId, lobbyId)
-                        console.log("user " + userId + " disconnect from " + lobbyId);
-                        emitToLobby(io, lobbyId, 'user disconnected', 'user disconnect from the lobby')
+                    const lobbyDisconnectionAttempt =  await lobbyController.disconnect(userId, lobbyId);
+                    if(!lobbyDisconnectionAttempt) {
+                        throw new Error("error in lobby disconnection attempt");
                     }
                 } catch (err) {
-                    console.log("error disconnecting", err);
+                    console.log(err)
+                    socket.emit('disconnection error', { message: 'disconnection error in DB'} );
                 }
-            }
+            });
         });
 
+        // handle disconnect event
+        socket.on('disconnect', async () => {
+            //socket.rooms is empty now
+            console.log('User disconnected. Socket ID: ', socket.id);
+        });
 
         socket.on('reconnect', () => {
             console.log('User reconnected. Socket ID: ', socket.id);
-
         });
 
     });

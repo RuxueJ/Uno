@@ -133,7 +133,11 @@ document
 const socket = io("http://localhost:3000", {
   query: { token, userName, email, userId },
   transports: ["websocket"],
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
+  reeconnectionDelayMax: 5000,
 });
+
 const messageInput = document.getElementById("messageInput");
 const messages = document.getElementById("messages");
 const sendButton = document.getElementById("sendButton");

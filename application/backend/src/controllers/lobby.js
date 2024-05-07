@@ -201,10 +201,13 @@ export async function disconnect(userId, lobbyId) {
 
         const existingLobbyUser = await db.models.lobbyUser.findOne({ where: { lobbyId, userId } });
         if(existingLobbyUser) {
-            if (lobby.status != "waiting") {    //just have them disconnect if lobby is waiting
+            console.log("---------")
+            console.log(lobby.status);
+            console.log("---------")
+            if (lobby.status == "waiting") {    //just have them disconnect if lobby is waiting
                 await existingLobbyUser.destroy();
                 console.log("removing disconnected user " + userId + " from lobby")
-                return null
+                return 1;
             }
             //if lobby is playing then set connected for this user as false
             existingLobbyUser.connected = false;
