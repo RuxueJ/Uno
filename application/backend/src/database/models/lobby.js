@@ -30,6 +30,11 @@ export default function (sequelize) {
           allowNull: false,
           defaultValue: 4
         },
+        numPlayersInLobby: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+          defaultValue: 0,
+        },
         password: {
           type: DataTypes.STRING(255),
           allowNull: true,

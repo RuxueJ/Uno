@@ -29,7 +29,8 @@ export async function getLobbiesData(req, res) {
                     userId: user.userId,
                     userName: userInfo ? userInfo.userName : null, // 找到玩家名称      find player name
                     isHost: user.isHost,
-                    score: user.score
+                    score: user.score,
+                    connected: user.connected,
                 };
             });
 
@@ -78,6 +79,7 @@ export async function createLobby(req, res) {
             status: 'waiting',
             maxPlayers: 4,
             password: password ? password: null,        //if a password is provided
+            numPlayersInLobby: 1,
         });
 
         // 创建房间用户     create room user
@@ -85,6 +87,7 @@ export async function createLobby(req, res) {
             lobbyId: lobby.id,
             userId: userId,
             isHost: true,
+            connected: true,
         });
 
         res.status(201).json(lobby);
@@ -94,32 +97,137 @@ export async function createLobby(req, res) {
     }
 }
 
-
-export async function joinLobby(req, res) {
+//controller for joining rooms
+export async function joinLobby(email, lobbyId) {
     try {
-        const { userId, lobbyId } = req.body;
-
-        const lobby = await db.models.lobby.findOne({ where: { id: lobbyId } });
+        const lobby = await db.models.lobby.findOne({ where: { lobbyId: lobbyId } });
         if (!lobby) {
             console.log("lobby does not exist");
-            res.status(500).json({ error: "lobby does not exist"});
+            return null;
         }
 
-        const existingLobbyUser = await db.models.lobbyUser.findOne({ where: { lobbyId, userId } });
-        if (!existingLobbyUser) {
-            console.log("user already in lobby");
-            res.status(500).json({ error: "user already in lobby"});
+
+        if(lobby.numPlayersInLobby >= lobby.maxPlayers){
+            console.log("lobby is full");
+            return null;
         }
+
+        //get userId
+        const user = await db.models.user.findOne( { where: { email: email } } );
+        if(!user) {
+            console.log("user does not exist");
+            return null;
+        }
+        const userId = user.userId;
+
+
+        const existingLobbyUser = await db.models.lobbyUser.findOne({ where: { lobbyId, userId } });
+        if (existingLobbyUser) {
+            console.log("user already in lobby");
+            return null;
+        }
+
 
         const lobbyUser = await db.models.lobbyUser.create({
             lobbyId: lobbyId,
             userId: userId,
             isHost: false,
+            connected: true,
         });
-        res.status(201).json(lobbyUser)
 
+        lobby.numPlayersInLobby++;
+        await lobby.save();
+
+        console.log("end joinLobby inside controller");
+        return(lobbyUser);
     } catch (err) {
         console.log(err);
-        res.status(500).json({ error: err.message });
+        return null
+    }
+}
+
+export async function leaveLobby(email, lobbyId) {
+    try {
+        const lobby = await db.models.lobby.findOne({ where: { lobbyId: lobbyId } });
+        if (!lobby) {
+            console.log("lobby does not exist");
+            return null;
+        }
+
+        //get userId
+        const user = await db.models.user.findOne( { where: { email: email } } );
+        if(!user) {
+            console.log("user " + userId + " does not exist");
+            return null;
+        }
+        const userId = user.userId;
+
+        const existingLobbyUser = await db.models.lobbyUser.findOne({ where: { lobbyId, userId } });
+        if (existingLobbyUser) {
+            try {
+                //try to delete it
+                await existingLobbyUser.destroy();
+                console.log("user " + userId + " removed from lobby");
+                lobby.numPlayersInLobby--;
+                await lobby.save();
+                return existingLobbyUser;
+            } catch (err) {
+                console.log("error deleting user from lobby");
+                return null;
+            }
+        } else {
+            console.log("user " + userId + " doesn't exist in lobby");
+            return null;
+        }
+
+    } catch (err) {
+        console.log(err)
+        return null;
+    }
+}
+
+export async function disconnect(userId, lobbyId) {
+    //if lobby status is waiting then make them leave lobby
+    //if lobby status is playing then set their connected to false
+    //logic is when its their turn if they are not connected then
+    //have them draw or something and go next turn
+    try {
+        const lobby = await db.models.lobby.findOne({ where: { lobbyId: lobbyId } });
+        if (!lobby) {
+            console.log("lobby does not exist");
+            return null;
+        }
+
+        const existingLobbyUser = await db.models.lobbyUser.findOne({ where: { lobbyId, userId } });
+        if(existingLobbyUser) {
+            if (lobby.status != "waiting") {    //just have them disconnect if lobby is waiting
+                await existingLobbyUser.destroy();
+                console.log("removing disconnected user " + userId + " from lobby")
+                return null
+            }
+            //if lobby is playing then set connected for this user as false
+            existingLobbyUser.connected = false;
+            await existingLobbyUser.save();
+            console.log("user " + userId + " disconnected")
+            return existingLobbyUser;
+        } else {
+            console.log("user " + userId + " is not in the lobby");
+            return null
+        }
+
+    } catch (err) {
+        console.log(err)
+        return null;
+    }
+}
+
+export async function reconnect(email, lobbyId) {
+    //if lobby status is waiting then n/a
+    //if lobby status is playing then reconnect
+    try {
+
+    } catch (err) {
+        console.log(err)
+        return null;
     }
 }

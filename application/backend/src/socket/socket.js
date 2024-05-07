@@ -1,4 +1,16 @@
-import gameController from '../controllers/game.js'
+import * as lobby from '@/database/models/lobby.js';
+import * as lobbyController from '@/controllers/lobby.js';
+
+
+export function associateUserWithSocket(socket, userId) {
+    socket.userId = userId;
+}
+
+
+
+export function emitToLobby(io, lobbyId, eventName, eventData) {
+    io.to(lobbyId).emit(eventName, eventData);
+}
 
 
 export function setUpSocketIO(io) {
@@ -6,13 +18,42 @@ export function setUpSocketIO(io) {
         console.log('A user connected. Socket ID: ', socket.id);
 
         
+        io.on('login_success', ({ userId }) => {
+            associateUserWithSocket(socket, userId)
+        });
 
 
-
-        socket.on('joinLobby', (userId, lobbyId) => {
-            
-
+        socket.on('joinLobby', async (email, lobbyId) => {
+            try {
+                const joinAttempt = await lobbyController.joinLobby(email, lobbyId);
+                if(joinAttempt == null) {
+                    throw new Error("error joining lobby inside sockets.js")
+                }
+                socket.join(lobbyId);
+                console.log(`Socket ${socket.id} user ${email} joined lobby ${lobbyId}`)
+                emitToLobby(io, lobbyId, 'user join', 'user joined the lobby')
+            } catch (err) {
+                console.log(err);
+                socket.emit('joinLobbyError', { message: 'failed to join lobby'} );
+            }
         })
+
+
+        socket.on('leaveLobby', async (email, lobbyId) =>{
+            try {
+                const leaveAttempt = await lobbyController.leaveLobby(email, lobbyId);
+                if(leaveAttempt == null) {
+                    throw new Error("error leaving lobby inside socket.js")
+                }
+                socket.leave(lobbyId);
+                console.log(`Socket ${socket.id} user ${email} left lobby ${lobbyId}`);
+                emitToLobby(io, lobbyId, 'user left', 'user left the lobby')
+            } catch (err) {
+                console.log(err)
+                socket.emit('leaveLobbyError', { message: 'failed to leave lobby'} );
+            }
+        })
+
 
 
         const userName = socket.handshake.query.userName || 'User';
@@ -30,8 +71,25 @@ export function setUpSocketIO(io) {
         });
 
         // handle disconnect event
-        socket.on('disconnect', () => {
+        socket.on('disconnect', async () => {
+            //when a socket disconnects it disconnects from all rooms that socket was in
             console.log('User disconnected. Socket ID: ', socket.id);
+            const userId = socket.userId;
+            if(userId) {
+                try {
+                    disconnectAttempt = await lobbyController.disconnect(userId, )
+
+                } catch (err) {
+                    console.log("error disconnecting", err);
+                }
+
+            }
+        });
+
+
+        socket.on('reconnect', () => {
+            console.log('User reconnected. Socket ID: ', socket.id);
+
         });
 
     });

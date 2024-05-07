@@ -29,10 +29,11 @@ export default function (sequelize) {
           allowNull: false,
           defaultValue: 0,
         },
-        socketId: {
-          type: DataTypes.INTEGER,
-          allowNull: false,
-        }
+        connected: {
+          type: DataTypes.BOOLEAN,
+          allowNull: false ,
+          defaultValue: false,
+        },
       }, {
         modelName: 'lobbyUser',
         tableName: 'lobby_user',

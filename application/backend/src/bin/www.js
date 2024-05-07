@@ -43,6 +43,9 @@ const io = new SocketIOServer(server, {
 });
 socketSetup.setUpSocketIO(io);
 
+//export io for attaching userId to a socket instance
+export { io }
+
 /**
  * Listen on provided port, on all network interfaces.
  */
@@ -108,7 +111,6 @@ function onError(error) {
 /**
  * Event listener for HTTP server "listening" event.
  */
-
 function onListening() {
   const addr = server.address();
   const bind = typeof addr === 'string'

@@ -1,5 +1,6 @@
 // JavaScript Code
 
+
 let i = 0;
 // Sample active game data
 const activeGames = [
@@ -27,11 +28,26 @@ function renderGamesList(data) {
     joinButton.textContent = "Join";
     joinButton.addEventListener("click", () => {
       // Add your logic to join the game
+      const email = localStorage.getItem('email');
+      const lobbyId = game.id;
+      socket.emit('joinLobby', email, lobbyId );
       console.log(`Joining game ${game.id}`);
+    });
+
+    const leaveButton = document.createElement("button");
+    leaveButton.classList.add("leave-button");
+    leaveButton.textContent = "Leave";
+    leaveButton.addEventListener("click", () => {
+      // Add your logic to leave the game
+      const email = localStorage.getItem('email');
+      const lobbyId = game.id;
+      socket.emit('leaveLobby', email, lobbyId );
+      console.log(`Leaving game ${game.id}`);
     });
 
     gameItem.appendChild(gameInfo);
     gameItem.appendChild(joinButton);
+    gameItem.appendChild(leaveButton);
     gamesList.append(gameItem);
   });
 }
