@@ -79,7 +79,6 @@ export async function createLobby(req, res) {
             status: 'waiting',
             maxPlayers: 4,
             password: password ? password: null,        //if a password is provided
-            numPlayersInLobby: 1,
         });
 
         // 创建房间用户     create room user
@@ -107,11 +106,6 @@ export async function joinLobby(email, lobbyId) {
         }
 
 
-        if(lobby.numPlayersInLobby >= lobby.maxPlayers){
-            console.log("lobby is full");
-            return null;
-        }
-
         //get userId
         const user = await db.models.user.findOne( { where: { email: email } } );
         if(!user) {
@@ -128,6 +122,16 @@ export async function joinLobby(email, lobbyId) {
         }
 
 
+        const totalPlayers = await db.models.lobbyUser.findAll( { where: { lobbyId } } );
+        if(totalPlayers) {
+            if(totalPlayers.length >= lobby.maxPlayers){
+            console.log("lobby is full");
+            return null;
+            }
+        }
+
+
+
         const lobbyUser = await db.models.lobbyUser.create({
             lobbyId: lobbyId,
             userId: userId,
@@ -135,8 +139,6 @@ export async function joinLobby(email, lobbyId) {
             connected: true,
         });
 
-        lobby.numPlayersInLobby++;
-        await lobby.save();
 
         console.log("end joinLobby inside controller");
         return(lobbyUser);
@@ -168,8 +170,6 @@ export async function leaveLobby(email, lobbyId) {
                 //try to delete it
                 await existingLobbyUser.destroy();
                 console.log("user " + userId + " removed from lobby");
-                lobby.numPlayersInLobby--;
-                await lobby.save();
                 return existingLobbyUser;
             } catch (err) {
                 console.log("error deleting user from lobby");
@@ -223,9 +223,18 @@ export async function disconnect(userId, lobbyId) {
     }
 }
 
-export async function reconnect(userId, lobbyId) {
+//returns lobby id of reconnect
+export async function reconnect(userId) {
     try {
-
+        //are there any games this user is a part of where their connected flag is false
+        const userGameRooms = await db.models.lobbyUser.findOne( { where: { userId, connected: false } } );
+        if (userGameRooms) {
+            userGameRooms.connected = true;
+            await userGameRooms.save();
+            return userGameRooms.lobbyId;
+        } else {
+            return null;
+        }
     } catch (err) {
         console.log(err)
         return null;

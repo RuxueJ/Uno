@@ -8,13 +8,42 @@ export function emitToLobby(io, lobbyId, eventName, eventData) {
 
 
 export function setUpSocketIO(io) {
-    io.on('connection', (socket) => {
+    io.on('connection', async (socket) => {
         console.log('A user connected. Socket ID: ', socket.id);
         //user info attached to this socket
         const userId = socket.handshake.query.userId;
         const email = socket.handshake.query.email;
         const userName = socket.handshake.query.userName || 'User';
         const token = socket.handshake.query.token;
+
+        //for the req: If a user closes a game tab, 
+        //and then reconnects to the game, the game must be able 
+        //to be reloaded in the current state for that user
+        //idea: when user connects check if their userId has any
+        //lobbyUser records if so check if that record is connected or not
+        //the first lobbyUser record that exists for this user and has the
+        //connected flag as false will be considered a reconnect to that
+        //game room.
+        //when I close a tab it consideres it a disconnect
+        //when I reopen the tab it considers it a connection so on.reconnect is not
+        //being used
+        try {
+            //reconnect will give the first record gmaeId in userLobby if it exists with connection=false
+            const reconnectAttempt = await lobbyController.reconnect(userId);
+            if (reconnectAttempt == null) {
+                console.log("no game rooms for this user to reconnect to");
+            } else {
+                console.log("user: " + email + " reconnecting to: " + reconnectAttempt);
+                //need more logic to reapply game state to user aswelll
+                //rejoin socket room for this game room
+                socket.join(reconnectAttempt);
+                emitToLobby(io, reconnectAttempt, 'user reconnect', 'user ' + email + 'reconnected to lobby');
+            }
+        } catch (err) {
+            console.log(err);
+            socket.emit('reconnectError', { message: 'failed to execute reconnection check'})
+        }
+
 
         socket.on('joinLobby', async (lobbyId) => {
             try {
@@ -52,6 +81,8 @@ export function setUpSocketIO(io) {
         socket.on('chatMessage', (message) => {
             console.log('Received message:', message);
             const timeStamp = new Date().toLocaleTimeString();
+
+            console.log(socket.rooms);
             // broadcast message to all connected clients
             io.emit('newMessage', {
                 userName,
@@ -83,11 +114,12 @@ export function setUpSocketIO(io) {
         });
 
 
+        //right now we are not using the socketio reconnecting feature
         socket.on('reconnecting', (attemptNumber) => {
             console.log(`Attempting to reconnect (attempt ${attemptNumber})`);
         });
 
-
+        //not using this right now
         socket.on('reconnect', () => {
             console.log('User reconnected. Socket ID: ', socket.id);
             console.log(socket.rooms);

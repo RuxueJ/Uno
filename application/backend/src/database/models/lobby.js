@@ -30,11 +30,6 @@ export default function (sequelize) {
           allowNull: false,
           defaultValue: 4
         },
-        numPlayersInLobby: {
-          type: DataTypes.INTEGER,
-          allowNull: false,
-          defaultValue: 0,
-        },
         password: {
           type: DataTypes.STRING(255),
           allowNull: true,
@@ -42,7 +37,7 @@ export default function (sequelize) {
         createtime: {
           type: DataTypes.DATE,
           allowNull: false,
-        }
+        },
       }, {
         modelName: 'lobby',
         tableName: 'lobby',
