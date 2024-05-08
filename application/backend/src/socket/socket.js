@@ -22,7 +22,6 @@ export function setUpSocketIO(io) {
                 if(joinAttempt == null) {
                     throw new Error("error joining lobby inside sockets.js")
                 }
-
                 socket.join(lobbyId);
                 console.log(`Socket ${socket.id} user ${email} joined lobby ${lobbyId}`)
                 emitToLobby(io, lobbyId, 'user join', 'user joined the lobby')
