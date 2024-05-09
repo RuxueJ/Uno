@@ -201,7 +201,7 @@ export async function disconnect(userId, roomId) {
         const existingRoomUser = await db.models.roomUser.findOne({ where: { roomId, userId } });
         if(existingRoomUser) {
             //at the end of the game kick all players who are still not connected
-            if (room.status == "waiting") {    //just have them disconnect if room is waiting
+            if (room.status === "waiting") {    //just have them disconnect if room is waiting
                 await existingRoomUser.destroy();
                 console.log("removing disconnected user " + userId + " from room")
                 return 1;
@@ -243,8 +243,6 @@ export async function reconnect(userId) {
 
 export async function startGame(roomId, userId) {
     try {
-
-
 
 
 

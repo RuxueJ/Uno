@@ -111,11 +111,11 @@ export function setUpSocketIO(io) {
 
 
         socket.on('disconnecting', () => {
-            const roomIds = Array.from(socket.rooms).filter(roomId => roomId !== socket.id && roomId !== 'room');
+            const roomIds = Array.from(socket.rooms).filter(roomId => roomId !== socket.id && roomId !== 'lobby');
             console.log(roomIds);
             roomIds.forEach(async roomId => {
                 try {
-                    const roomDisconnectionAttempt =  await roomController.disconnect(userId, roomId);
+                    const roomDisconnectionAttempt = await roomController.disconnect(userId, roomId);
                     if(!roomDisconnectionAttempt) {
                         throw new Error("error in room disconnection attempt");
                     }
