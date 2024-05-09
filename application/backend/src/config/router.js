@@ -1,9 +1,9 @@
 import userRouter from '@/routes/user';
 import indexRouter from '@/routes/index';
-import lobbyRoute from '@/routes/lobby';
+import roomRoute from '@/routes/room';
 
 export default function (app) {
   app.use('/api', indexRouter);
   app.use('/api/user', userRouter);
-  app.use('/api/lobby', lobbyRoute);
+  app.use('/api/room', roomRoute);
 }

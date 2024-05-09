@@ -13,8 +13,8 @@ app.get('/signup', function(req, res) {
     res.redirect('/public/signUp.html');
 });
 
-app.get('/lobby', function(req, res) {
-    res.redirect('/public/lobby.html');
+app.get('/room', function(req, res) {
+    res.redirect('/public/room.html');
 });
 
 app.listen(PORT, () => console.log(`Server listening on port: ${PORT}`));

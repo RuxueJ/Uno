@@ -64,6 +64,19 @@ body {
   cursor: pointer;
 }
 
+/*added for testing*/
+.leave-button {
+  background-color: red;
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 14px;
+  cursor: pointer;
+}
+
 /* CSS Styles */
 /* Modal Styles */
 .modal {

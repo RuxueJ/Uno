@@ -1,5 +1,6 @@
 // JavaScript Code
 
+
 let i = 0;
 // Sample active game data
 const activeGames = [
@@ -27,11 +28,24 @@ function renderGamesList(data) {
     joinButton.textContent = "Join";
     joinButton.addEventListener("click", () => {
       // Add your logic to join the game
-      console.log(`Joining game ${game.id}`);
+      const roomId = game.id;
+      socket.emit('joinRoom', roomId );
+      console.log(`Joining room ${roomId}`);
+    });
+
+    const leaveButton = document.createElement("button");
+    leaveButton.classList.add("leave-button");
+    leaveButton.textContent = "Leave";
+    leaveButton.addEventListener("click", () => {
+      // Add your logic to leave the game
+      const roomId = game.id;
+      socket.emit('leaveRoom', roomId );
+      console.log(`Leaving room ${roomId}`);
     });
 
     gameItem.appendChild(gameInfo);
     gameItem.appendChild(joinButton);
+    gameItem.appendChild(leaveButton);
     gamesList.append(gameItem);
   });
 }
@@ -71,6 +85,8 @@ document.getElementById("profileBtn").addEventListener("click", () => {
 
 const token = localStorage.getItem("token");
 const userName = localStorage.getItem("userName");
+const userId = localStorage.getItem('userId');
+const email = localStorage.getItem('email');
 
 if (token && userName) {
   const greeting = document.getElementById("greeting");
@@ -113,16 +129,20 @@ document
     // Add your logic to handle form submission (e.g., create game)
   });
 
-// chat system
+// chat system also where we make the socket connection for meow
 const socket = io("http://localhost:3000", {
-  query: { token, userName },
+  query: { token, userName, email, userId },
   transports: ["websocket"],
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
+  reeconnectionDelayMax: 5000,
 });
+
 const messageInput = document.getElementById("messageInput");
 const messages = document.getElementById("messages");
 const sendButton = document.getElementById("sendButton");
 
-socket.on("newMessage", function (data) {
+socket.on("newLobbyMessage", function (data) {
   const messageElement = document.createElement("div");
   messageElement.textContent = `${data.userName} @ ${data.timeStamp}: ${data.message}`;
   messages.appendChild(messageElement);
@@ -134,7 +154,7 @@ socket.on("connect", () => {
 function sendMessage() {
   const message = messageInput.value.trim();
   if (message) {
-    socket.emit("chatMessage", message);
+    socket.emit("lobbyChatMessage", message);
     messageInput.value = "";
   }
 }
