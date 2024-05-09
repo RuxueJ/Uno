@@ -12,7 +12,7 @@ export default function (sequelize) {
             primaryKey: true,
             autoIncrement: true,
         },
-        lobbyId: {
+        roomId: {
             type: DataTypes.INTEGER,
             allowNull: false,
         },

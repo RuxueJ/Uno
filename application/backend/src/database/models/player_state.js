@@ -16,7 +16,7 @@ export default function (sequelize) {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
-        lobbyId: {
+        roomId: {
             type: DataTypes.INTEGER,
             allowNull: false,
         },

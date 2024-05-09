@@ -50,13 +50,13 @@ export function drawCard(deck) {
 }
 
 
-export async function initalizePlayer(userId, lobbyId) {
+export async function initalizePlayer(userId, roomId) {
     try {
-        //check for lobby
-        const lobbyUser = await db.models.lobbyUser.findOne({ where: { lobbyId, userId } });
-        if (!lobbyUser) {
-            console.log("user: " + userid, " in: " + lobbyId + " not found");
-            res.status(500).json({ error: ("user: " + userid + " in: ", lobbyId + " not found")});
+        //check for room
+        const roomUser = await db.models.roomUser.findOne({ where: { roomId, userId } });
+        if (!roomUser) {
+            console.log("user: " + userid, " in: " + roomId + " not found");
+            res.status(500).json({ error: ("user: " + userid + " in: ", roomId + " not found")});
         }
  
     } catch (err) {
@@ -67,7 +67,7 @@ export async function initalizePlayer(userId, lobbyId) {
 
 
 //function to setup game_state entry to beginning state for this game
-export async function initalizeGameState(lobbyId, players) {
+export async function initalizeGameState(roomId, players) {
     try {
         //initalize drawDeck and discardDeck
         try {
@@ -83,7 +83,7 @@ export async function initalizeGameState(lobbyId, players) {
         }
         
         const game = await db.models.gameState.create({
-            lobbyId: lobbyId,
+            roomId: roomId,
             currentPlayerTurn: 0,
             direction: 1,
             playerOrder: newplayerOrder,

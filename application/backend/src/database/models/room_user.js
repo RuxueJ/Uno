@@ -1,18 +1,18 @@
 import { DataTypes, Model } from 'sequelize';
 
 export default function (sequelize) {
-    class LobbyUser extends Model {
+    class RoomUser extends Model {
     }
 
-    LobbyUser.init({
-        lobbyUserId: {
+    RoomUser.init({
+        roomUserId: {
           type: DataTypes.INTEGER,
           allowNull: false,
           unique: true,
           primaryKey: true,
           autoIncrement: true,
         },
-        lobbyId: {
+        roomId: {
           type: DataTypes.INTEGER,
           allowNull: false
         },
@@ -35,8 +35,8 @@ export default function (sequelize) {
           defaultValue: false,
         },
       }, {
-        modelName: 'lobbyUser',
-        tableName: 'lobby_user',
+        modelName: 'roomUser',
+        tableName: 'room_user',
         sequelize,
         timestamps: false
       });

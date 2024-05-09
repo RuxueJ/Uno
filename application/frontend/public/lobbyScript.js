@@ -28,9 +28,9 @@ function renderGamesList(data) {
     joinButton.textContent = "Join";
     joinButton.addEventListener("click", () => {
       // Add your logic to join the game
-      const lobbyId = game.id;
-      socket.emit('joinLobby', lobbyId );
-      console.log(`Joining game ${game.id}`);
+      const roomId = game.id;
+      socket.emit('joinRoom', roomId );
+      console.log(`Joining room ${roomId}`);
     });
 
     const leaveButton = document.createElement("button");
@@ -38,9 +38,9 @@ function renderGamesList(data) {
     leaveButton.textContent = "Leave";
     leaveButton.addEventListener("click", () => {
       // Add your logic to leave the game
-      const lobbyId = game.id;
-      socket.emit('leaveLobby', lobbyId );
-      console.log(`Leaving game ${game.id}`);
+      const roomId = game.id;
+      socket.emit('leaveRoom', roomId );
+      console.log(`Leaving room ${roomId}`);
     });
 
     gameItem.appendChild(gameInfo);
@@ -142,7 +142,7 @@ const messageInput = document.getElementById("messageInput");
 const messages = document.getElementById("messages");
 const sendButton = document.getElementById("sendButton");
 
-socket.on("newMessage", function (data) {
+socket.on("newLobbyMessage", function (data) {
   const messageElement = document.createElement("div");
   messageElement.textContent = `${data.userName} @ ${data.timeStamp}: ${data.message}`;
   messages.appendChild(messageElement);
@@ -154,7 +154,7 @@ socket.on("connect", () => {
 function sendMessage() {
   const message = messageInput.value.trim();
   if (message) {
-    socket.emit("chatMessage", message);
+    socket.emit("lobbyChatMessage", message);
     messageInput.value = "";
   }
 }

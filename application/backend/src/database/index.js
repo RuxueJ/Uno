@@ -4,8 +4,8 @@ import * as config from '@/config/sequelize';
 
 // import models
 import userModel from './models/user';
-import lobbyModel from './models/lobby';
-import lobbyUserModel from './models/lobby_user';
+import roomModel from './models/room';
+import roomUserModel from './models/room_user';
 import playerstateModel from './models/player_state';
 import gamestateModel from './models/game_state';
 
@@ -20,8 +20,8 @@ const sequelize = new Sequelize(sequelizeConfig);
 // Import all model files
 const modelDefiners = [
     userModel,
-    lobbyModel,
-    lobbyUserModel,
+    roomModel,
+    roomUserModel,
     playerstateModel,
     gamestateModel,
 ];

@@ -2,28 +2,28 @@ import db from '@/database';
 
 
 // 长轮询获取房间数据的控制器       Controller for long polling to retrieve room data
-export async function getLobbiesData(req, res) {
+export async function getRoomsData(req, res) {
     try {
         const timeout = 30000;
 
         // 获取房间数据的函数       Function to retrieve room data
-    const getLobbyData = async () => {
+    const getRoomData = async () => {
         // 查询所有房间     query all rooms
-        const lobbies = await db.models.lobby.findAll();
+        const rooms = await db.models.room.findAll();
 
         // 查询所有关联的玩家信息       Query all associated player information
-        const lobbyUsers = await db.models.lobbyUser.findAll();
+        const roomUsers = await db.models.roomUser.findAll();
 
-        // 查询所有用户信息     query all users in lobby information
+        // 查询所有用户信息     query all users in room information
         const users = await db.models.user.findAll();
 
         // 整合数据     integrate data
-        const result = lobbies.map(lobby => {
+        const result = rooms.map(room => {
             // 获取此房间相关的玩家信息         Retrieve player information related to this room
-            const usersInLobby = lobbyUsers.filter(user => user.lobbyId === lobby.id);
+            const usersInRoom = roomUsers.filter(user => user.roomId === room.id);
 
             // 将玩家信息附加到房间数据中       append player info to room data
-            const userDetails = usersInLobby.map(user => {
+            const userDetails = usersInRoom.map(user => {
                 const userInfo = users.find(u => u.id === user.userId);
                 return {
                     userId: user.userId,
@@ -35,8 +35,8 @@ export async function getLobbiesData(req, res) {
             });
 
             return {
-                name: lobby.name,
-                status: lobby.status,
+                name: room.name,
+                status: room.status,
                 users: userDetails
             };
         });
@@ -46,10 +46,10 @@ export async function getLobbiesData(req, res) {
 
         // 检查更新的函数       function to check for updates
         const checkForUpdates = async () => {
-            const lobbyData = await getLobbyData();
+            const roomData = await getRoomData();
 
-            if (lobbyData.length > 0) {
-                res.json(lobbyData);
+            if (roomData.length > 0) {
+                res.json(roomData);
             } else {
                 setTimeout(() => checkForUpdates(), 5000);
             }
@@ -69,12 +69,12 @@ export async function getLobbiesData(req, res) {
 }
 
 // 创建房间的控制器     controller for creating rooms
-export async function createLobby(req, res) {
+export async function createRoom(req, res) {
     try {
         const { name, userId, password } = req.body;
 
         // 创建房间     create room
-        const lobby = await db.models.lobby.create({
+        const room = await db.models.room.create({
             name,
             status: 'waiting',
             maxPlayers: 4,
@@ -82,26 +82,27 @@ export async function createLobby(req, res) {
         });
 
         // 创建房间用户     create room user
-        await db.models.lobbyUser.create({
-            lobbyId: lobby.id,
+        await db.models.roomUser.create({
+            roomId: room.id,
             userId: userId,
             isHost: true,
             connected: true,
         });
 
-        res.status(201).json(lobby);
+        res.status(201).json(groom);
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: err.message });
     }
 }
 
+
 //controller for joining rooms
-export async function joinLobby(email, lobbyId) {
+export async function joinRoom(email, roomId) {
     try {
-        const lobby = await db.models.lobby.findOne({ where: { lobbyId: lobbyId } });
-        if (!lobby) {
-            console.log("lobby does not exist");
+        const room = await db.models.room.findOne({ where: { roomId: roomId } });
+        if (!room) {
+            console.log("room does not exist");
             return null;
         }
 
@@ -114,45 +115,39 @@ export async function joinLobby(email, lobbyId) {
         }
         const userId = user.userId;
 
-
-        const existingLobbyUser = await db.models.lobbyUser.findOne({ where: { lobbyId, userId } });
-        if (existingLobbyUser) {
-            console.log("user already in lobby");
+        const existingroomUser = await db.models.roomUser.findOne({ where: { roomId, userId } });
+        if (existingroomUser) {
+            console.log("user already in room");
             return null;
         }
 
-
-        const totalPlayers = await db.models.lobbyUser.findAll( { where: { lobbyId } } );
+        const totalPlayers = await db.models.roomUser.findAll( { where: { roomId } } );
         if(totalPlayers) {
-            if(totalPlayers.length >= lobby.maxPlayers){
-            console.log("lobby is full");
+            if(totalPlayers.length >= room.maxPlayers){
+            console.log("room is full");
             return null;
             }
         }
 
-
-
-        const lobbyUser = await db.models.lobbyUser.create({
-            lobbyId: lobbyId,
+        const roomUser = await db.models.roomUser.create({
+            roomId: roomId,
             userId: userId,
             isHost: false,
             connected: true,
         });
 
-
-        console.log("end joinLobby inside controller");
-        return(lobbyUser);
+        return(roomUser);
     } catch (err) {
         console.log(err);
         return null
     }
 }
 
-export async function leaveLobby(email, lobbyId) {
+export async function leaveRoom(email, roomId) {
     try {
-        const lobby = await db.models.lobby.findOne({ where: { lobbyId: lobbyId } });
-        if (!lobby) {
-            console.log("lobby does not exist");
+        const room = await db.models.room.findOne({ where: { roomId: roomId } });
+        if (!room) {
+            console.log("room does not exist");
             return null;
         }
 
@@ -164,19 +159,19 @@ export async function leaveLobby(email, lobbyId) {
         }
         const userId = user.userId;
 
-        const existingLobbyUser = await db.models.lobbyUser.findOne({ where: { lobbyId, userId } });
-        if (existingLobbyUser) {
+        const existingRoomUser = await db.models.roomUser.findOne({ where: { roomId, userId } });
+        if (existingRoomUser) {
             try {
                 //try to delete it
-                await existingLobbyUser.destroy();
-                console.log("user " + userId + " removed from lobby");
-                return existingLobbyUser;
+                await existingRoomUser.destroy();
+                console.log("user " + userId + " removed from room");
+                return existingRoomUser;
             } catch (err) {
-                console.log("error deleting user from lobby");
+                console.log("error deleting user from room");
                 return null;
             }
         } else {
-            console.log("user " + userId + " doesn't exist in lobby");
+            console.log("user " + userId + " doesn't exist in room");
             return null;
         }
 
@@ -186,34 +181,34 @@ export async function leaveLobby(email, lobbyId) {
     }
 }
 
-export async function disconnect(userId, lobbyId) {
-    //if lobby status is waiting then make them leave lobby
-    //if lobby status is playing then set their connected to false
+export async function disconnect(userId, roomId) {
+    //if room status is waiting then make them leave room
+    //if room status is playing then set their connected to false
     //logic is when its their turn if they are not connected then
     //have them draw or something and go next turn
-    console.log("starting disconnect in lobby.js");
+    console.log("starting disconnect in room.js");
     try {
-        const lobby = await db.models.lobby.findOne({ where: { lobbyId: lobbyId } });
-        if (!lobby) {
-            console.log("lobby does not exist");
+        const room = await db.models.room.findOne({ where: { roomId: roomId } });
+        if (!room) {
+            console.log("room does not exist");
             return null;
         }
 
-        const existingLobbyUser = await db.models.lobbyUser.findOne({ where: { lobbyId, userId } });
-        if(existingLobbyUser) {
+        const existingRoomUser = await db.models.roomUser.findOne({ where: { roomId, userId } });
+        if(existingRoomUser) {
             //at the end of the game kick all players who are still not connected
-            if (lobby.status == "waiting") {    //just have them disconnect if lobby is waiting
-                await existingLobbyUser.destroy();
-                console.log("removing disconnected user " + userId + " from lobby")
+            if (room.status == "waiting") {    //just have them disconnect if room is waiting
+                await existingRoomUser.destroy();
+                console.log("removing disconnected user " + userId + " from room")
                 return 1;
             }
-            //if lobby is playing then set connected for this user as false so we can reconnect
-            existingLobbyUser.connected = false;
-            await existingLobbyUser.save();
+            //if room is playing then set connected for this user as false so we can reconnect
+            existingRoomUser.connected = false;
+            await existingRoomUser.save();
             console.log("user " + userId + " disconnected")
-            return existingLobbyUser;
+            return existingRoomUser;
         } else {
-            console.log("user " + userId + " is not in the lobby");
+            console.log("user " + userId + " is not in the room");
             return null
         }
 
@@ -223,20 +218,48 @@ export async function disconnect(userId, lobbyId) {
     }
 }
 
-//returns lobby id of reconnect
+//returns room id of reconnect
 export async function reconnect(userId) {
     try {
         //are there any games this user is a part of where their connected flag is false
-        const userGameRooms = await db.models.lobbyUser.findOne( { where: { userId, connected: false } } );
-        if (userGameRooms) {
-            userGameRooms.connected = true;
-            await userGameRooms.save();
-            return userGameRooms.lobbyId;
+        const userrooms = await db.models.roomUser.findOne( { where: { userId, connected: false } } );
+        if (userrooms) {
+            userrooms.connected = true;
+            await userrooms.save();
+            return userrooms.roomId;
         } else {
             return null;
         }
     } catch (err) {
         console.log(err)
+        return null;
+    }
+}
+
+
+export async function startGame(roomId, userId) {
+    try {
+
+
+
+
+
+
+        const startAttempt = await db.models.room.findOne( { where: { roomId } } );
+        if(!startAttempt) {
+            console.log('cannot find game to start: ' + roomId);
+            return null;
+        }
+
+
+        const roomLead = await db.models.roomUser.findOne( { wehere: { roomId, userId, isHost: true } } );
+        if (!roomLead) {
+            console.log('you are not the room leader: ' + email);
+            return null;
+        }
+        
+    } catch (err) {
+        console.log(err);
         return null;
     }
 }
