@@ -70,6 +70,7 @@ export async function getRoomsData(req, res) {
 
 // 创建房间的控制器     controller for creating rooms
 export async function createRoom(req, res) {
+    const transaction = await db.transaction();
     try {
         const { name, userId, password } = req.body;
 
@@ -79,7 +80,7 @@ export async function createRoom(req, res) {
             status: 'waiting',
             maxPlayers: 4,
             password: password ? password: null,        //if a password is provided
-        });
+        }, { transaction });
 
         // 创建房间用户     create room user
         await db.models.roomUser.create({
@@ -87,10 +88,13 @@ export async function createRoom(req, res) {
             userId: userId,
             isHost: true,
             connected: true,
-        });
+        }, { transaction });
 
-        res.status(201).json(groom);
+        await transaction.commit();
+
+        res.status(201).json(room);
     } catch (err) {
+        await transaction.rollback();
         console.log(err);
         res.status(500).json({ error: err.message });
     }
