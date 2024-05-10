@@ -101,7 +101,6 @@ export async function createRoom(req, res) {
 }
 
 
-//controller for joining rooms
 export async function joinRoom(email, roomId) {
     try {
         const room = await db.models.room.findOne({ where: { roomId: roomId } });
@@ -110,8 +109,6 @@ export async function joinRoom(email, roomId) {
             return null;
         }
 
-
-        //get userId
         const user = await db.models.user.findOne( { where: { email: email } } );
         if(!user) {
             console.log("user does not exist");
@@ -146,6 +143,7 @@ export async function joinRoom(email, roomId) {
         return null
     }
 }
+
 
 export async function leaveRoom(email, roomId) {
     try {
@@ -185,6 +183,7 @@ export async function leaveRoom(email, roomId) {
     }
 }
 
+
 export async function disconnect(userId, roomId) {
     //if room status is waiting then make them leave room
     //if room status is playing then set their connected to false
@@ -222,10 +221,12 @@ export async function disconnect(userId, roomId) {
     }
 }
 
-//returns room id of reconnect
+
 export async function reconnect(userId) {
     try {
         //are there any games this user is a part of where their connected flag is false
+        //will reconnect to first disconnected game if multi disconnects
+        //
         const userrooms = await db.models.roomUser.findOne( { where: { userId, connected: false } } );
         if (userrooms) {
             userrooms.connected = true;
@@ -236,32 +237,6 @@ export async function reconnect(userId) {
         }
     } catch (err) {
         console.log(err)
-        return null;
-    }
-}
-
-
-export async function startGame(roomId, userId) {
-    try {
-
-
-
-
-        const startAttempt = await db.models.room.findOne( { where: { roomId } } );
-        if(!startAttempt) {
-            console.log('cannot find game to start: ' + roomId);
-            return null;
-        }
-
-
-        const roomLead = await db.models.roomUser.findOne( { wehere: { roomId, userId, isHost: true } } );
-        if (!roomLead) {
-            console.log('you are not the room leader: ' + email);
-            return null;
-        }
-        
-    } catch (err) {
-        console.log(err);
         return null;
     }
 }

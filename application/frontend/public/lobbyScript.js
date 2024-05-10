@@ -43,9 +43,32 @@ function renderGamesList(data) {
       console.log(`Leaving room ${roomId}`);
     });
 
+    const startButton = document.createElement("button");
+    startButton.classList.add("start-button");
+    startButton.textContent = "Start";
+    startButton.addEventListener("click", () => {
+      // Add your logic to leave the game
+      const roomId = game.id;
+      socket.emit('startGame', roomId );
+      console.log(`Starting game ${roomId}`);
+    });
+
+
+    const endButton = document.createElement("button");
+    endButton.classList.add("end-button");
+    endButton.textContent = "End";
+    endButton.addEventListener("click", () => {
+      // Add your logic to leave the game
+      const roomId = game.id;
+      socket.emit('cleanUpGame', roomId );
+      console.log(`Cleaning up game ${roomId}`);
+    });
+
     gameItem.appendChild(gameInfo);
     gameItem.appendChild(joinButton);
     gameItem.appendChild(leaveButton);
+    gameItem.appendChild(startButton);
+    gameItem.appendChild(endButton);
     gamesList.append(gameItem);
   });
 }
