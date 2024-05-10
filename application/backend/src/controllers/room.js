@@ -239,29 +239,3 @@ export async function reconnect(userId) {
         return null;
     }
 }
-
-
-export async function startGame(roomId, userId) {
-    try {
-
-
-
-
-        const startAttempt = await db.models.room.findOne( { where: { roomId } } );
-        if(!startAttempt) {
-            console.log('cannot find game to start: ' + roomId);
-            return null;
-        }
-
-
-        const roomLead = await db.models.roomUser.findOne( { wehere: { roomId, userId, isHost: true } } );
-        if (!roomLead) {
-            console.log('you are not the room leader: ' + email);
-            return null;
-        }
-        
-    } catch (err) {
-        console.log(err);
-        return null;
-    }
-}

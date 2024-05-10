@@ -23,11 +23,24 @@ export function createUnoDeck()  {
     }
 
     for (let wild of wildCards) {
-        deck.push({ type: 'wild', value: wild });
-        deck.push({ type: 'wild', value: wild });
+        deck.push({ type: 'wild', color: null, value: wild });
+        deck.push({ type: 'wild', color: null, value: wild });
     }
 
     return deck;
+}
+
+export function reshuffle(fromDeck, toDeck) {
+    //fromDeck is array of cards
+    //toDeck is array of cards
+    //put all cards fromDeck into toDeck then shuffle toDeck
+    Array.prototype.push.apply(toDeck, fromDeck);
+    console.log(toDeck);
+    console.log('-----apply--------');
+    console.log(fromDeck);
+    shuffle(toDeck)
+    console.log('-------shuffled------');
+    console.log(toDeck);
 }
 
 
@@ -50,56 +63,152 @@ export function drawCard(deck) {
 }
 
 
-export async function initalizePlayer(userId, roomId) {
+
+export async function startGame(roomId, userId) {
+    const transaction = await db.transaction();
     try {
-        //check for room
-        const roomUser = await db.models.roomUser.findOne({ where: { roomId, userId } });
-        if (!roomUser) {
-            console.log("user: " + userid, " in: " + roomId + " not found");
-            res.status(500).json({ error: ("user: " + userid + " in: ", roomId + " not found")});
+
+        
+        const startAttempt = await db.models.room.findOne( { where: { roomId } } );
+        if(!startAttempt) {
+            console.log('cannot find game to start: ' + roomId);
+            return null;
         }
- 
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({ error: err.message });
-    }
-}
 
 
-//function to setup game_state entry to beginning state for this game
-export async function initalizeGameState(roomId, players) {
-    try {
-        //initalize drawDeck and discardDeck
+        const roomLead = await db.models.roomUser.findOne( { where: { roomId, userId, isHost: true } } );
+        if (!roomLead) {
+            console.log('you are not the room leader: ' + userId);
+            return null;
+        }
+
+
+        const players = await db.models.roomUser.findAll( { where: {roomId} } )
+        if(players.length === 0) {
+            console.log('problem getting roomUsers for this room: ' + roomId);
+            return null;
+        }
+
+        const userIds = players.map(player => player.userId);
+        if(!userIds) {
+            console.log('problem extracting userIds from players inside game.js');
+            return null;
+        }
+
+        //initalize game state entry for this room +
+        //initialize each player's player state entry
+        //change room status to playing +
         try {
-            newDeck = createUnoDeck();
-            newDeck = shuffle(newDeck);
-            card = drawCard(newDeck)
-            newDiscardDeck = []
-            newDiscardDeck.unshift(card)    //add card to beginning of the discardDeck array
-            newplayerOrder = shuffle(players)
+            const newDeck = createUnoDeck();
+            console.log("----------newDeck------------")
+            console.log(newDeck);
+            console.log("-----------Deck-----------")
+            const deck = shuffle(newDeck);
+            console.log(deck);
+            console.log("---------TopCard-------------")
+            const topCard = drawCard(deck)
+            console.log(topCard);
+            //if wild player picks color
+            //if wild4 shuffle back in deck and redraw
+            //how to implement player picks color?
+            //You have to match either by the number, color, or the symbol/Action.
+            //gameplay usually follows a clockwise direction
+            //if the Draw Pile becomes depleted and no one has yet won the round, take the Discard Pile, 
+            //shuffle it, and turn it over to regenerate a new Draw Pile.
+            while(topCard.value === 'wild_draw_four') {
+                //put it back into deck and reshuffle then draw again
+                const putCardInEmptyArray = []
+                putCardInEmptyArray.push(topCard);
+                reshuffle(putCardInEmptyArray, deck)
+
+                //try again
+                topCard = drawCard(deck);
+            }
+            console.log("----------empty discard deck------------")
+            const newDiscardDeck = []
+            console.log(newDiscardDeck)
+            console.log("---------discard deck after draw-------------")
+            newDiscardDeck.unshift(topCard)    //add card to beginning of the discardDeck array
+            console.log(newDiscardDeck)
+            console.log("-----------players-----------")
+            console.log(userIds)
+            console.log("-----------new players-----------")
+            const newplayerOrder = shuffle(userIds)
+            console.log(newplayerOrder);
+            console.log("----------------------")
+            const gameState = await db.models.gameState.create({
+                roomId: roomId,
+                currentPlayerTurn: 0,
+                direction: 1,
+                playerOrder: newplayerOrder,
+                drawAmount: 1,
+                drawDeck: deck,
+                discardDeck: newDiscardDeck,
+                discardDeckTopCard: topCard,
+            }, {transaction });
+
+
+            //initalize each player
+            //use transaction
+            userIds.forEach(userId => {
+
+
+            });
+
+
+            await transaction.commit();
+            console.log("starting new game: " + roomId)
+
+            startAttempt.status = "playing";
+            await startAttempt.save();
+
+            const initPlayersAttempt = await initalizePlayers(userIds);
+            if(!initPlayersAttempt) {
+                console.log(err);
+                return null;
+            }
+
+            return gameState;
         } catch (err) {
             console.log(err);
-            res.status(500).json({ error: err.message });
+            return null;
         }
-        
-        const game = await db.models.gameState.create({
-            roomId: roomId,
-            currentPlayerTurn: 0,
-            direction: 1,
-            playerOrder: newplayerOrder,
-            drawAmount: 1,
-            drawDeck: newDeck,
-            discardDeck: newDiscardDeck,
-            discardDeckTopCard: card,
-        });
 
-        res.status(201).json(game);
     } catch (err) {
         console.log(err);
-        res.status(500).json({ error: err.message });
+        return null;
     }
 }
 
 
+export async function cleanUpGame(roomId) {
+    try {
+        const room = await db.models.room.findOne({ where: { roomId }} );
+        if(!room) {
+            console.log('room does not exist: ' + roomId);
+            return null;
+        }
+
+        const gameState = await db.models.gameState.findOne( { where: { roomId }});
+        if(!gameState) {
+            console.log('gameState does not exist for: ' + roomId);
+            return null;
+        }
+
+        try {
+            room.status = 'waiting';
+            await room.save();
+
+            await gameState.destroy();
+            console.log('cleaned up game: ' + roomId);
+        } catch (innerErr) {
+            console.log(innerErr);
+            throw innerErr;
+        }
+    } catch (err) {
+        console.log(err);
+        return null;
+    }
+}
 
 

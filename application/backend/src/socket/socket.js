@@ -1,4 +1,5 @@
 import * as roomController from '@/controllers/room.js';
+import * as gameController from '@/controllers/game.js'
 
 
 export function emitToRoom(io, roomId, eventName, eventData) {
@@ -70,7 +71,7 @@ export function setUpSocketIO(io) {
                     throw new Error("error leaving room inside socket.js")
                 }
                 socket.leave(roomId);
-                socket.join('lobby')
+                socket.join('lobby');
                 console.log(`Socket ${socket.id} user ${email} left room ${roomId}`);
                 emitToRoom(io, roomId, 'user left', 'user left the room')
             } catch (err) {
@@ -105,7 +106,32 @@ export function setUpSocketIO(io) {
 
 
         socket.on('startGame', async (roomId) => {
-            console.log('starting game ' + roomId)
+            console.log('starting game ' + roomId + ' by user ' + userId);
+            try {
+                const startAttempt = gameController.startGame(roomId, userId);
+                if(!startAttempt) {
+                    throw new Error("error starting room in socket.js");
+                }
+                console.log("successfully started game: " + roomId);
+            } catch (err) {
+                console.log("problem starting game: " + roomId + " in socket.js");
+                socket.emit('failedStart', roomId);
+            }
+        });
+
+
+        socket.on('cleanUpGame', async (roomId) => {
+            console.log('cleaning up game: ' + roomId);
+            try {
+                const cleanUpAttempt = gameController.cleanUpGame(roomId);
+                if(!cleanUpAttempt) {
+                    throw new Error('error cleaning up room in socket.js');
+                }
+                console.log('successfully cleaned up game: ' + roomId);
+            } catch (err) {
+                console.log(err);
+                socket.emit('cleanUpFailure', roomId);
+            }
 
         });
 
