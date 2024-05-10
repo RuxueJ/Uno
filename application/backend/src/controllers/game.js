@@ -34,6 +34,7 @@ export function reshuffle(fromDeck, toDeck) {
     //fromDeck is array of cards
     //toDeck is array of cards
     //put all cards fromDeck into toDeck then shuffle toDeck
+    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@TEST THIS@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
     Array.prototype.push.apply(toDeck, fromDeck);
     console.log('-----apply todeck res---');
     console.log(toDeck);
@@ -43,6 +44,7 @@ export function reshuffle(fromDeck, toDeck) {
     console.log('-------shuffled todeck res------');
     console.log(toDeck);
     console.log('--------------');
+    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@TEST THIS@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 }
 
 
