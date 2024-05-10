@@ -16,7 +16,6 @@ export function setUpSocketIO(io) {
         const email = socket.handshake.query.email;
         const userName = socket.handshake.query.userName || 'User';
         const token = socket.handshake.query.token;
-
         //for the req: If a user closes a game tab, 
         //and then reconnects to the game, the game must be able 
         //to be reloaded in the current state for that user
@@ -25,17 +24,16 @@ export function setUpSocketIO(io) {
         //the first roomUser record that exists for this user and has the
         //connected flag as false will be considered a reconnect to that
         //game room.
-        //when I close a tab it consideres it a disconnect
-        //when I reopen the tab it considers it a connection so on.reconnect is not
+        //when you close a tab it consideres it a disconnect
+        //when you reopen the tab it considers it a connection so on.reconnect is not
         //being used
         try {
-            //reconnect will give the first record gmaeId in roomUser if it exists with connection=false
             const reconnectAttempt = await roomController.reconnect(userId);
             if (reconnectAttempt == null) {
                 console.log("no game rooms for this user to reconnect to");
             } else {
                 console.log("user: " + email + " reconnecting to: " + reconnectAttempt);
-                //need more logic to reapply game state to user aswelll
+                //may need more logic to reapply game state
                 //rejoin socket room for this game room
                 socket.join(reconnectAttempt);
                 socket.leave('lobby')
@@ -81,7 +79,6 @@ export function setUpSocketIO(io) {
         })
 
 
-
         socket.on('roomChatMessage', (roomId, message) => {
             console.log('Received room message:', message);
             const timeStamp = new Date().toLocaleTimeString();
@@ -121,10 +118,9 @@ export function setUpSocketIO(io) {
 
 
         socket.on('cleanUpGame', async (roomId) => {
-            console.log('cleaning up game: ' + roomId);
             try {
                 const cleanUpAttempt = gameController.cleanUpGame(roomId);
-                if(!cleanUpAttempt) {
+                if(cleanUpAttempt === null) {
                     throw new Error('error cleaning up room in socket.js');
                 }
                 console.log('successfully cleaned up game: ' + roomId);
@@ -140,18 +136,17 @@ export function setUpSocketIO(io) {
             const roomIds = Array.from(socket.rooms).filter(roomId => roomId !== socket.id && roomId !== 'lobby');
             console.log(roomIds);
             roomIds.forEach(async roomId => {
-                try {
-                    const roomDisconnectionAttempt = await roomController.disconnect(userId, roomId);
-                    if(!roomDisconnectionAttempt) {
-                        throw new Error("error in room disconnection attempt");
-                    }
-                } catch (err) {
-                    console.log(err)
-                    socket.emit('disconnection error', { message: 'disconnection error in DB'} );
+            try {
+                const roomDisconnectionAttempt = await roomController.disconnect(userId, roomId);
+                if(!roomDisconnectionAttempt) {
+                    throw new Error("error in room disconnection attempt");
                 }
+            } catch (err) {
+                console.log(err)
+                socket.emit('disconnection error', { message: 'disconnection error in DB'} );
+            }
             });
         });
-
 
         // handle disconnect event
         socket.on('disconnect', async () => {
@@ -159,12 +154,10 @@ export function setUpSocketIO(io) {
             console.log('User disconnected. Socket ID: ', socket.id);
         });
 
-
         //right now we are not using the socketio reconnecting feature
         socket.on('reconnecting', (attemptNumber) => {
             console.log(`Attempting to reconnect (attempt ${attemptNumber})`);
         });
-
 
         //not using this right now
         socket.on('reconnect', () => {

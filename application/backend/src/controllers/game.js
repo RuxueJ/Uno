@@ -121,7 +121,6 @@ export async function startGame(roomId, userId) {
         })
 
 
-
         try {
             const newDeck = createUnoDeck();
             console.log("----------newDeck------------")
@@ -130,7 +129,7 @@ export async function startGame(roomId, userId) {
             const deck = shuffle(newDeck);
             console.log(deck);
             console.log("---------TopCard-------------")
-            const topCard = drawCard(deck)
+            let topCard = drawCard(deck)
             console.log(topCard);
             //if wild player picks color --> in the inital game_state if the top card is wild
             //then its color will be null --> when the first turn begins
@@ -156,7 +155,6 @@ export async function startGame(roomId, userId) {
             console.log(newplayerOrder);
             console.log("----------------------")
 
-
             //initalize all the player states then move on to gamestate
             await Promise.all(playerCreationPromises);
 
@@ -172,13 +170,11 @@ export async function startGame(roomId, userId) {
             }, { transaction });
 
 
-
             startAttempt.status = "playing";
             await startAttempt.save({ transaction });
 
             console.log("starting new game: " + roomId)
             await transaction.commit();
-
 
             return gameState;
         } catch (err) {
@@ -192,13 +188,16 @@ export async function startGame(roomId, userId) {
     }
 }
 
-
 export async function cleanUpGame(roomId) {
     const transaction = await db.transaction();
     try {
         const room = await db.models.room.findOne({ where: { roomId }} );
         if(!room) {
             console.log('room does not exist: ' + roomId);
+            return null;
+        }
+        if(room.status !== 'playing') {
+            console.log('there is no game to end');
             return null;
         }
 
@@ -208,7 +207,6 @@ export async function cleanUpGame(roomId) {
             return null;
         }
 
-
         const playerStates = await db.models.playerState.findAll( { where: { roomId }} );
         if(playerStates.length === 0) {
             console.log('no player states for this game: ' + roomId);
@@ -216,13 +214,11 @@ export async function cleanUpGame(roomId) {
         }
 
         try {
-
             //destory all player states then move on
             if(playerStates.length > 0) {
                 await Promise.all(playerStates.map(playerState => playerState.destroy({ transaction })));
                 console.log('all player states destoryed successfully');
             }
-
 
 
             room.status = 'waiting';
