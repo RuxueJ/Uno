@@ -35,12 +35,14 @@ export function reshuffle(fromDeck, toDeck) {
     //toDeck is array of cards
     //put all cards fromDeck into toDeck then shuffle toDeck
     Array.prototype.push.apply(toDeck, fromDeck);
+    console.log('-----apply todeck res---');
     console.log(toDeck);
-    console.log('-----apply--------');
+    console.log('-----apply fromdeck res--------');
     console.log(fromDeck);
     shuffle(toDeck)
-    console.log('-------shuffled------');
+    console.log('-------shuffled todeck res------');
     console.log(toDeck);
+    console.log('--------------');
 }
 
 
@@ -98,6 +100,22 @@ export async function startGame(roomId, userId) {
         //initalize game state entry for this room +
         //initialize each player's player state entry
         //change room status to playing +
+
+        const playerCreationPromises = userIds.map(async (userId) => {
+            const newPlayerHand = [];
+
+            const playerState = await db.models.playerState.create({
+                userId: userId,
+                roomId: roomId,
+                playerHandCount: 7,
+                playerHand: newPlayerHand,
+            }, { transaction });
+
+            return playerState;
+        })
+
+
+
         try {
             const newDeck = createUnoDeck();
             console.log("----------newDeck------------")
@@ -136,6 +154,11 @@ export async function startGame(roomId, userId) {
             const newplayerOrder = shuffle(userIds)
             console.log(newplayerOrder);
             console.log("----------------------")
+
+
+            //initalize all the player states then move on to gamestate
+            await Promise.all(playerCreationPromises);
+
             const gameState = await db.models.gameState.create({
                 roomId: roomId,
                 currentPlayerTurn: 0,
@@ -145,28 +168,16 @@ export async function startGame(roomId, userId) {
                 drawDeck: deck,
                 discardDeck: newDiscardDeck,
                 discardDeckTopCard: topCard,
-            }, {transaction });
+            }, { transaction });
 
 
-            //initalize each player
-            //use transaction
-            userIds.forEach(userId => {
-
-
-            });
-
-
-            await transaction.commit();
-            console.log("starting new game: " + roomId)
 
             startAttempt.status = "playing";
-            await startAttempt.save();
+            await startAttempt.save({ transaction });
 
-            const initPlayersAttempt = await initalizePlayers(userIds);
-            if(!initPlayersAttempt) {
-                console.log(err);
-                return null;
-            }
+            console.log("starting new game: " + roomId)
+            await transaction.commit();
+
 
             return gameState;
         } catch (err) {
@@ -182,6 +193,7 @@ export async function startGame(roomId, userId) {
 
 
 export async function cleanUpGame(roomId) {
+    const transaction = await db.transaction();
     try {
         const room = await db.models.room.findOne({ where: { roomId }} );
         if(!room) {
@@ -195,12 +207,30 @@ export async function cleanUpGame(roomId) {
             return null;
         }
 
-        try {
-            room.status = 'waiting';
-            await room.save();
 
-            await gameState.destroy();
+        const playerStates = await db.models.playerState.findAll( { where: { roomId }} );
+        if(playerStates.length === 0) {
+            console.log('no player states for this game: ' + roomId);
+            return null;
+        }
+
+        try {
+
+            //destory all player states then move on
+            if(playerStates.length > 0) {
+                await Promise.all(playerStates.map(playerState => playerState.destroy({ transaction })));
+                console.log('all player states destoryed successfully');
+            }
+
+
+
+            room.status = 'waiting';
+            await room.save( { transaction });
+
+            await gameState.destroy({ transaction });
             console.log('cleaned up game: ' + roomId);
+
+            await transaction.commit();
         } catch (innerErr) {
             console.log(innerErr);
             throw innerErr;
