@@ -30,29 +30,18 @@ export function createUnoDeck()  {
     return deck;
 }
 
+
 export function reshuffle(fromDeck, toDeck) {
-    //fromDeck is array of cards
-    //toDeck is array of cards
     //put all cards fromDeck into toDeck then shuffle toDeck
-    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@TEST THIS@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
     Array.prototype.push.apply(toDeck, fromDeck);
-    console.log('-----apply todeck res---');
-    console.log(toDeck);
-    console.log('-----apply fromdeck res--------');
-    console.log(fromDeck);
     shuffle(toDeck)
-    console.log('-------shuffled todeck res------');
     //reset wild type cards to color: null
     toDeck.forEach(card => {
         if (card.type === 'wild') {
             card.color = null;
         }
     });
-    console.log(toDeck);
-    console.log('--------------');
-    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@TEST THIS@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 }
-
 
 //Fisher-Yates shuffle algorithmn
 export function shuffle(deck) {
@@ -73,25 +62,21 @@ export function drawCard(deck) {
 }
 
 
-
 export async function startGame(roomId, userId) {
     const transaction = await db.transaction();
     try {
 
-        
         const startAttempt = await db.models.room.findOne( { where: { roomId } } );
         if(!startAttempt) {
             console.log('cannot find game to start: ' + roomId);
             return null;
         }
 
-
         const roomLead = await db.models.roomUser.findOne( { where: { roomId, userId, isHost: true } } );
         if (!roomLead) {
             console.log('you are not the room leader: ' + userId);
             return null;
         }
-
 
         const players = await db.models.roomUser.findAll( { where: {roomId} } )
         if(players.length === 0) {
@@ -116,10 +101,8 @@ export async function startGame(roomId, userId) {
                 playerHandCount: 7,
                 playerHand: newPlayerHand,
             }, { transaction });
-
             return playerState;
         })
-
 
         try {
             const newDeck = createUnoDeck();
@@ -169,7 +152,6 @@ export async function startGame(roomId, userId) {
                 discardDeckTopCard: topCard,
             }, { transaction });
 
-
             startAttempt.status = "playing";
             await startAttempt.save({ transaction });
 
@@ -181,12 +163,12 @@ export async function startGame(roomId, userId) {
             console.log(err);
             return null;
         }
-
     } catch (err) {
         console.log(err);
         return null;
     }
 }
+
 
 export async function cleanUpGame(roomId) {
     const transaction = await db.transaction();
@@ -219,7 +201,6 @@ export async function cleanUpGame(roomId) {
                 await Promise.all(playerStates.map(playerState => playerState.destroy({ transaction })));
                 console.log('all player states destoryed successfully');
             }
-
 
             room.status = 'waiting';
             await room.save( { transaction });
