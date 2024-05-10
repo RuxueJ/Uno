@@ -106,8 +106,6 @@ export async function startGame(roomId, userId) {
 
         try {
             const newDeck = createUnoDeck();
-            console.log("----------newDeck------------")
-            console.log(newDeck);
             console.log("-----------Deck-----------")
             const deck = shuffle(newDeck);
             console.log(deck);
