@@ -109,6 +109,11 @@ export async function joinRoom(email, roomId) {
             return null;
         }
 
+        if(room.status !== 'waiting') {
+            console.log("cannot join room; game is in session");
+            return null;
+        }
+
         const user = await db.models.user.findOne( { where: { email: email } } );
         if(!user) {
             console.log("user does not exist");
