@@ -42,6 +42,12 @@ export function reshuffle(fromDeck, toDeck) {
     console.log(fromDeck);
     shuffle(toDeck)
     console.log('-------shuffled todeck res------');
+    //reset wild type cards to color: null
+    toDeck.forEach(card => {
+        if (card.type === 'wild') {
+            card.color = null;
+        }
+    });
     console.log(toDeck);
     console.log('--------------');
     console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@TEST THIS@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
@@ -99,10 +105,8 @@ export async function startGame(roomId, userId) {
             return null;
         }
 
-        //initalize game state entry for this room +
-        //initialize each player's player state entry
-        //change room status to playing +
-
+        // to fill playerHands array we call draw(deck)
+        //all players need to be initalized then move on so the deck contents are consistent
         const playerCreationPromises = userIds.map(async (userId) => {
             const newPlayerHand = [];
 
@@ -128,20 +132,15 @@ export async function startGame(roomId, userId) {
             console.log("---------TopCard-------------")
             const topCard = drawCard(deck)
             console.log(topCard);
-            //if wild player picks color
+            //if wild player picks color --> in the inital game_state if the top card is wild
+            //then its color will be null --> when the first turn begins
+            //that player will decide which color to set it to
+            //when wild cards are shuffled back into a deck reset their color to null
             //if wild4 shuffle back in deck and redraw
-            //how to implement player picks color?
-            //You have to match either by the number, color, or the symbol/Action.
-            //gameplay usually follows a clockwise direction
-            //if the Draw Pile becomes depleted and no one has yet won the round, take the Discard Pile, 
-            //shuffle it, and turn it over to regenerate a new Draw Pile.
             while(topCard.value === 'wild_draw_four') {
-                //put it back into deck and reshuffle then draw again
                 const putCardInEmptyArray = []
                 putCardInEmptyArray.push(topCard);
                 reshuffle(putCardInEmptyArray, deck)
-
-                //try again
                 topCard = drawCard(deck);
             }
             console.log("----------empty discard deck------------")
