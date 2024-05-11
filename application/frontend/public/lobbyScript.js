@@ -34,6 +34,7 @@ function renderGamesList(data) {
       window.location.href = `/public/game.html?roomId=${game.id}`;
     });
 
+    /*
     const leaveButton = document.createElement("button");
     leaveButton.classList.add("leave-button");
     leaveButton.textContent = "Leave";
@@ -43,7 +44,9 @@ function renderGamesList(data) {
       socket.emit('leaveRoom', roomId );
       console.log(`Leaving room ${roomId}`);
     });
+    */
 
+    /*
     const startButton = document.createElement("button");
     startButton.classList.add("start-button");
     startButton.textContent = "Start";
@@ -53,8 +56,9 @@ function renderGamesList(data) {
       socket.emit('startGame', roomId );
       console.log(`Starting game ${roomId}`);
     });
-
+    */
     
+    /*
     const endButton = document.createElement("button");
     endButton.classList.add("end-button");
     endButton.textContent = "End";
@@ -64,12 +68,13 @@ function renderGamesList(data) {
       socket.emit('cleanUpGame', roomId );
       console.log(`Cleaning up game ${roomId}`);
     });
+    */
 
     gameItem.appendChild(gameInfo);
     gameItem.appendChild(joinButton);
-    gameItem.appendChild(leaveButton);
-    gameItem.appendChild(startButton);
-    gameItem.appendChild(endButton);
+    //gameItem.appendChild(leaveButton);
+    //gameItem.appendChild(startButton);
+    //gameItem.appendChild(endButton);
     gamesList.append(gameItem);
   });
 }
