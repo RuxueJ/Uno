@@ -41,6 +41,7 @@ function renderGamesList(data) {
       const roomId = game.id;
       socket.emit('leaveRoom', roomId );
       console.log(`Leaving room ${roomId}`);
+      window.location.href = `/public/game.html?roomId=${game.id}`;
     });
 
     const startButton = document.createElement("button");
@@ -135,10 +136,10 @@ document.getElementById("cancelBtn").addEventListener("click", () => {
 
   const formContainer = document.querySelector(".create-game-form-container");
   const overlay = document.querySelector(".overlay");
-  
+
   // Hide the form container
   formContainer.style.display = "none";
-  
+
   // Hide the overlay
   overlay.style.display = "none";
 });
@@ -178,6 +179,9 @@ function sendMessage() {
   const message = messageInput.value.trim();
   if (message) {
     socket.emit("lobbyChatMessage", message);
+
+
+
     messageInput.value = "";
   }
 }
