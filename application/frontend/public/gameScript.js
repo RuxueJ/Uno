@@ -23,13 +23,8 @@ const deck = [
 ];
 const hand = ["Red 1", "Blue 5", "Green +2", "Yellow Reverse"];
 
-//this is not the best way to manage page navigation
-//when a user is connected to lobby a socket is opened
-//when that user is redirected to another page like gamePage
-//that user's socket is disconnected
-//here we are getting the info to attach to the new socket connection made for this user for this page
-//I think the socket.on'disconnecting' and our reconnecting logic needs to be checked
-//but for now we can take our screenshots of different games being played at the same time
+
+
 const token = localStorage.getItem("token");
 const userName = localStorage.getItem("userName");
 const userId = localStorage.getItem('userId');
@@ -43,9 +38,13 @@ const socket = io("http://localhost:3000", {
   reeconnectionDelayMax: 5000,
 });
 
-socket.on("connect", () => {
-  console.log("Successfully reconnected to the server!");
-});
+//this is not the best way to manage page navigation
+//when a user is connected to lobby a socket is opened
+//when that user is redirected to another page like gamePage
+//that user's socket is disconnected
+//here we are getting the info to attach to the new socket connection made for this user for this page
+//I think the socket.on'disconnecting' and our reconnecting logic needs to be checked
+//but for now we can take our screenshots of different games being played at the same time
 
 
 // Function to render player list
@@ -59,16 +58,19 @@ function renderPlayerList() {
   });
 }
 
-// Function to render chat messages
-function renderChatMessages() {
-  const chatMessagesDiv = document.getElementById("chat-messages");
-  chatMessagesDiv.innerHTML = "";
-  chatMessages.forEach((msg) => {
-    const div = document.createElement("div");
-    div.textContent = `${msg.user}: ${msg.message}`;
-    chatMessagesDiv.appendChild(div);
-  });
-}
+
+
+// Function to render chat messages=======================================================
+//function renderChatMessages() {
+//  const chatMessagesDiv = document.getElementById("chat-messages");
+//  chatMessagesDiv.innerHTML = "";
+//  chatMessages.forEach((msg) => {
+//    const div = document.createElement("div");
+//    div.textContent = `${msg.user}: ${msg.message}`;
+//    chatMessagesDiv.appendChild(div);
+//  });
+//}
+//============================================================
 
 // Function to render remaining deck cards
 function renderDeck() {
@@ -102,16 +104,74 @@ function leaveRoom() {
   window.location.href = "lobby.html"; // Change the URL accordingly
 }
 
-// Event listener for sending messages
-document.getElementById("send-message").addEventListener("click", () => {
-  const input = document.getElementById("chat-input");
-  const message = input.value.trim();
-  if (message !== "") {
-    chatMessages.push({ user: "You", message });
-    renderChatMessages();
-    input.value = "";
+function startGame() {
+  const urlParams =  new URLSearchParams(window.location.search);
+  const roomId = urlParams.get('roomId');
+  socket.emit('startGame', roomId );
+  console.log(`Starting game ${roomId}`);
+}
+
+function endGame() {
+  const urlParams =  new URLSearchParams(window.location.search);
+  const roomId = urlParams.get('roomId');
+  socket.emit('cleanUpGame', roomId );
+  console.log(`Cleaning up game ${roomId}`);
+}
+
+const messageInput = document.getElementById("messageInput");
+const messages = document.getElementById("messages");
+const sendButton = document.getElementById("sendButton");
+
+
+function sendGameMessage() {
+  const urlParams =  new URLSearchParams(window.location.search);
+  const roomId = urlParams.get('roomId');
+  const message = messageInput.value.trim();
+  if (message) {
+    socket.emit("roomChatMessage", roomId, message);
+    messageInput.value = "";
   }
+}
+
+
+socket.on("connect", () => {
+  console.log("Successfully connected to the server!");
+  setTimeout(() => {
+    reJoinGame();
+  }, 500);    //needs short delay to make sure the socket is fully connected
 });
+
+
+
+function reJoinGame() {
+  const urlParams =  new URLSearchParams(window.location.search);
+  const roomId = urlParams.get('roomId');
+  console.log("rejoining: " + roomId + " for user: " + userId);
+  socket.emit("putUserInRoom", roomId);
+  console.log("after emitting");
+}
+
+socket.on("newRoomMessage", function (data) {
+  const messageElement = document.createElement("div");
+  messageElement.textContent = `${data.userName} @ ${data.timeStamp}: ${data.message}`;
+  messages.appendChild(messageElement);
+  messages.scrollTop = messages.scrollHeight;
+  //chatMessages.push( { user: data.userName, message: data.message});
+  //renderChatMessages();
+});
+
+//=============================================================
+// Event listener for sending messages
+//document.getElementById("send-message").addEventListener("click", () => {
+//  const input = document.getElementById("chat-input");
+//  const message = input.value.trim();
+//  if (message !== "") {
+//    chatMessages.push({ user: "You", message });
+//    renderChatMessages();
+//    input.value = "";
+//  }
+//});
+//=====================================================================
 
 // Event listener for drawing a card
 document.getElementById("draw-card").addEventListener("click", () => {
@@ -119,9 +179,17 @@ document.getElementById("draw-card").addEventListener("click", () => {
   alert("Drawing a card...");
 });
 
+
+function handleKeypress(event) {
+  if (event.key === "Enter") {
+    sendGameMessage();
+    event.preventDefault(); // Prevent form from being submitted
+  }
+}
+
 // Initial rendering
-renderPlayerList();
-renderChatMessages();
+//renderPlayerList();
+//renderChatMessages();//=============================================
 renderDeck();
 renderHand();
 

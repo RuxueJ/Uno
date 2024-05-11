@@ -27,8 +27,8 @@ function renderGamesList(data) {
     joinButton.classList.add("join-button");
     joinButton.textContent = "Join";
     joinButton.addEventListener("click", () => {
-      // Add your logic to join the game
       const roomId = game.id;
+      //basic session implementation?
       socket.emit('joinRoom', roomId );
       console.log(`Joining room ${roomId}`);
       window.location.href = `/public/game.html?roomId=${game.id}`;
@@ -54,7 +54,7 @@ function renderGamesList(data) {
       console.log(`Starting game ${roomId}`);
     });
 
-
+    
     const endButton = document.createElement("button");
     endButton.classList.add("end-button");
     endButton.textContent = "End";
@@ -161,6 +161,7 @@ const socket = io("http://localhost:3000", {
   reconnectionDelay: 1000,
   reeconnectionDelayMax: 5000,
 });
+
 
 const messageInput = document.getElementById("messageInput");
 const messages = document.getElementById("messages");

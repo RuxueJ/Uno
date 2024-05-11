@@ -1,6 +1,5 @@
 import * as roomController from '@/controllers/room.js';
 import * as gameController from '@/controllers/game.js'
-import { UUIDV4 } from 'sequelize';
 
 
 export function emitToRoom(io, roomId, eventName, eventData) {
@@ -11,9 +10,6 @@ export function emitToRoom(io, roomId, eventName, eventData) {
 export function setUpSocketIO(io) {
     io.on('connection', async (socket) => {
         console.log('A user connected. Socket ID: ', socket.id);
-
-
-        //rest of socket logic
         socket.join('lobby');
         //user info attached to this socket
         const userId = socket.handshake.query.userId;
@@ -37,6 +33,18 @@ export function setUpSocketIO(io) {
             console.log(err);
             socket.emit('reconnectError', { message: 'failed to execute reconnection check'})
         }
+
+
+
+        socket.on('putUserInRoom', async (roomId) => {
+            try {
+                socket.leave('lobby');
+                socket.join(roomId);
+                console.log("put user: " + userId + " back into room: " + roomId);
+            } catch (err) {
+                console.log(err);
+            }
+        });
 
 
         socket.on('joinRoom', async (roomId) => {
@@ -76,6 +84,7 @@ export function setUpSocketIO(io) {
         socket.on('roomChatMessage', (roomId, message) => {
             console.log('Received room message:', message);
             const timeStamp = new Date().toLocaleTimeString();
+            console.log(socket.rooms)
             io.to(roomId).emit('newRoomMessage', {
                 userName,
                 message,
@@ -85,7 +94,7 @@ export function setUpSocketIO(io) {
 
 
         socket.on('lobbyChatMessage', (message) => {
-            console.log('Received room message:', message);
+            console.log('Received lobby message:', message);
             const timeStamp = new Date().toLocaleTimeString();
             console.log(socket.rooms);
             io.to('lobby').emit('newLobbyMessage', {

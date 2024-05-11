@@ -20,6 +20,7 @@ async function login(email, password) {
     localStorage.setItem("email", data.data.email);
     localStorage.setItem("userName", data.data.userName);
     localStorage.setItem("userId", data.data.userId)
+  
 
     // Redirect to the dashboard or perform any other action
     window.location.href = "lobby.html"; // Change the URL accordingly
