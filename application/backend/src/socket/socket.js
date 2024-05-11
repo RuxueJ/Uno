@@ -1,5 +1,6 @@
 import * as roomController from '@/controllers/room.js';
 import * as gameController from '@/controllers/game.js'
+import { UUIDV4 } from 'sequelize';
 
 
 export function emitToRoom(io, roomId, eventName, eventData) {
@@ -10,23 +11,16 @@ export function emitToRoom(io, roomId, eventName, eventData) {
 export function setUpSocketIO(io) {
     io.on('connection', async (socket) => {
         console.log('A user connected. Socket ID: ', socket.id);
+
+
+        //rest of socket logic
         socket.join('lobby');
         //user info attached to this socket
         const userId = socket.handshake.query.userId;
         const email = socket.handshake.query.email;
         const userName = socket.handshake.query.userName || 'User';
         const token = socket.handshake.query.token;
-        //for the req: If a user closes a game tab, 
-        //and then reconnects to the game, the game must be able 
-        //to be reloaded in the current state for that user
-        //idea: when user connects check if their userId has any
-        //roomUser records if so check if that record is connected or not
-        //the first roomUser record that exists for this user and has the
-        //connected flag as false will be considered a reconnect to that
-        //game room.
-        //when you close a tab it consideres it a disconnect
-        //when you reopen the tab it considers it a connection so on.reconnect is not
-        //being used
+
         try {
             const reconnectAttempt = await roomController.reconnect(userId);
             if (reconnectAttempt == null) {

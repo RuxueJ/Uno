@@ -31,6 +31,7 @@ function renderGamesList(data) {
       const roomId = game.id;
       socket.emit('joinRoom', roomId );
       console.log(`Joining room ${roomId}`);
+      window.location.href = `/public/game.html?roomId=${game.id}`;
     });
 
     const leaveButton = document.createElement("button");
@@ -41,7 +42,6 @@ function renderGamesList(data) {
       const roomId = game.id;
       socket.emit('leaveRoom', roomId );
       console.log(`Leaving room ${roomId}`);
-      window.location.href = `/public/game.html?roomId=${game.id}`;
     });
 
     const startButton = document.createElement("button");
@@ -172,19 +172,19 @@ socket.on("newLobbyMessage", function (data) {
   messages.appendChild(messageElement);
   messages.scrollTop = messages.scrollHeight;
 });
+
 socket.on("connect", () => {
   console.log("Successfully connected to the server!");
 });
+
 function sendMessage() {
   const message = messageInput.value.trim();
   if (message) {
     socket.emit("lobbyChatMessage", message);
-
-
-
     messageInput.value = "";
   }
 }
+
 function handleKeypress(event) {
   if (event.key === "Enter") {
     sendMessage();

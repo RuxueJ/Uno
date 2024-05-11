@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Game Room</title>
+  <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
   <link rel="stylesheet" href="game.css">
 </head>
 <body>
@@ -26,7 +27,8 @@
         <div id="messages"></div>
         <input class="gray-border" type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeypress(event)">
         <button id="sendButton" onclick="sendMessage()">Send</button>
-        
+        <button id="leaveButton" onclick="leaveRoom()">Leave</button>
+
       </div>
     </div>
     <div class="row user-hand">

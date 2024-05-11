@@ -1,3 +1,4 @@
+
 // Dummy data for demonstration
 const players = ["Player 1", "Player 2", "Player 3"];
 const chatMessages = [
@@ -21,6 +22,31 @@ const deck = [
   "Reverse",
 ];
 const hand = ["Red 1", "Blue 5", "Green +2", "Yellow Reverse"];
+
+//this is not the best way to manage page navigation
+//when a user is connected to lobby a socket is opened
+//when that user is redirected to another page like gamePage
+//that user's socket is disconnected
+//here we are getting the info to attach to the new socket connection made for this user for this page
+//I think the socket.on'disconnecting' and our reconnecting logic needs to be checked
+//but for now we can take our screenshots of different games being played at the same time
+const token = localStorage.getItem("token");
+const userName = localStorage.getItem("userName");
+const userId = localStorage.getItem('userId');
+const email = localStorage.getItem('email');
+
+const socket = io("http://localhost:3000", {
+  query: { token, userName, email, userId },
+  transports: ["websocket"],
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
+  reeconnectionDelayMax: 5000,
+});
+
+socket.on("connect", () => {
+  console.log("Successfully reconnected to the server!");
+});
+
 
 // Function to render player list
 function renderPlayerList() {
@@ -68,6 +94,14 @@ function renderHand() {
   });
 }
 
+function leaveRoom() {
+  const urlParams =  new URLSearchParams(window.location.search);
+  const roomId = urlParams.get('roomId');
+  socket.emit('leaveRoom', roomId);
+  console.log(`Leaving room ${roomId}`);
+  window.location.href = "lobby.html"; // Change the URL accordingly
+}
+
 // Event listener for sending messages
 document.getElementById("send-message").addEventListener("click", () => {
   const input = document.getElementById("chat-input");
@@ -90,3 +124,4 @@ renderPlayerList();
 renderChatMessages();
 renderDeck();
 renderHand();
+
