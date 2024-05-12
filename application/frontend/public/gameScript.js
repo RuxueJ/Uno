@@ -25,10 +25,10 @@ const hand = ["Red 1", "Blue 5", "Green +2", "Yellow Reverse"];
 
 
 
-const token = localStorage.getItem("token");
-const userName = localStorage.getItem("userName");
-const userId = localStorage.getItem('userId');
-const email = localStorage.getItem('email');
+const token = sessionStorage.getItem("token");
+const userName = sessionStorage.getItem("userName");
+const userId = sessionStorage.getItem('userId');
+const email = sessionStorage.getItem('email');
 
 const socket = io("http://localhost:3000", {
   query: { token, userName, email, userId },

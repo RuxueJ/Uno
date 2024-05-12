@@ -106,16 +106,16 @@ renderGamesList(dummyData);
 
 document.getElementById("profileBtn").addEventListener("click", () => {
   // Add your logic to handle profile or logout
-  localStorage.removeItem("token");
-  localStorage.removeItem("username");
+  sessionStorage.removeItem("token");
+  sessionStorage.removeItem("username");
   window.location.href = "SignIn.html";
   console.log("Profile / Logout clicked");
 });
 
-const token = localStorage.getItem("token");
-const userName = localStorage.getItem("userName");
-const userId = localStorage.getItem('userId');
-const email = localStorage.getItem('email');
+const token = sessionStorage.getItem("token");
+const userName = sessionStorage.getItem("userName");
+const userId = sessionStorage.getItem('userId');
+const email = sessionStorage.getItem('email');
 
 if (token && userName) {
   const greeting = document.getElementById("greeting");
