@@ -16,10 +16,10 @@ async function login(email, password) {
 
 
     // Store the JWT token in local storage for future requests
-    localStorage.setItem("token", data.token);
-    localStorage.setItem("email", data.data.email);
-    localStorage.setItem("userName", data.data.userName);
-    localStorage.setItem("userId", data.data.userId)
+    sessionStorage.setItem("token", data.token);
+    sessionStorage.setItem("email", data.data.email);
+    sessionStorage.setItem("userName", data.data.userName);
+    sessionStorage.setItem("userId", data.data.userId)
   
 
     // Redirect to the dashboard or perform any other action
@@ -40,7 +40,7 @@ document
   });
 
   window.addEventListener("load", (event) => {
-    const token = localStorage.getItem("token");
+    const token = sessionStorage.getItem("token");
     if(!token) {
       return;
     }
@@ -53,6 +53,6 @@ document
     if(roomId) {
       window.location.href = `/game/${roomId}`;
     }else {
-      localStorage.removeItem("token")
+      sessionStorage.removeItem("token")
     }
   });
