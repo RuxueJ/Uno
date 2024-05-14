@@ -14,10 +14,14 @@ async function login(email, password) {
 
     const data = await response.json();
 
+
     // Store the JWT token in local storage for future requests
-    localStorage.setItem("token", data.token);
-    // localStorage.setItem("userId", data.data.id);
-    localStorage.setItem("userName", data.data.userName);
+    sessionStorage.setItem("token", data.token);
+    sessionStorage.setItem("email", data.data.email);
+    sessionStorage.setItem("userName", data.data.userName);
+    sessionStorage.setItem("userId", data.data.userId)
+  
+
     // Redirect to the dashboard or perform any other action
     window.location.href = "lobby.html"; // Change the URL accordingly
   } catch (error) {
@@ -35,17 +39,20 @@ document
     login(email, password);
   });
 
-window.addEventListener("load", (event) => {
-  const token = localStorage.getItem("token");
-  if(!token) {
-    return;
-  }
+  window.addEventListener("load", (event) => {
+    const token = sessionStorage.getItem("token");
+    if(!token) {
+      return;
+    }
 
-  // todo : call API to check if a user was playing a game before
-  const roomId = null;
-  if(roomId) {
-    window.location.href = `/game/${roomId}`;
-  }else {
-    window.location.href = 'lobby.html';
-  }
-});
+    //remove this
+    return;
+
+    // call API to check if a user was playing a game before
+    const roomId = "dummy";
+    if(roomId) {
+      window.location.href = `/game/${roomId}`;
+    }else {
+      sessionStorage.removeItem("token")
+    }
+  });

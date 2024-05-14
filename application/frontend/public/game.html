@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Room</title>
+  <link rel="stylesheet" href="game.css">
+  <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="row game-deck">
+      <div class="column player-list">
+        <h2 class="text-2xl mb-6">Player List</h2>
+        <div id="playerList"></div>
+      </div>
+      <div class="column deck">
+        <h2>Deck</h2>
+        <!-- Display remaining cards in the deck -->
+        <div id="deck">
+          <!-- Deck cards will be dynamically added here -->
+        </div>
+        <button id="draw-card">Draw Card</button>
+      </div>
+      <div class="column deck chat-box">
+        <h2 class="text-2xl mb-6">Chat</h2>
+        <div id="messages"></div>
+        <input class="gray-border" type="text" id="messageInput" placeholder="Type a message..." onkeypress="handleKeypress(event)">
+        <button id="sendButton" onclick="sendGameMessage()">Send</button>
+        <button id="leaveButton" onclick="leaveRoom()">Leave</button>
+        <button id="startButton" onclick="startGame()">Start</button>
+        <button id="endButton" onclick="endGame()">End</button>
+
+      </div>
+    </div>
+    <div class="row user-hand">
+      <h2>Your Hand</h2>
+      <!-- Display cards in the player's hand -->
+      <div id="hand">
+        <!-- Player's cards will be dynamically added here -->
+      </div>
+    </div>
+  </div>
+  <script src="gameScript.js"></script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 import createError from 'http-errors';
-
 import db from '@/database';
+
 
 /**
  * POST /user/login
@@ -29,11 +29,12 @@ export const login = async (req, res, next) => {
       "token": token, 
       "expiresIn": "1h",
       "data": {
-        "id": user.id,
+        "userId": user.userId,
         "userName": user.userName,
         "email": user.email
       }
     }
+
     return res.status(200).json({ ...response });
   } catch (err) {
     console.error(err);  
