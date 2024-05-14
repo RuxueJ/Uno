@@ -1,6 +1,5 @@
 // JavaScript Code
 
-
 let i = 0;
 // Sample active game data
 const activeGames = [
@@ -29,7 +28,7 @@ function renderGamesList(data) {
     joinButton.addEventListener("click", () => {
       const roomId = game.id;
       //basic session implementation?
-      socket.emit('joinRoom', roomId );
+      socket.emit("joinRoom", roomId);
       console.log(`Joining room ${roomId}`);
       window.location.href = `/public/game.html?roomId=${game.id}`;
     });
@@ -57,7 +56,7 @@ function renderGamesList(data) {
       console.log(`Starting game ${roomId}`);
     });
     */
-    
+
     /*
     const endButton = document.createElement("button");
     endButton.classList.add("end-button");
@@ -114,8 +113,8 @@ document.getElementById("profileBtn").addEventListener("click", () => {
 
 const token = sessionStorage.getItem("token");
 const userName = sessionStorage.getItem("userName");
-const userId = sessionStorage.getItem('userId');
-const email = sessionStorage.getItem('email');
+const userId = sessionStorage.getItem("userId");
+const email = sessionStorage.getItem("email");
 
 if (token && userName) {
   const greeting = document.getElementById("greeting");
@@ -152,10 +151,41 @@ document.getElementById("cancelBtn").addEventListener("click", () => {
 // Prevent form submission for testing
 document
   .getElementById("createGameForm")
-  .addEventListener("submit", (event) => {
+  .addEventListener("submit", async (event) => {
     event.preventDefault();
-    console.log("Form submitted");
-    // Add your logic to handle form submission (e.g., create game)
+
+    const formData = new FormData(event.target);
+    const data = {
+      name: formData.get("gameTitle"),
+      userId: userId,
+      maxPlayers: formData.get("numPlayers"),
+    };
+
+    console.log("Form submitted", data); // For testing
+
+    try {
+      // Make the POST request to the server
+      const response = await fetch("http://localhost:3000/api/room/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      // Handle the response
+      if (response.ok) {
+        const result = await response.json();
+        console.log("Room created successfully:", result);
+        // Add any additional logic (e.g., redirecting the user, showing a success message)
+      } else {
+        console.error("Failed to create room", response.statusText);
+        // Handle the error (e.g., show an error message)
+      }
+    } catch (error) {
+      console.error("Error creating room:", error);
+      // Handle the error (e.g., show an error message)
+    }
   });
 
 // chat system also where we make the socket connection for meow
@@ -166,7 +196,6 @@ const socket = io("http://localhost:3000", {
   reconnectionDelay: 1000,
   reeconnectionDelayMax: 5000,
 });
-
 
 const messageInput = document.getElementById("messageInput");
 const messages = document.getElementById("messages");
