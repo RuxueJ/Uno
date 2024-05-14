@@ -1,15 +1,3 @@
-// JavaScript Code
-
-let i = 0;
-// Sample active game data
-const activeGames = [
-  { status: 304, data: [] },
-  { status: 200, data: [{ id: 1, members: "Jin, Jiji" }] },
-  { status: 200, data: [{ id: 2, members: "Dante, Xu" }] },
-  { status: 200, data: [{ id: 3, members: "Jin, Jiji, Dante, Xu" }] },
-  { status: 200, data: [{ id: 4, members: "Jiji" }] },
-  { status: 200, data: [{ id: 5, members: "Dante, Xu" }] },
-];
 
 // Function to render active game list
 function renderGamesList(data) {
@@ -82,11 +70,7 @@ function getGameList() {
   return activeGames[i++ % 5];
 }
 
-const dummyData = [
-  { id: 1, members: "Jin, Jiji" },
-  { id: 2, members: "Dante, Xu" },
-  { id: 3, members: "Jin, Jiji, Dante, Xu" },
-];
+
 
 renderGamesList(dummyData);
 // setInterval(async() => {
@@ -132,7 +116,7 @@ document.getElementById("createGameBtn").addEventListener("click", () => {
   overlay.style.display = "block";
 });
 
-document.getElementById("cancelBtn").addEventListener("click", () => {
+function closeCreateForm() {
   const form = document.getElementById("createGameForm");
 
   // Reset the form to clear input values
@@ -146,6 +130,11 @@ document.getElementById("cancelBtn").addEventListener("click", () => {
 
   // Hide the overlay
   overlay.style.display = "none";
+  console.log("i am in closeCreateForm function");
+}
+
+document.getElementById("cancelBtn").addEventListener("click", () => {
+  closeCreateForm();
 });
 
 // Prevent form submission for testing
@@ -175,8 +164,9 @@ document
 
       // Handle the response
       if (response.ok) {
-        const result = await response.json();
-        console.log("Room created successfully:", result);
+        // const result = await response.json();
+        console.log("Room created successfully:");
+        closeCreateForm();
         // Add any additional logic (e.g., redirecting the user, showing a success message)
       } else {
         console.error("Failed to create room", response.statusText);
