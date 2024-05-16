@@ -1,41 +1,47 @@
 import db from "@/database";
 
-// 长轮询获取房间数据的控制器       Controller for long polling to retrieve room data
+//  Controller for long polling to retrieve room data
 export async function getRoomsData(req, res) {
   try {
     const timeout = 30000;
 
-    // 获取房间数据的函数       Function to retrieve room data
+    //     Function to retrieve room data
     const getRoomData = async () => {
-      // 查询所有房间     query all rooms
+      //   query all rooms
       const rooms = await db.models.room.findAll();
 
-      // 查询所有关联的玩家信息       Query all associated player information
+      //  Query all associated player information
       const roomUsers = await db.models.roomUser.findAll();
+      console.log(roomUsers);
 
-      // 查询所有用户信息     query all users in room information
+      //  query all users in room information
       const users = await db.models.user.findAll();
 
-      // 整合数据     integrate data
+      // integrate data
       const result = rooms.map((room) => {
-        // 获取此房间相关的玩家信息         Retrieve player information related to this room
+        // console.log(room);
+        // Retrieve player information related to this room
         const usersInRoom = roomUsers.filter(
-          (user) => user.roomId === room.dataValues.id
+          (user) => user.roomId === room.dataValues.roomId
         );
+        console.log("usersInRoom" + JSON.stringify(usersInRoom));
 
-        // 将玩家信息附加到房间数据中       append player info to room data
+        // append player info to room data
         const userDetails = usersInRoom.map((user) => {
-          const userInfo = users.find((u) => u.id === user.userId);
+          console.log("user:" + JSON.stringify(user.dataValues));
+          const userInfo = users.find((u) => u.userId === user.userId);
           return {
             userId: user.userId,
-            userName: userInfo ? userInfo.userName : null, // 找到玩家名称      find player name
+            userName: userInfo ? userInfo.userName : null, // find player name
             isHost: user.isHost,
             score: user.score,
             connected: user.connected,
           };
         });
+        console.log("userDetail" + userDetails);
 
         return {
+          id: room.roomId,
           name: room.name,
           status: room.status,
           users: userDetails,

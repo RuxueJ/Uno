@@ -1,6 +1,21 @@
+async function fetchRoomsData() {
+  try {
+    const response = await fetch("http://localhost:3000/api/room/list");
+    if (!response.ok) {
+      throw new Error("Failed to fetch rooms data");
+    }
+    
+    if (response.status === 200) {
+      const data = await response.json();
+      console.log(data);
+      displayRoomsData(data);
+    }
+  } catch (error) {
+    console.error("Error fetching rooms data:", error);
+  }
+}
 
-// Function to render active game list
-function renderGamesList(data) {
+function displayRoomsData(data) {
   const gamesList = document.getElementById("gamesList");
   data.forEach((game) => {
     const gameItem = document.createElement("div");
@@ -8,7 +23,11 @@ function renderGamesList(data) {
 
     const gameInfo = document.createElement("div");
     gameInfo.classList.add("game-info");
-    gameInfo.innerHTML = `<span>Game ID: ${game.id}</span><span>Members: ${game.members}</span>`;
+    let concatenatedString = "";
+    game.users.forEach((gameUser) => {
+      concatenatedString += gameUser.userName;
+    });
+    gameInfo.innerHTML = `<span>Game ID: ${game.name}</span><span>Members: ${concatenatedString}</span>`;
 
     const joinButton = document.createElement("button");
     joinButton.classList.add("join-button");
@@ -66,13 +85,22 @@ function renderGamesList(data) {
   });
 }
 
+// Function to fetch data at regular intervals
+function fetchDataRegularly() {
+  fetchRoomsData();
+  setInterval(fetchRoomsData, 30000); // Fetch data every 30 seconds
+}
+
+// Start fetching data
+fetchDataRegularly();
+
+// Function to render active game list
+
 function getGameList() {
   return activeGames[i++ % 5];
 }
 
-
-
-renderGamesList(dummyData);
+// renderGamesList(dummyData);
 // setInterval(async() => {
 //   const gameList = await getGameList(); // api call
 //   if(gameList.status === 200) {
