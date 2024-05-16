@@ -7,12 +7,17 @@ async function fetchRoomsData() {
     
     if (response.status === 200) {
       const data = await response.json();
-      console.log(data);
       displayRoomsData(data);
     }
   } catch (error) {
     console.error("Error fetching rooms data:", error);
   }
+}
+
+function refreshGameList() {
+  const gamesList = document.getElementById("gamesList");
+  gamesList.innerHTML = '';
+  fetchRoomsData();
 }
 
 function displayRoomsData(data) {
@@ -93,20 +98,6 @@ function fetchDataRegularly() {
 
 // Start fetching data
 fetchDataRegularly();
-
-// Function to render active game list
-
-function getGameList() {
-  return activeGames[i++ % 5];
-}
-
-// renderGamesList(dummyData);
-// setInterval(async() => {
-//   const gameList = await getGameList(); // api call
-//   if(gameList.status === 200) {
-//     renderGamesList(gameList.data)
-//   }
-// }, 3000)
 
 // Event listeners for buttons
 // document.getElementById("createGameBtn").addEventListener("click", () => {
