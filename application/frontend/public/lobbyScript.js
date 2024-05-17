@@ -4,7 +4,7 @@ async function fetchRoomsData() {
     if (!response.ok) {
       throw new Error("Failed to fetch rooms data");
     }
-    
+
     if (response.status === 200) {
       const data = await response.json();
       console.log(data);
@@ -30,57 +30,22 @@ function displayRoomsData(data) {
     gameInfo.innerHTML = `<span>Game ID: ${game.name}</span><span>Members: ${concatenatedString}</span>`;
 
     const joinButton = document.createElement("button");
+    console.log("I am create join button...");
     joinButton.classList.add("join-button");
     joinButton.textContent = "Join";
     joinButton.addEventListener("click", () => {
+      console.log(game);
       const roomId = game.id;
       //basic session implementation?
       socket.emit("joinRoom", roomId);
       console.log(`Joining room ${roomId}`);
-      window.location.href = `/public/game.html?roomId=${game.id}`;
+      window.open(`/public/game.html?roomId=${game.id}`, "_blank");
     });
 
-    /*
-    const leaveButton = document.createElement("button");
-    leaveButton.classList.add("leave-button");
-    leaveButton.textContent = "Leave";
-    leaveButton.addEventListener("click", () => {
-      // Add your logic to leave the game
-      const roomId = game.id;
-      socket.emit('leaveRoom', roomId );
-      console.log(`Leaving room ${roomId}`);
-    });
-    */
 
-    /*
-    const startButton = document.createElement("button");
-    startButton.classList.add("start-button");
-    startButton.textContent = "Start";
-    startButton.addEventListener("click", () => {
-      // Add your logic to leave the game
-      const roomId = game.id;
-      socket.emit('startGame', roomId );
-      console.log(`Starting game ${roomId}`);
-    });
-    */
-
-    /*
-    const endButton = document.createElement("button");
-    endButton.classList.add("end-button");
-    endButton.textContent = "End";
-    endButton.addEventListener("click", () => {
-      // Add your logic to leave the game
-      const roomId = game.id;
-      socket.emit('cleanUpGame', roomId );
-      console.log(`Cleaning up game ${roomId}`);
-    });
-    */
 
     gameItem.appendChild(gameInfo);
     gameItem.appendChild(joinButton);
-    //gameItem.appendChild(leaveButton);
-    //gameItem.appendChild(startButton);
-    //gameItem.appendChild(endButton);
     gamesList.append(gameItem);
   });
 }
@@ -100,20 +65,6 @@ function getGameList() {
   return activeGames[i++ % 5];
 }
 
-// renderGamesList(dummyData);
-// setInterval(async() => {
-//   const gameList = await getGameList(); // api call
-//   if(gameList.status === 200) {
-//     renderGamesList(gameList.data)
-//   }
-// }, 3000)
-
-// Event listeners for buttons
-// document.getElementById("createGameBtn").addEventListener("click", () => {
-//   // Add your logic to create a new game
-//   window.location.href = "createGame.html";
-//   console.log("Creating a new game");
-// });
 
 document.getElementById("profileBtn").addEventListener("click", () => {
   // Add your logic to handle profile or logout
