@@ -70,19 +70,6 @@ body {
   cursor: pointer;
 }
 
-/*added for testing*/
-.leave-button {
-  background-color: red;
-  border: none;
-  color: white;
-  padding: 8px 16px;
-  text-align: center;
-  text-decoration: none;
-  display: inline-block;
-  font-size: 14px;
-  cursor: pointer;
-}
-
 /* Modal Styles */
 .modal {
   display: none;
@@ -127,6 +114,7 @@ body {
 
 .scroll {
   overflow: scroll;
+  height: 700px; /* Set a fixed height for the scrollable area */
 }
 
 #messageInput {
@@ -308,8 +296,4 @@ input[type="text"] {
   margin-top: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
-}
-
-.scroll {
-  overflow: scroll;
 }
