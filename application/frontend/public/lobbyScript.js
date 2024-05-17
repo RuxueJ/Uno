@@ -16,7 +16,7 @@ async function fetchRoomsData() {
 
 function refreshGameList() {
   const gamesList = document.getElementById("gamesList");
-  gamesList.innerHTML = '';
+  gamesList.innerHTML = "";
   fetchRoomsData();
 }
 
@@ -47,8 +47,6 @@ function displayRoomsData(data) {
       window.open(`/public/game.html?roomId=${game.id}`, "_blank");
     });
 
-
-
     gameItem.appendChild(gameInfo);
     gameItem.appendChild(joinButton);
     gamesList.append(gameItem);
@@ -64,21 +62,18 @@ function fetchDataRegularly() {
 // Start fetching data
 fetchDataRegularly();
 
-<<<<<<< HEAD
 // Function to render active game list
 
 function getGameList() {
   return activeGames[i++ % 5];
 }
 
-=======
 // Event listeners for buttons
 // document.getElementById("createGameBtn").addEventListener("click", () => {
 //   // Add your logic to create a new game
 //   window.location.href = "createGame.html";
 //   console.log("Creating a new game");
 // });
->>>>>>> 732fc47c2e8ae102611d33f437e5ef922af0b20a
 
 document.getElementById("profileBtn").addEventListener("click", () => {
   // Add your logic to handle profile or logout
