@@ -56,7 +56,7 @@ export function setUpSocketIO(io) {
                 socket.leave('lobby')
                 socket.join(roomId);
                 console.log(`Socket ${socket.id} user ${email} joined room ${roomId}`)
-                emitToRoom(io, roomId, 'user join', 'user joined the room')
+                emitToRoom(io, roomId, 'userJoin', 'user joined the room')
             } catch (err) {
                 console.log(err);
                 socket.emit('joinRoomError', { message: 'failed to join room'} );

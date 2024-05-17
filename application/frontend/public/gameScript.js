@@ -27,7 +27,6 @@ const userName = sessionStorage.getItem("userName");
 const userId = sessionStorage.getItem("userId");
 const email = sessionStorage.getItem("email");
 
-
 const queryString = window.location.search;
 const queryParams = new URLSearchParams(queryString);
 const gameRoomName = queryParams.get("gameName");
@@ -157,6 +156,11 @@ socket.on("newRoomMessage", function (data) {
   messages.scrollTop = messages.scrollHeight;
   //chatMessages.push( { user: data.userName, message: data.message});
   //renderChatMessages();
+});
+
+socket.on("userJoin", (userData) => {
+  console.log("User joined the room:", userData);
+  // Handle the userJoined event here, for example, update the UI to display the new user
 });
 
 //=============================================================
