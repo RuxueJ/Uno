@@ -1,16 +1,22 @@
 async function fetchRoomsData() {
   try {
-    const response = await fetch("http://localhost:3000/api/room/list");
-    if (!response.ok) {
-      throw new Error("Failed to fetch rooms data");
-    }
+      const response = await fetch("http://localhost:3000/api/room/list");
+      if (!response.ok) {
+          throw new Error("Failed to fetch rooms data");
+      }
 
-    if (response.status === 200) {
-      const data = await response.json();
-      displayRoomsData(data);
-    }
+      const result = await response.json();
+      console.log("Fetched rooms data:", result);
+
+      if (response.status === 200) {
+          const data = result.gamelist;
+          console.log("Displaying rooms data:", data);
+          displayRoomsData(data);
+      }
   } catch (error) {
-    console.error("Error fetching rooms data:", error);
+      console.error("Error fetching rooms data:", error);
+  } finally {
+      setTimeout(fetchRoomsData, 3000);
   }
 }
 
@@ -22,51 +28,39 @@ function refreshGameList() {
 
 function displayRoomsData(data) {
   const gamesList = document.getElementById("gamesList");
+  gamesList.innerHTML = ""; 
+
   data.forEach((game) => {
-    const gameItem = document.createElement("div");
-    gameItem.classList.add("game-item");
+      const gameItem = document.createElement("div");
+      gameItem.classList.add("game-item");
 
-    const gameInfo = document.createElement("div");
-    gameInfo.classList.add("game-info");
-    let concatenatedString = "";
-    game.users.forEach((gameUser) => {
-      concatenatedString += gameUser.userName;
-    });
-    gameInfo.innerHTML = `<span>Game ID: ${game.name}</span><span>Members: ${concatenatedString}</span>`;
+      const gameInfo = document.createElement("div");
+      gameInfo.classList.add("game-info");
+      let concatenatedString = "";
+      game.users.forEach((gameUser) => {
+          concatenatedString += `${gameUser.userName} `;
+      });
+      gameInfo.innerHTML = `<span>Game ID: ${game.name}</span><span>Members: ${concatenatedString}</span>`;
 
-    const joinButton = document.createElement("button");
-    console.log("I am create join button...");
-    joinButton.classList.add("join-button");
-    joinButton.textContent = "Join";
-    joinButton.addEventListener("click", () => {
-      console.log(game);
-      const roomId = game.id;
-      //basic session implementation?
-      socket.emit("joinRoom", roomId);
-      console.log(`Joining room ${roomId}`);
-      window.open(`/public/game.html?roomId=${game.id}`, "_blank");
-    });
+      const joinButton = document.createElement("button");
+      joinButton.classList.add("join-button");
+      joinButton.textContent = "Join";
+      joinButton.addEventListener("click", () => {
+          const roomId = game.id;
+          // Basic session implementation
+          socket.emit("joinRoom", roomId);
+          console.log(`Joining room ${roomId}`);
+          window.open(`/public/game.html?roomId=${game.id}`, "_blank");
+      });
 
-    gameItem.appendChild(gameInfo);
-    gameItem.appendChild(joinButton);
-    gamesList.append(gameItem);
+      gameItem.appendChild(gameInfo);
+      gameItem.appendChild(joinButton);
+      gamesList.append(gameItem);
   });
 }
 
-// Function to fetch data at regular intervals
-function fetchDataRegularly() {
-  fetchRoomsData();
-  setInterval(fetchRoomsData, 30000); // Fetch data every 30 seconds
-}
-
-// Start fetching data
-fetchDataRegularly();
-
-// Function to render active game list
-
-function getGameList() {
-  return activeGames[i++ % 5];
-}
+// Start the long polling
+fetchRoomsData();
 
 // Event listeners for buttons
 // document.getElementById("createGameBtn").addEventListener("click", () => {
