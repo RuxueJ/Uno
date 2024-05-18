@@ -14,13 +14,10 @@ async function login(email, password) {
 
     const data = await response.json();
 
-
-    // Store the JWT token in local storage for future requests
     sessionStorage.setItem("token", data.token);
     sessionStorage.setItem("email", data.data.email);
     sessionStorage.setItem("userName", data.data.userName);
-    sessionStorage.setItem("userId", data.data.userId)
-  
+    sessionStorage.setItem("userId", data.data.userId);
 
     // Redirect to the dashboard or perform any other action
     window.location.href = "lobby.html"; // Change the URL accordingly
@@ -39,20 +36,9 @@ document
     login(email, password);
   });
 
-  window.addEventListener("load", (event) => {
-    const token = sessionStorage.getItem("token");
-    if(!token) {
-      return;
-    }
-
-    //remove this
+window.addEventListener("load", (event) => {
+  const token = sessionStorage.getItem("token");
+  if (!token) {
     return;
-
-    // call API to check if a user was playing a game before
-    const roomId = "dummy";
-    if(roomId) {
-      window.location.href = `/game/${roomId}`;
-    }else {
-      sessionStorage.removeItem("token")
-    }
-  });
+  }
+});

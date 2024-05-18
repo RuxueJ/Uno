@@ -33,7 +33,7 @@ const gameRoomName = queryParams.get("gameName");
 
 // Set the game room name as the text content of the header element
 const gameRoomNameHeader = document.getElementById("gameRoomName");
-gameRoomNameHeader.textContent = "Welcome to " + gameRoomName;
+gameRoomNameHeader.textContent = "Welcome to Room: " + gameRoomName;
 
 const socket = io("http://localhost:3000", {
   query: { token, userName, email, userId },
@@ -52,15 +52,15 @@ const socket = io("http://localhost:3000", {
 //but for now we can take our screenshots of different games being played at the same time
 
 // Function to render player list
-function renderPlayerList() {
-  const playerList = document.getElementById("player-list");
-  playerList.innerHTML = "";
-  players.forEach((player) => {
-    const li = document.createElement("li");
-    li.textContent = player;
-    playerList.appendChild(li);
-  });
-}
+// function renderPlayerList() {
+//   const playerList = document.getElementById("player-list");
+//   playerList.innerHTML = "";
+//   players.forEach((player) => {
+//     const li = document.createElement("li");
+//     li.textContent = player;
+//     playerList.appendChild(li);
+//   });
+// }
 
 // Function to render chat messages=======================================================
 //function renderChatMessages() {
@@ -75,16 +75,16 @@ function renderPlayerList() {
 //============================================================
 
 // Function to render remaining deck cards
-function renderDeck() {
-  const deckDiv = document.getElementById("deck");
-  deckDiv.innerHTML = "";
-  deck.forEach((card) => {
-    const div = document.createElement("div");
-    div.classList.add("card");
-    div.textContent = card;
-    deckDiv.appendChild(div);
-  });
-}
+// function renderDeck() {
+//   const deckDiv = document.getElementById("deck");
+//   deckDiv.innerHTML = "";
+//   deck.forEach((card) => {
+//     const div = document.createElement("div");
+//     div.classList.add("card");
+//     div.textContent = card;
+//     deckDiv.appendChild(div);
+//   });
+// }
 
 // Function to render player's hand cards
 function renderHand() {
@@ -161,6 +161,10 @@ socket.on("newRoomMessage", function (data) {
 socket.on("userJoin", (userData) => {
   console.log("User joined the room:", userData);
   // Handle the userJoined event here, for example, update the UI to display the new user
+  var playerList = document.getElementById("playerList");
+  var li = document.createElement("li");
+  li.textContent = userData.userName;
+  playerList.appendChild(li);
 });
 
 //=============================================================

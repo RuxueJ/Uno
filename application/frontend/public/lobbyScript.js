@@ -10,7 +10,7 @@ async function fetchRoomsData() {
 
     if (response.status === 200) {
       const data = result.gamelist;
-      console.log("Displaying rooms data:", data);
+      // console.log("Displaying rooms data:", data);
       displayRoomsData(data);
     }
   } catch (error) {
@@ -66,13 +66,6 @@ function displayRoomsData(data) {
 
 // Start the long polling
 fetchRoomsData();
-
-// Event listeners for buttons
-// document.getElementById("createGameBtn").addEventListener("click", () => {
-//   // Add your logic to create a new game
-//   window.location.href = "createGame.html";
-//   console.log("Creating a new game");
-// });
 
 document.getElementById("profileBtn").addEventListener("click", () => {
   // Add your logic to handle profile or logout
@@ -179,6 +172,7 @@ const messages = document.getElementById("messages");
 const sendButton = document.getElementById("sendButton");
 
 socket.on("newLobbyMessage", function (data) {
+  console.log("I am getting data:" + data);
   const messageElement = document.createElement("div");
   messageElement.textContent = `${data.userName} @ ${data.timeStamp}: ${data.message}`;
   messages.appendChild(messageElement);
