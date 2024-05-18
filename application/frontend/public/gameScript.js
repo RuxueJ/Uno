@@ -1,34 +1,45 @@
-
 // Dummy data for demonstration
-const players = ["Player 1", "Player 2", "Player 3"];
-const chatMessages = [
-  { user: "Player 1", message: "Hello everyone!" },
-  { user: "Player 2", message: "Hey there!" },
-  { user: "Player 3", message: "Welcome to the UNO game room." },
-];
-const deck = [
-  "0",
-  "1",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "9",
-  "+2",
-  "Skip",
-  "Reverse",
-];
-const hand = ["Red 1", "Blue 5", "Green +2", "Yellow Reverse"];
+// const players = ["Player 1", "Player 2", "Player 3"];
+// const chatMessages = [
+//   { user: "Player 1", message: "Hello everyone!" },
+//   { user: "Player 2", message: "Hey there!" },
+//   { user: "Player 3", message: "Welcome to the UNO game room." },
+// ];
+// const deck = [
+//   "0",
+//   "1",
+//   "2",
+//   "3",
+//   "4",
+//   "5",
+//   "6",
+//   "7",
+//   "8",
+//   "9",
+//   "+2",
+//   "Skip",
+//   "Reverse",
+// ];
+// const hand = ["Red 1", "Blue 5", "Green +2", "Yellow Reverse"];
 
-
+// getUserInRoom();
 
 const token = sessionStorage.getItem("token");
 const userName = sessionStorage.getItem("userName");
-const userId = sessionStorage.getItem('userId');
-const email = sessionStorage.getItem('email');
+const userId = sessionStorage.getItem("userId");
+const email = sessionStorage.getItem("email");
+
+const urlParams = new URLSearchParams(window.location.search);
+const roomId = urlParams.get("roomId");
+
+const queryString = window.location.search;
+const queryParams = new URLSearchParams(queryString);
+const gameRoomName = queryParams.get("gameName");
+
+// Set the game room name as the text content of the header element
+const gameRoomNameHeader = document.getElementById("gameRoomName");
+gameRoomNameHeader.textContent =
+  "Hello " + userName + "! Welcome to Room: " + gameRoomName;
 
 const socket = io("http://localhost:3000", {
   query: { token, userName, email, userId },
@@ -38,6 +49,50 @@ const socket = io("http://localhost:3000", {
   reeconnectionDelayMax: 5000,
 });
 
+async function getUserInRoom() {
+  try {
+    // Make the POST request to the server
+    const response = await fetch(
+      `http://localhost:3000/api/game/list/${roomId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // Handle the response
+    if (response.ok) {
+      const result = await response.json();
+      console.log(
+        "the user in this room:" + JSON.stringify(result.player_list)
+      );
+      const playerList = document.getElementById("playerList");
+      playerList.innerHTML = "";
+
+      result.player_list.forEach((user) => {
+        // Access properties of each object
+        const userInfo = document.createElement("li");
+
+        // Set the text content of the li element
+        userInfo.textContent = user.userName;
+
+        // Append the li element to the div container
+        playerList.appendChild(userInfo);
+      });
+
+      // Add any additional logic (e.g., redirecting the user, showing a success message)
+    } else {
+      console.error("Failed to create room", response.statusText);
+      // Handle the error (e.g., show an error message)
+    }
+  } catch (error) {
+    console.error("Error creating room:", error);
+    // Handle the error (e.g., show an error message)
+  }
+}
+
 //this is not the best way to manage page navigation
 //when a user is connected to lobby a socket is opened
 //when that user is redirected to another page like gamePage
@@ -46,19 +101,16 @@ const socket = io("http://localhost:3000", {
 //I think the socket.on'disconnecting' and our reconnecting logic needs to be checked
 //but for now we can take our screenshots of different games being played at the same time
 
-
 // Function to render player list
-function renderPlayerList() {
-  const playerList = document.getElementById("player-list");
-  playerList.innerHTML = "";
-  players.forEach((player) => {
-    const li = document.createElement("li");
-    li.textContent = player;
-    playerList.appendChild(li);
-  });
-}
-
-
+// function renderPlayerList() {
+//   const playerList = document.getElementById("player-list");
+//   playerList.innerHTML = "";
+//   players.forEach((player) => {
+//     const li = document.createElement("li");
+//     li.textContent = player;
+//     playerList.appendChild(li);
+//   });
+// }
 
 // Function to render chat messages=======================================================
 //function renderChatMessages() {
@@ -73,16 +125,16 @@ function renderPlayerList() {
 //============================================================
 
 // Function to render remaining deck cards
-function renderDeck() {
-  const deckDiv = document.getElementById("deck");
-  deckDiv.innerHTML = "";
-  deck.forEach((card) => {
-    const div = document.createElement("div");
-    div.classList.add("card");
-    div.textContent = card;
-    deckDiv.appendChild(div);
-  });
-}
+// function renderDeck() {
+//   const deckDiv = document.getElementById("deck");
+//   deckDiv.innerHTML = "";
+//   deck.forEach((card) => {
+//     const div = document.createElement("div");
+//     div.classList.add("card");
+//     div.textContent = card;
+//     deckDiv.appendChild(div);
+//   });
+// }
 
 // Function to render player's hand cards
 function renderHand() {
@@ -97,24 +149,24 @@ function renderHand() {
 }
 
 function leaveRoom() {
-  const urlParams =  new URLSearchParams(window.location.search);
-  const roomId = urlParams.get('roomId');
-  socket.emit('leaveRoom', roomId);
+  const urlParams = new URLSearchParams(window.location.search);
+  const roomId = urlParams.get("roomId");
+  socket.emit("leaveRoom", roomId);
   console.log(`Leaving room ${roomId}`);
   window.location.href = "lobby.html"; // Change the URL accordingly
 }
 
 function startGame() {
-  const urlParams =  new URLSearchParams(window.location.search);
-  const roomId = urlParams.get('roomId');
-  socket.emit('startGame', roomId );
+  const urlParams = new URLSearchParams(window.location.search);
+  const roomId = urlParams.get("roomId");
+  socket.emit("startGame", roomId);
   console.log(`Starting game ${roomId}`);
 }
 
 function endGame() {
-  const urlParams =  new URLSearchParams(window.location.search);
-  const roomId = urlParams.get('roomId');
-  socket.emit('cleanUpGame', roomId );
+  const urlParams = new URLSearchParams(window.location.search);
+  const roomId = urlParams.get("roomId");
+  socket.emit("cleanUpGame", roomId);
   console.log(`Cleaning up game ${roomId}`);
 }
 
@@ -122,10 +174,9 @@ const messageInput = document.getElementById("messageInput");
 const messages = document.getElementById("messages");
 const sendButton = document.getElementById("sendButton");
 
-
 function sendGameMessage() {
-  const urlParams =  new URLSearchParams(window.location.search);
-  const roomId = urlParams.get('roomId');
+  const urlParams = new URLSearchParams(window.location.search);
+  const roomId = urlParams.get("roomId");
   const message = messageInput.value.trim();
   if (message) {
     socket.emit("roomChatMessage", roomId, message);
@@ -133,31 +184,37 @@ function sendGameMessage() {
   }
 }
 
-
 socket.on("connect", () => {
   console.log("Successfully connected to the server!");
   setTimeout(() => {
     reJoinGame();
-  }, 500);    //needs short delay to make sure the socket is fully connected
+  }, 500); //needs short delay to make sure the socket is fully connected
 });
 
-
-
 function reJoinGame() {
-  const urlParams =  new URLSearchParams(window.location.search);
-  const roomId = urlParams.get('roomId');
   console.log("rejoining: " + roomId + " for user: " + userId);
   socket.emit("putUserInRoom", roomId);
   console.log("after emitting");
 }
 
 socket.on("newRoomMessage", function (data) {
+  console.log("I am in newRoomMessage event");
   const messageElement = document.createElement("div");
   messageElement.textContent = `${data.userName} @ ${data.timeStamp}: ${data.message}`;
   messages.appendChild(messageElement);
   messages.scrollTop = messages.scrollHeight;
-  //chatMessages.push( { user: data.userName, message: data.message});
-  //renderChatMessages();
+});
+
+// Handling "userJoin" event
+socket.on("userJoin", () => {
+  console.log("I am in userJoin event");
+  getUserInRoom();
+});
+
+// Handling "userLeft" event
+socket.on("userLeft", () => {
+  console.log("I am in userLeft event");
+  getUserInRoom();
 });
 
 //=============================================================
@@ -179,7 +236,6 @@ document.getElementById("draw-card").addEventListener("click", () => {
   alert("Drawing a card...");
 });
 
-
 function handleKeypress(event) {
   if (event.key === "Enter") {
     sendGameMessage();
@@ -190,6 +246,5 @@ function handleKeypress(event) {
 // Initial rendering
 //renderPlayerList();
 //renderChatMessages();//=============================================
-renderDeck();
-renderHand();
-
+// renderDeck();
+// renderHand();

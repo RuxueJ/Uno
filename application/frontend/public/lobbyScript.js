@@ -1,108 +1,73 @@
-// JavaScript Code
+async function fetchRoomsData() {
+  try {
+    const response = await fetch("http://localhost:3000/api/room/list");
+    if (!response.ok) {
+      throw new Error("Failed to fetch rooms data");
+    }
 
+    const result = await response.json();
+    console.log("Fetched rooms data:", result);
 
-let i = 0;
-// Sample active game data
-const activeGames = [
-  { status: 304, data: [] },
-  { status: 200, data: [{ id: 1, members: "Jin, Jiji" }] },
-  { status: 200, data: [{ id: 2, members: "Dante, Xu" }] },
-  { status: 200, data: [{ id: 3, members: "Jin, Jiji, Dante, Xu" }] },
-  { status: 200, data: [{ id: 4, members: "Jiji" }] },
-  { status: 200, data: [{ id: 5, members: "Dante, Xu" }] },
-];
+    if (response.status === 200) {
+      const data = result.gamelist;
+      // console.log("Displaying rooms data:", data);
+      displayRoomsData(data);
+    }
+  } catch (error) {
+    console.error("Error fetching rooms data:", error);
+  } finally {
+    setTimeout(fetchRoomsData, 3000);
+  }
+}
 
-// Function to render active game list
-function renderGamesList(data) {
+function refreshGameList() {
   const gamesList = document.getElementById("gamesList");
+  gamesList.innerHTML = "";
+  fetchRoomsData();
+}
+
+function displayRoomsData(data) {
+  const gamesList = document.getElementById("gamesList");
+  gamesList.innerHTML = "";
+
   data.forEach((game) => {
     const gameItem = document.createElement("div");
     gameItem.classList.add("game-item");
 
     const gameInfo = document.createElement("div");
     gameInfo.classList.add("game-info");
-    gameInfo.innerHTML = `<span>Game ID: ${game.id}</span><span>Members: ${game.members}</span>`;
+    let concatenatedString = "";
+    numUser = game.users.length;
+    game.users.forEach((gameUser) => {
+      concatenatedString += `${gameUser.userName} `;
+    });
+
+    gameInfo.innerHTML = `<span>Game ID: ${game.name}</span><span>${game.status}</span><span>${numUser}/${game.maxPlayers}</span><span>Members: ${concatenatedString}</span>`;
 
     const joinButton = document.createElement("button");
     joinButton.classList.add("join-button");
     joinButton.textContent = "Join";
     joinButton.addEventListener("click", () => {
       const roomId = game.id;
-      //basic session implementation?
-      socket.emit('joinRoom', roomId );
+      // Basic session implementation
+      socket.emit("joinRoom", roomId);
       console.log(`Joining room ${roomId}`);
-      window.location.href = `/public/game.html?roomId=${game.id}`;
+      window.open(
+        `/public/game.html?roomId=${game.id}&gameName=${encodeURIComponent(
+          game.name
+        )}`,
+        "_blank"
+      );
     });
-
-    /*
-    const leaveButton = document.createElement("button");
-    leaveButton.classList.add("leave-button");
-    leaveButton.textContent = "Leave";
-    leaveButton.addEventListener("click", () => {
-      // Add your logic to leave the game
-      const roomId = game.id;
-      socket.emit('leaveRoom', roomId );
-      console.log(`Leaving room ${roomId}`);
-    });
-    */
-
-    /*
-    const startButton = document.createElement("button");
-    startButton.classList.add("start-button");
-    startButton.textContent = "Start";
-    startButton.addEventListener("click", () => {
-      // Add your logic to leave the game
-      const roomId = game.id;
-      socket.emit('startGame', roomId );
-      console.log(`Starting game ${roomId}`);
-    });
-    */
-    
-    /*
-    const endButton = document.createElement("button");
-    endButton.classList.add("end-button");
-    endButton.textContent = "End";
-    endButton.addEventListener("click", () => {
-      // Add your logic to leave the game
-      const roomId = game.id;
-      socket.emit('cleanUpGame', roomId );
-      console.log(`Cleaning up game ${roomId}`);
-    });
-    */
 
     gameItem.appendChild(gameInfo);
     gameItem.appendChild(joinButton);
-    //gameItem.appendChild(leaveButton);
-    //gameItem.appendChild(startButton);
-    //gameItem.appendChild(endButton);
     gamesList.append(gameItem);
   });
 }
 
-function getGameList() {
-  return activeGames[i++ % 5];
-}
-
-const dummyData = [
-  { id: 1, members: "Jin, Jiji" },
-  { id: 2, members: "Dante, Xu" },
-  { id: 3, members: "Jin, Jiji, Dante, Xu" },
-];
-
-renderGamesList(dummyData);
-// setInterval(async() => {
-//   const gameList = await getGameList(); // api call
-//   if(gameList.status === 200) {
-//     renderGamesList(gameList.data)
-//   }
-// }, 3000)
-
-// Event listeners for buttons
-// document.getElementById("createGameBtn").addEventListener("click", () => {
-//   // Add your logic to create a new game
-//   window.location.href = "createGame.html";
-//   console.log("Creating a new game");
-// });
+// Start the long polling
+fetchRoomsData();
 
 document.getElementById("profileBtn").addEventListener("click", () => {
   // Add your logic to handle profile or logout
@@ -114,8 +79,8 @@ document.getElementById("profileBtn").addEventListener("click", () => {
 
 const token = sessionStorage.getItem("token");
 const userName = sessionStorage.getItem("userName");
-const userId = sessionStorage.getItem('userId');
-const email = sessionStorage.getItem('email');
+const userId = sessionStorage.getItem("userId");
+const email = sessionStorage.getItem("email");
 
 if (token && userName) {
   const greeting = document.getElementById("greeting");
@@ -133,7 +98,7 @@ document.getElementById("createGameBtn").addEventListener("click", () => {
   overlay.style.display = "block";
 });
 
-document.getElementById("cancelBtn").addEventListener("click", () => {
+function closeCreateForm() {
   const form = document.getElementById("createGameForm");
 
   // Reset the form to clear input values
@@ -147,15 +112,52 @@ document.getElementById("cancelBtn").addEventListener("click", () => {
 
   // Hide the overlay
   overlay.style.display = "none";
+  console.log("i am in closeCreateForm function");
+}
+
+document.getElementById("cancelBtn").addEventListener("click", () => {
+  closeCreateForm();
 });
 
 // Prevent form submission for testing
 document
   .getElementById("createGameForm")
-  .addEventListener("submit", (event) => {
+  .addEventListener("submit", async (event) => {
     event.preventDefault();
-    console.log("Form submitted");
-    // Add your logic to handle form submission (e.g., create game)
+
+    const formData = new FormData(event.target);
+    const data = {
+      name: formData.get("gameTitle"),
+      userId: userId,
+      maxPlayers: formData.get("numPlayers"),
+    };
+
+    console.log("Form submitted", data); // For testing
+
+    try {
+      // Make the POST request to the server
+      const response = await fetch("http://localhost:3000/api/room/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      // Handle the response
+      if (response.ok) {
+        // const result = await response.json();
+        console.log("Room created successfully:");
+        closeCreateForm();
+        // Add any additional logic (e.g., redirecting the user, showing a success message)
+      } else {
+        console.error("Failed to create room", response.statusText);
+        // Handle the error (e.g., show an error message)
+      }
+    } catch (error) {
+      console.error("Error creating room:", error);
+      // Handle the error (e.g., show an error message)
+    }
   });
 
 // chat system also where we make the socket connection for meow
@@ -167,12 +169,12 @@ const socket = io("http://localhost:3000", {
   reeconnectionDelayMax: 5000,
 });
 
-
 const messageInput = document.getElementById("messageInput");
 const messages = document.getElementById("messages");
 const sendButton = document.getElementById("sendButton");
 
 socket.on("newLobbyMessage", function (data) {
+  console.log("I am getting data:" + data);
   const messageElement = document.createElement("div");
   messageElement.textContent = `${data.userName} @ ${data.timeStamp}: ${data.message}`;
   messages.appendChild(messageElement);

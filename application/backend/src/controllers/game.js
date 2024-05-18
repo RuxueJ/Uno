@@ -217,4 +217,36 @@ export async function cleanUpGame(roomId) {
     }
 }
 
+export async function getPlayerList(req, res) {
+    // get method roomId from req
+    const { roomId } = req.params;
+    console.log('getting player list for room: ' + roomId);
+    try {
+        const players = await db.models.roomUser.findAll({
+            where: { roomId },
+            attributes: ['userId', 'isHost', 'score', 'connected'],
+        });
+        if (!players) {
+            console.log('problem getting player list');
+            return null;
+        }
+        const userIds = players.map(player => player.userId);
+        if(!userIds) {
+            console.log('problem extracting userIds from players inside game.js');
+            return null;
+        }
+        const userNames = await db.models.user.findAll({
+            where: { userId: userIds },
+            attributes: ['userName'],
+        });
 
+
+        for (let i = 0; i < players.length; i++) {
+            players[i].dataValues.userName = userNames[i].userName;
+        }
+        res.json({ player_list: players });
+    } catch (err) {
+        console.log(err);
+        res.status(500).json({ error: err.message });
+    }
+}
