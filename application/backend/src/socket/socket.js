@@ -41,6 +41,7 @@ export function setUpSocketIO(io) {
 
     socket.on("putUserInRoom", async (roomId) => {
       try {
+      
         socket.leave("lobby");
         socket.join(roomId);
         console.log("put user: " + userId + " back into room: " + roomId);

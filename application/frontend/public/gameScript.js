@@ -22,6 +22,8 @@
 // ];
 // const hand = ["Red 1", "Blue 5", "Green +2", "Yellow Reverse"];
 
+// getUserInRoom();
+
 const token = sessionStorage.getItem("token");
 const userName = sessionStorage.getItem("userName");
 const userId = sessionStorage.getItem("userId");
@@ -196,6 +198,7 @@ function reJoinGame() {
 }
 
 socket.on("newRoomMessage", function (data) {
+  console.log("I am in newRoomMessage event");
   const messageElement = document.createElement("div");
   messageElement.textContent = `${data.userName} @ ${data.timeStamp}: ${data.message}`;
   messages.appendChild(messageElement);
@@ -204,11 +207,13 @@ socket.on("newRoomMessage", function (data) {
 
 // Handling "userJoin" event
 socket.on("userJoin", () => {
+  console.log("I am in userJoin event");
   getUserInRoom();
 });
 
 // Handling "userLeft" event
 socket.on("userLeft", () => {
+  console.log("I am in userLeft event");
   getUserInRoom();
 });
 
@@ -241,5 +246,5 @@ function handleKeypress(event) {
 // Initial rendering
 //renderPlayerList();
 //renderChatMessages();//=============================================
-renderDeck();
-renderHand();
+// renderDeck();
+// renderHand();

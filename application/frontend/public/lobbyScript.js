@@ -6,7 +6,7 @@ async function fetchRoomsData() {
     }
 
     const result = await response.json();
-    // console.log("Fetched rooms data:", result);
+    console.log("Fetched rooms data:", result);
 
     if (response.status === 200) {
       const data = result.gamelist;
@@ -37,10 +37,12 @@ function displayRoomsData(data) {
     const gameInfo = document.createElement("div");
     gameInfo.classList.add("game-info");
     let concatenatedString = "";
+    numUser = game.users.length;
     game.users.forEach((gameUser) => {
       concatenatedString += `${gameUser.userName} `;
     });
-    gameInfo.innerHTML = `<span>Game ID: ${game.name}</span><span>Members: ${concatenatedString}</span>`;
+
+    gameInfo.innerHTML = `<span>Game ID: ${game.name}</span><span>${game.status}</span><span>${numUser}/${game.maxPlayers}</span><span>Members: ${concatenatedString}</span>`;
 
     const joinButton = document.createElement("button");
     joinButton.classList.add("join-button");
