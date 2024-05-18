@@ -78,7 +78,7 @@ export function setUpSocketIO(io) {
         socket.leave(roomId);
         socket.join("lobby");
         console.log(`Socket ${socket.id} user ${email} left room ${roomId}`);
-        emitToRoom(io, roomId, "user left", "user left the room");
+        emitToRoom(io, roomId, "userLeft", "user left the room");
       } catch (err) {
         console.log(err);
         socket.emit("leaveroomError", { message: "failed to leave room" });

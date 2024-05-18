@@ -27,13 +27,17 @@ const userName = sessionStorage.getItem("userName");
 const userId = sessionStorage.getItem("userId");
 const email = sessionStorage.getItem("email");
 
+const urlParams = new URLSearchParams(window.location.search);
+const roomId = urlParams.get("roomId");
+
 const queryString = window.location.search;
 const queryParams = new URLSearchParams(queryString);
 const gameRoomName = queryParams.get("gameName");
 
 // Set the game room name as the text content of the header element
 const gameRoomNameHeader = document.getElementById("gameRoomName");
-gameRoomNameHeader.textContent = "Welcome to Room: " + gameRoomName;
+gameRoomNameHeader.textContent =
+  "Hello " + userName + "! Welcome to Room: " + gameRoomName;
 
 const socket = io("http://localhost:3000", {
   query: { token, userName, email, userId },
@@ -42,6 +46,50 @@ const socket = io("http://localhost:3000", {
   reconnectionDelay: 1000,
   reeconnectionDelayMax: 5000,
 });
+
+async function getUserInRoom() {
+  try {
+    // Make the POST request to the server
+    const response = await fetch(
+      `http://localhost:3000/api/game/list/${roomId}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    // Handle the response
+    if (response.ok) {
+      const result = await response.json();
+      console.log(
+        "the user in this room:" + JSON.stringify(result.player_list)
+      );
+      const playerList = document.getElementById("playerList");
+      playerList.innerHTML = "";
+
+      result.player_list.forEach((user) => {
+        // Access properties of each object
+        const userInfo = document.createElement("li");
+
+        // Set the text content of the li element
+        userInfo.textContent = user.userName;
+
+        // Append the li element to the div container
+        playerList.appendChild(userInfo);
+      });
+
+      // Add any additional logic (e.g., redirecting the user, showing a success message)
+    } else {
+      console.error("Failed to create room", response.statusText);
+      // Handle the error (e.g., show an error message)
+    }
+  } catch (error) {
+    console.error("Error creating room:", error);
+    // Handle the error (e.g., show an error message)
+  }
+}
 
 //this is not the best way to manage page navigation
 //when a user is connected to lobby a socket is opened
@@ -142,8 +190,6 @@ socket.on("connect", () => {
 });
 
 function reJoinGame() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomId = urlParams.get("roomId");
   console.log("rejoining: " + roomId + " for user: " + userId);
   socket.emit("putUserInRoom", roomId);
   console.log("after emitting");
@@ -154,17 +200,16 @@ socket.on("newRoomMessage", function (data) {
   messageElement.textContent = `${data.userName} @ ${data.timeStamp}: ${data.message}`;
   messages.appendChild(messageElement);
   messages.scrollTop = messages.scrollHeight;
-  //chatMessages.push( { user: data.userName, message: data.message});
-  //renderChatMessages();
 });
 
-socket.on("userJoin", (userData) => {
-  console.log("User joined the room:", userData);
-  // Handle the userJoined event here, for example, update the UI to display the new user
-  var playerList = document.getElementById("playerList");
-  var li = document.createElement("li");
-  li.textContent = userData.userName;
-  playerList.appendChild(li);
+// Handling "userJoin" event
+socket.on("userJoin", () => {
+  getUserInRoom();
+});
+
+// Handling "userLeft" event
+socket.on("userLeft", () => {
+  getUserInRoom();
 });
 
 //=============================================================

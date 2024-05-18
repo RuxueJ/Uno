@@ -6,7 +6,7 @@ async function fetchRoomsData() {
     }
 
     const result = await response.json();
-    console.log("Fetched rooms data:", result);
+    // console.log("Fetched rooms data:", result);
 
     if (response.status === 200) {
       const data = result.gamelist;
