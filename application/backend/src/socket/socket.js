@@ -112,7 +112,7 @@ export function setUpSocketIO(io) {
     socket.on("startGame", async (roomId) => {
       console.log("starting game " + roomId + " by user " + userId);
       try {
-        const startStatus = gameController.startGame(roomId, userId);
+        const startStatus = await gameController.startGame(roomId, userId);
         if (!startStatus) {
           throw new Error("error starting room in socket.js");
         }
@@ -128,7 +128,7 @@ export function setUpSocketIO(io) {
 
     socket.on("drawCard", async (roomId, userId) => {
         try {
-            const drawStatus = gameController.playerDrawCard(roomId, userId);
+            const drawStatus = await gameController.playerDrawCard(roomId, userId);
             if (!drawStatus) {
             throw new Error("error drawing card in socket.js");
             }
@@ -143,7 +143,7 @@ export function setUpSocketIO(io) {
 
     socket.on("playCard", async (roomId, userId, card) => {
         try {
-            const playStatus = gameController.playerPlayCard(roomId, userId, card);
+            const playStatus = await gameController.playerPlayCard(roomId, userId, card);
             if (!playStatus) {
             throw new Error("error playing card in socket.js");
             }
@@ -157,7 +157,7 @@ export function setUpSocketIO(io) {
 
     socket.on("cleanUpGame", async (roomId) => {
       try {
-        const cleanUpAttempt = gameController.cleanUpGame(roomId);
+        const cleanUpAttempt = await gameController.cleanUpGame(roomId);
         if (cleanUpAttempt === null) {
           throw new Error("error cleaning up room in socket.js");
         }
