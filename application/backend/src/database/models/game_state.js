@@ -16,7 +16,7 @@ export default function (sequelize) {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
-        currentPlayerTurn: {
+        currentPlayerIndex: {
             type: DataTypes.INTEGER,
             allowNull: false,
             defaultValue: 0,        //1st index in player_orders arr
