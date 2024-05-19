@@ -1,5 +1,6 @@
 import * as roomController from "@/controllers/room.js";
 import * as gameController from "@/controllers/game.js";
+import * as userController from "@/controllers/user.js";
 
 export function emitToRoom(io, roomId, eventName, eventData) {
   io.to(roomId).emit(eventName, eventData);
@@ -111,15 +112,47 @@ export function setUpSocketIO(io) {
     socket.on("startGame", async (roomId) => {
       console.log("starting game " + roomId + " by user " + userId);
       try {
-        const startAttempt = gameController.startGame(roomId, userId);
-        if (!startAttempt) {
+        const startStatus = gameController.startGame(roomId, userId);
+        if (!startStatus) {
           throw new Error("error starting room in socket.js");
         }
         console.log("successfully started game: " + roomId);
+        socket.emit("playersHand", startStatus.playersHand);
+        delete startStatus.playersHand;
+        io.to(roomId).emit("gameStarted", startStatus);
       } catch (err) {
         console.log("problem starting game: " + roomId + " in socket.js");
         socket.emit("failedStart", roomId);
       }
+    });
+
+    socket.on("drawCard", async (roomId, userId) => {
+        try {
+            const drawStatus = gameController.playerDrawCard(roomId, userId);
+            if (!drawStatus) {
+            throw new Error("error drawing card in socket.js");
+            }
+            console.log("successfully drew card: " + roomId);
+            socket.emit("drawnCards", drawStatus.drawnCards);
+            io.to(roomId).emit("cardDrawn", `User ${userController.getUserNamebyId(userId)} drew ${countNeedToDraw} cards.`);
+        } catch (err) {
+            console.log("problem drawing card: " + roomId + " in socket.js");
+            socket.emit("failedDraw", roomId);
+        }
+    });
+
+    socket.on("playCard", async (roomId, userId, card) => {
+        try {
+            const playStatus = gameController.playerPlayCard(roomId, userId, card);
+            if (!playStatus) {
+            throw new Error("error playing card in socket.js");
+            }
+            console.log("successfully played card: " + roomId);
+            io.to(roomId).emit("cardPlayed", playStatus);
+        } catch (err) {
+            console.log("problem playing card: " + roomId + " in socket.js");
+            socket.emit("failedPlay", roomId);
+        }
     });
 
     socket.on("cleanUpGame", async (roomId) => {

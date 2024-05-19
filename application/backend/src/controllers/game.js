@@ -61,6 +61,16 @@ export function drawCard(deck) {
     return deck.shift();        //remove first card from deck array
 }
 
+function initializePlayerHand(deck, userIds) {
+    const playerHands = {};
+    for (let i = 0; i < userIds.length; i++) {
+        playerHands[userIds[i]] = [];
+        for (let j = 0; j < 7; j++) {
+            playerHands[userIds[i]].push(deck.shift());
+        }
+    }
+    return playerHands;
+}
 
 export async function startGame(roomId, userId) {
     const transaction = await db.transaction();
@@ -90,25 +100,26 @@ export async function startGame(roomId, userId) {
             return null;
         }
 
-        // to fill playerHands array we call draw(deck)
-        //all players need to be initalized then move on so the deck contents are consistent
-        const playerCreationPromises = userIds.map(async (userId) => {
-            const newPlayerHand = [];
-
-            const playerState = await db.models.playerState.create({
-                userId: userId,
-                roomId: roomId,
-                playerHandCount: 7,
-                playerHand: newPlayerHand,
-            }, { transaction });
-            return playerState;
-        })
-
         try {
             const newDeck = createUnoDeck();
             console.log("-----------Deck-----------")
             const deck = shuffle(newDeck);
             console.log(deck);
+            console.log("-----------Init Player Hands-----------")
+            const initPlayerHands = initializePlayerHand(deck, userIds);
+            // to fill playerHands array we call draw(deck)
+            //all players need to be initalized then move on so the deck contents are consistent
+            const playerCreationPromises = userIds.map(async (userId) => {
+                const newPlayerHand = initPlayerHands[userId];
+
+                const playerState = await db.models.playerState.create({
+                    userId: userId,
+                    roomId: roomId,
+                    playerHandCount: 7,
+                    playerHand: newPlayerHand,
+                }, { transaction });
+                return playerState;
+            })
             console.log("---------TopCard-------------")
             let topCard = drawCard(deck)
             console.log(topCard);
@@ -123,6 +134,12 @@ export async function startGame(roomId, userId) {
                 reshuffle(putCardInEmptyArray, deck)
                 topCard = drawCard(deck);
             }
+
+            if (topCard.value === 'wild') { 
+                const randomNumber = Math.random();
+                topCard.color = randomNumber < 0.25 ? 'red' : randomNumber < 0.5 ? 'blue' : randomNumber < 0.75 ? 'green' : 'yellow';
+            }
+
             console.log("----------empty discard deck------------")
             const newDiscardDeck = []
             console.log(newDiscardDeck)
@@ -139,10 +156,21 @@ export async function startGame(roomId, userId) {
             //initalize all the player states then move on to gamestate
             await Promise.all(playerCreationPromises);
 
+            // decide current player index and direction by top card
+            const direction = topCard.value === 'reverse' ? -1 : 1;
+            let currentPlayerIndex;
+            if (topCard.value === 'skip') {
+                currentPlayerIndex = 1;
+            } else if (topCard.value === 'reverse') {
+                currentPlayerIndex = userIds.length - 1;
+            } else {
+                currentPlayerIndex = 0;
+            }
+
             const gameState = await db.models.gameState.create({
                 roomId: roomId,
-                currentPlayerTurn: 0,
-                direction: 1,
+                currentPlayerIndex: currentPlayerIndex,
+                direction: direction,
                 playerOrder: newplayerOrder,
                 drawAmount: 1,
                 drawDeck: deck,
@@ -156,7 +184,14 @@ export async function startGame(roomId, userId) {
             console.log("starting new game: " + roomId)
             await transaction.commit();
 
-            return gameState;
+            return {
+                "roomId": roomId,
+                "playerOrder": newplayerOrder,
+                "nextTurn": newplayerOrder[currentPlayerIndex],
+                "direction": direction,
+                "playersHand": initPlayerHands,
+                "discardDeckTopCard": topCard
+            }
         } catch (err) {
             console.log(err);
             return null;
@@ -211,6 +246,149 @@ export async function cleanUpGame(roomId) {
             console.log(innerErr);
             throw innerErr;
         }
+    } catch (err) {
+        console.log(err);
+        return null;
+    }
+}
+
+export async function playerDrawCard(roomId, userId) {
+    const transaction = await db.transaction();
+    try {
+        const gameState = await db.models.gameState.findOne( { where: { roomId }});
+        if(!gameState) {
+            console.log('gameState does not exist for: ' + roomId);
+            return null;
+        }
+
+        const playerState = await db.models.playerState.findOne( { where: { roomId, userId }});
+        if(!playerState) {
+            console.log('playerState does not exist for: ' + userId);
+            return null;
+        }
+
+        // update current player index
+        const playerOrder = gameState.playerOrder;
+        const currentPlayerIndex = Array.from(playerOrder).findIndex(playerId => playerId === userId);
+        gameState.currentPlayerIndex = currentPlayerIndex;
+
+        // decide how many cards to draw
+        const topCard = gameState.discardDeckTopCard;
+        let countNeedToDraw;
+        if (topCard.value === 'wild_draw_four') {
+            countNeedToDraw = 4;
+        } else if (topCard.value === 'draw_two') {
+            countNeedToDraw = 0;
+            discardDeck = gameState.discardDeck;
+            const index = 0;
+            while (index < discardDeck.length && discardDeck[index].value === 'draw_two') {
+                countNeedToDraw += 2;
+                index++;
+            }
+        } else {
+            countNeedToDraw = 1;
+        }
+
+        // draw cards from drawDeck
+        const newCards = [];
+        for (let i = 0; i < countNeedToDraw; i++) {
+            newCards.push(drawCard(gameState.drawDeck));
+        }
+
+        playerState.playerHand = playerState.playerHand.concat(newCards);
+        playerState.playerHandCount = playerState.playerHandCount + countNeedToDraw;
+        await playerState.save( { transaction });
+
+        // decide next player index
+        const direction = gameState.direction;
+        let nextPlayerIndex;
+        if (direction === 1) {
+            nextPlayerIndex = (currentPlayerIndex + 1) % playerOrder.length;
+        } else {
+            nextPlayerIndex = currentPlayerIndex === 0 ? playerOrder.length - 1 : currentPlayerIndex - 1;
+        }
+
+        await gameState.save( { transaction });
+
+        await transaction.commit();
+        return {
+            "userId": userId,
+            "roomId": roomId,
+            "drawnCards": newCards,
+            "cardsCountDrawn": countNeedToDraw,
+            "nextTurn": playerOrder[nextPlayerIndex],
+            "direction": direction
+        };
+    } catch (err) {
+        console.log(err);
+        return null;
+    }    
+
+}
+
+export async function playerPlayCard(roomId, userId, card) {
+    const transaction = await db.transaction();
+    try {
+        const gameState = await db.models.gameState.findOne( { where: { roomId }});
+        if(!gameState) {
+            console.log('gameState does not exist for: ' + roomId);
+            return null;
+        }
+
+        const playerState = await db.models.playerState.findOne( { where: { roomId, userId }});
+        if(!playerState) {
+            console.log('playerState does not exist for: ' + userId);
+            return null;
+        }
+
+        // get index of card to be played
+        const index = playerState.playerHand.findIndex(playerCard => playerCard.type === card.type && playerCard.color === card.color && playerCard.value === card.value);
+        if (index === -1) {
+            console.log('card not found in player hand');
+            return null;
+        }
+
+        // update current player index
+        const playerOrder = gameState.playerOrder;
+        const currentPlayerIndex = Array.from(playerOrder).findIndex(playerId => playerId === userId);
+        gameState.currentPlayerIndex = currentPlayerIndex;
+
+        // update discard deck
+        playerState.playerHand.splice(index, 1);
+        playerState.playerHandCount = playerState.playerHandCount - 1;
+        await playerState.save( { transaction });
+
+        // update discard deck
+        gameState.discardDeck.unshift(card);
+        gameState.discardDeckTopCard = card;
+        let nextPlayerIndex;
+        
+        // decide direction and next turn
+        if (card.value === 'reverse') {
+            gameState.direction = gameState.direction * -1;
+            nextPlayerIndex = currentPlayerIndex + gameState.direction;
+        } else if (card.value === 'skip') {
+            nextPlayerIndex = currentPlayerIndex + gameState.direction * 2;
+        }
+
+        if (nextPlayerIndex < 0) {
+            nextPlayerIndex = playerOrder.length + nextPlayerIndex;
+        } else if (nextPlayerIndex >= playerOrder.length) {
+            nextPlayerIndex = nextPlayerIndex % playerOrder.length;
+        }
+        
+        await gameState.save( { transaction });
+
+        await transaction.commit();
+       
+        return {
+            "userId": userId,
+            "roomId": roomId,
+            "discardDesckTop": card,
+            "playerHandCount": playerState.playerHandCount,
+            "direction": gameState.direction,
+            "nextTurn": playerOrder[nextPlayerIndex],
+        };
     } catch (err) {
         console.log(err);
         return null;

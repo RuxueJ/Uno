@@ -82,3 +82,7 @@ export const getCurrentUser = async (req, res, next) => {
     next(err);
   }
 };
+
+export function getUserNamebyId(userId) {
+  return db.models.user.findOne({ where: { userId } });
+}
