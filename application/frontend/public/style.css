@@ -301,6 +301,7 @@ input[type="text"] {
 
 .player-container {
   display: flex;
+<<<<<<< HEAD
   flex-direction: row;
   flex-wrap: rap;
   justify-content: space-between;
@@ -308,6 +309,15 @@ input[type="text"] {
 
 .player-box {
   flex: 1 0 auto;
+=======
+  flex-wrap: wrap;
+}
+
+.player-box {
+  width: calc(
+    100% / 4 - 10px
+  ); /* Adjust the percentage based on your preference */
+>>>>>>> 44e06f6 (add user box in game list in lobby page)
   height: 40px; /* Adjust the height based on your preference */
   border: 1px solid #ccc;
   border-radius: 5px;
