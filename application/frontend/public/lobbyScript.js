@@ -41,18 +41,22 @@ function displayRoomsData(data) {
     const joinButton = document.createElement("button");
     joinButton.classList.add("join-button");
     joinButton.textContent = "Join";
-    joinButton.addEventListener("click", () => {
-      const roomId = game.id;
-      // Basic session implementation
-      socket.emit("joinRoom", roomId);
-      console.log(`Joining room ${roomId}`);
-      window.open(
-        `/public/game.html?roomId=${game.id}&gameName=${encodeURIComponent(
-          game.name
-        )}`,
-        "_blank"
-      );
-    });
+    if (game.status === "playing") {
+      joinButton.style.display = "none";
+    } else {
+      joinButton.addEventListener("click", () => {
+        const roomId = game.id;
+        // Basic session implementation
+        socket.emit("joinRoom", roomId);
+        console.log(`Joining room ${roomId}`);
+        window.open(
+          `/public/game.html?roomId=${game.id}&gameName=${encodeURIComponent(
+            game.name
+          )}`,
+          "_blank"
+        );
+      });
+    }
 
     const playerContainer = document.createElement("div");
     playerContainer.classList.add("player-container");
@@ -63,7 +67,7 @@ function displayRoomsData(data) {
         playerBox.textContent = game.users[i].userName;
         playerBox.classList.add("occupied");
       } else {
-        playerBox.textContent = "Empty";
+        playerBox.textContent = "";
         playerBox.classList.add("empty");
       }
       playerContainer.appendChild(playerBox);
