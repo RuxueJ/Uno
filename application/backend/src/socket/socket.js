@@ -42,7 +42,10 @@ export function setUpSocketIO(io) {
 
     socket.on("putUserInRoom", async (roomId) => {
       try {
-      
+        const putUserInRoomAttempt = await roomController.putUserInRoom(roomId, userId, socket.id);
+        if (putUserInRoomAttempt === null) {
+          throw new Error("error putting user in room inside sockets.js");
+        }
         socket.leave("lobby");
         socket.join(roomId);
         console.log("put user: " + userId + " back into room: " + roomId);
@@ -117,7 +120,10 @@ export function setUpSocketIO(io) {
           throw new Error("error starting room in socket.js");
         }
         console.log("successfully started game: " + roomId);
-        socket.emit("playersHand", startStatus.playersHand);
+        startStatus.socketIdMap.forEach((value, key) => {
+          io.to(value).emit("playersHand", startStatus.playersHand[key]);
+        });
+        // socket.emit("playersHand", startStatus.playersHand);
         delete startStatus.playersHand;
         io.to(roomId).emit("gameStarted", startStatus);
       } catch (err) {
@@ -134,7 +140,7 @@ export function setUpSocketIO(io) {
             }
             console.log("successfully drew card: " + roomId);
             socket.emit("drawnCards", drawStatus.drawnCards);
-            io.to(roomId).emit("cardDrawn", `User ${userController.getUserNamebyId(userId)} drew ${countNeedToDraw} cards.`);
+            io.to(roomId).emit("cardDrawn", `User ${userName})} drew ${countNeedToDraw} cards.`);
         } catch (err) {
             console.log("problem drawing card: " + roomId + " in socket.js");
             socket.emit("failedDraw", roomId);

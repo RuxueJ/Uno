@@ -34,6 +34,10 @@ export default function (sequelize) {
           allowNull: false ,
           defaultValue: false,
         },
+        socketId: {
+          type: DataTypes.STRING,
+          allowNull: true
+        }
       }, {
         modelName: 'roomUser',
         tableName: 'room_user',
