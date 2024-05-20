@@ -206,12 +206,11 @@ socket.on("userLeft", () => {
 // Handling "userLeft" event
 socket.on("drawnCards", (data) => {
   console.log(JSON.stringify(data[0]));
-
 });
 
-socket.on("nextTurn",(data)=>{
+socket.on("nextTurn", (data) => {
   // check if it is your turn
-})
+});
 
 socket.on("playedCard", (data) => {
   // top deck card
@@ -233,10 +232,10 @@ socket.on("playersHand", (data) => {
   renderHand();
 });
 socket.on("gameStarted", (data) => {
-  console.log("I am in gameStarted event"+data);
+  console.log("I am in gameStarted event" + data);
   topPlayedCard = getURL(data.discardDeckTopCard);
+  clearDeckMessage();
   renderDeckCard(topPlayedCard);
-
 });
 
 function getURL(card) {
@@ -286,11 +285,11 @@ function renderHand() {
 
 //=========================renderDeck====================================
 
-const deckDiv = document.getElementById("deck");
-
 // Loop through the cardImages array and create img elements for each card
 
 function renderDeckCard(topPlayedCardUrl) {
+  const deckDiv = document.getElementById("deck");
+
   const backUnoImage = document.createElement("img");
   backUnoImage.src = "./static/uno_card-back.png";
   backUnoImage.classList.add("deck_card");

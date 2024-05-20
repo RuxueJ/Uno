@@ -130,11 +130,6 @@ export function setUpSocketIO(io) {
           "startStatus.playersHand" + JSON.stringify(startStatus.playersHand)
         );
         Object.entries(startStatus.socketIdMap).forEach(([key, value]) => {
-          console.log("key" + key);
-          console.log("value" + value);
-          console.log(
-            "startStatus.playersHand[key]" + startStatus.playersHand[key]
-          );
           io.to(value).emit("playersHand", startStatus.playersHand[key]);
         });
         delete startStatus.playersHand;
@@ -145,8 +140,6 @@ export function setUpSocketIO(io) {
         socket.emit("failedStart", roomId);
       }
     });
-
-
 
     socket.on("drawCard", async (roomId, userId) => {
       try {
@@ -160,7 +153,6 @@ export function setUpSocketIO(io) {
           "nextTurn",
           `User ${userName})} drew ${countNeedToDraw} cards.`
         );
-
       } catch (err) {
         console.log("problem drawing card: " + roomId + " in socket.js");
         socket.emit("failedDraw", roomId);
