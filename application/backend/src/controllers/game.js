@@ -320,6 +320,7 @@ export async function playerDrawCard(roomId, userId) {
             "direction": direction
         };
     } catch (err) {
+        transaction.rollback();
         console.log(err);
         return null;
     }    
@@ -390,6 +391,7 @@ export async function playerPlayCard(roomId, userId, card) {
             "nextTurn": playerOrder[nextPlayerIndex],
         };
     } catch (err) {
+        transaction.rollback();
         console.log(err);
         return null;
     }
@@ -403,6 +405,7 @@ export async function getPlayerList(req, res) {
         const players = await db.models.roomUser.findAll({
             where: { roomId },
             attributes: ['userId', 'isHost', 'score', 'connected'],
+            order: [['isHost', 'DESC']]
         });
         if (!players) {
             console.log('problem getting player list');

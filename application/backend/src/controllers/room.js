@@ -182,49 +182,72 @@ export async function joinRoom(email, roomId) {
 }
 
 export async function leaveRoom(email, roomId) {
+  const transaction = await db.transaction();
   try {
-    const room = await db.models.room.findOne({ where: { roomId: roomId } });
+    const room = await db.models.room.findOne({ where: { roomId: roomId }, transaction });
     if (!room) {
       console.log("room does not exist");
+      await transaction.rollback();
       return null;
     }
 
-    //get userId
-    const user = await db.models.user.findOne({ where: { email: email } });
+    // 获取 userId
+    const user = await db.models.user.findOne({ where: { email: email }, transaction });
     if (!user) {
-      console.log("user " + userId + " does not exist");
+      console.log("user does not exist");
+      await transaction.rollback();
       return null;
     }
     const userId = user.userId;
 
-    const existingRoomUser = await db.models.roomUser.findOne({
-      where: { roomId, userId },
+    const roomUsers = await db.models.roomUser.findAll({
+      where: { roomId },
+      order: [["isHost", "DESC"]],
+      transaction
     });
+    const userCount = roomUsers.length;
+
+    const existingRoomUser = roomUsers.find((user) => user.dataValues.userId === userId);
     if (existingRoomUser) {
-      try {
-        //try to delete it
-        await existingRoomUser.destroy();
-        console.log("user " + userId + " removed from room");
-        return existingRoomUser;
-      } catch (err) {
-        console.log("error deleting user from room");
-        return null;
+      const isHost = existingRoomUser.isHost;
+      if (isHost) {
+        if (userCount > 1) {
+          roomUsers[1].isHost = true;
+          await roomUsers[1].save({ transaction }); // 提交新房主的更改
+        }
       }
+
+      // 尝试删除用户
+      await existingRoomUser.destroy({ transaction });
+      console.log("user " + userId + " removed from room");
+
+      if (userCount === 1) {
+        // 如果房间中没有用户，则删除房间
+        await room.destroy({ transaction });
+        console.log("room " + roomId + " deleted");
+      }
+
+      await transaction.commit();
+      return existingRoomUser;
     } else {
       console.log("user " + userId + " doesn't exist in room");
+      await transaction.rollback();
       return null;
     }
   } catch (err) {
-    console.log(err);
+    console.log("Error:", err);
+    await transaction.rollback();
     return null;
   }
 }
+
 
 export async function disconnect(userId, roomId) {
   //if room status is waiting then make them leave room
   //if room status is playing then set their connected to false
   //logic is when its their turn if they are not connected then
   //have them draw or something and go next turn
+  const transaction = await db.transaction();
   console.log("starting disconnect in room.js");
   try {
     const room = await db.models.room.findOne({ where: { roomId: roomId } });
@@ -233,27 +256,51 @@ export async function disconnect(userId, roomId) {
       return null;
     }
 
-    const existingRoomUser = await db.models.roomUser.findOne({
-      where: { roomId, userId },
+    const roomUsers = await db.models.roomUser.findAll({
+      where: { roomId },
+      order: [["isHost", "DESC"]],
+      transaction
     });
+    const userCount = roomUsers.length;
+
+    const existingRoomUser = roomUsers.find((user) => user.userId === Number(userId));
+    console.log("userId: ", userId);
+    console.log("roomUsers: ", roomUsers);
+    console.log("existingRoomUser: ", existingRoomUser);
+
     if (existingRoomUser) {
       //at the end of the game kick all players who are still not connected
       if (room.status === "waiting") {
         //just have them disconnect if room is waiting
-        await existingRoomUser.destroy();
-        console.log("removing disconnected user " + userId + " from room");
-        return 1;
-      }
+        const isHost = existingRoomUser.isHost;
+        if (isHost) {
+          if (userCount > 1) {
+            roomUsers[1].isHost = true;
+            await roomUsers[1].save({ transaction }); // 提交新房主的更改
+          }
+        }
+        await existingRoomUser.destroy({ transaction });
+        console.log("user " + userId + " removed from room");
+        if (userCount === 1) {
+          //if room is empty then delete room
+          await room.destroy({ transaction });
+          console.log("room " + roomId + " deleted");
+        }
+      } else {
       //if room is playing then set connected for this user as false so we can reconnect
-      existingRoomUser.connected = false;
-      await existingRoomUser.save();
-      console.log("user " + userId + " disconnected");
+        existingRoomUser.connected = false;
+        await existingRoomUser.save({ transaction });
+        console.log("user " + userId + " disconnected");
+      }
+      await transaction.commit();
       return existingRoomUser;
     } else {
+      transaction.rollback();
       console.log("user " + userId + " is not in the room");
       return null;
     }
   } catch (err) {
+    transaction.rollback();
     console.log(err);
     return null;
   }
