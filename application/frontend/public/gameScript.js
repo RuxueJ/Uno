@@ -142,6 +142,13 @@ function leaveRoom() {
   window.location.href = "lobby.html"; // Change the URL accordingly
 }
 
+function startGame() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const roomId = urlParams.get("roomId");
+  socket.emit("startGame", roomId);
+  console.log(`Starting game ${roomId}`);
+}
+
 function endGame() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get("roomId");
