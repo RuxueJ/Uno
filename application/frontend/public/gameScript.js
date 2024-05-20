@@ -198,23 +198,24 @@ function startGame() {
 socket.on("playersHand", (data) => {
   console.log("I am in playersHand event");
   data[userId].forEach((card) => {
-    console.log(card);
-    if (card.type == "number" || card.type == "special") {
-      console.log("I am a number or special card");
-      const url = "./static/uno_card-" + card.color + card.value + ".png";
-      hand.push(url);
-    } else {
-      const url = "./static/uno_card-" + card.value + ".png";
-      hand.push(url);
-    }
+    hand.push(getURL(card));
   });
-  console.log(hand);
   renderHand();
 });
 socket.on("gameStarted", (data) => {
-  console.log("event: game started:" + data);
-  topPlayedCard = data.discardDeckTopCard;
+  topPlayedCard = getURL(data.discardDeckTopCard);
+  renderDeckCard(topPlayedCard);
 });
+
+function getURL(card) {
+  let url = "";
+  if (card.type == "number" || card.type == "special") {
+    url = "./static/uno_card-" + card.color + card.value + ".png";
+  } else {
+    url = "./static/uno_card-" + card.value + ".png";
+  }
+  return url;
+}
 //=========================startGame====================================
 
 // Event listener for drawing a card
@@ -229,12 +230,6 @@ function handleKeypress(event) {
     event.preventDefault(); // Prevent form from being submitted
   }
 }
-
-// Initial rendering
-// renderPlayerList();
-// renderChatMessages();
-// renderDeck();
-// renderHand();
 
 //=========================renderHand====================================
 
@@ -265,15 +260,17 @@ const deckDiv = document.getElementById("deck");
 
 // Loop through the cardImages array and create img elements for each card
 
-const backUnoImage = document.createElement("img");
-backUnoImage.src = "./static/uno_card-back.png";
-backUnoImage.classList.add("deck_card");
-deckDiv.appendChild(backUnoImage);
+function renderDeckCard(topPlayedCardUrl) {
+  const backUnoImage = document.createElement("img");
+  backUnoImage.src = "./static/uno_card-back.png";
+  backUnoImage.classList.add("deck_card");
+  deckDiv.appendChild(backUnoImage);
 
-const topPlayImage = document.createElement("img");
-topPlayImage.src = "./static/uno_card-" + topPlayedCard + ".png";
-topPlayImage.classList.add("deck_card");
-deckDiv.appendChild(topPlayImage);
+  const topPlayImage = document.createElement("img");
+  topPlayImage.src = topPlayedCardUrl;
+  topPlayImage.classList.add("deck_card");
+  deckDiv.appendChild(topPlayImage);
+}
 
 //=========================renderDeck====================================
 
