@@ -199,9 +199,15 @@ socket.on("userLeft", () => {
 // Handling "userLeft" event
 socket.on("drawnCards", (data) => {
   console.log(JSON.stringify(data[0]));
+
 });
 
-socket.on("cardPlayed", (data) => {
+socket.on("nextTurn",(data)=>{
+  // check if it is your turn
+})
+
+socket.on("playedCard", (data) => {
+  // top deck card
   console.log(data);
 });
 
@@ -223,6 +229,7 @@ socket.on("gameStarted", (data) => {
   console.log("I am in gameStarted event");
   topPlayedCard = getURL(data.discardDeckTopCard);
   renderDeckCard(topPlayedCard);
+
 });
 
 function getURL(card) {
