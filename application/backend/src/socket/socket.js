@@ -123,7 +123,6 @@ export function setUpSocketIO(io) {
         startStatus.socketIdMap.forEach((value, key) => {
           io.to(value).emit("playersHand", startStatus.playersHand[key]);
         });
-        // socket.emit("playersHand", startStatus.playersHand);
         delete startStatus.playersHand;
         io.to(roomId).emit("gameStarted", startStatus);
       } catch (err) {

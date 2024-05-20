@@ -1,7 +1,12 @@
 let hand = [];
-
 let topPlayedCard = "";
 
+const hostWaitingRoomFullMessage =
+  "The room is not full. To start the game, please wait for another guest to come...";
+const guestWaitingStartMessage =
+  "Please wait for the host to start the game...";
+const hostWaitingStartMessage =
+  "The room is full, you can start the game by clicking the start button";
 
 const token = sessionStorage.getItem("token");
 const userName = sessionStorage.getItem("userName");
@@ -23,6 +28,42 @@ gameRoomNameHeader.textContent = "Game Room: " + gameRoomName;
 const greetingMessage = document.getElementById("greetingMessage");
 console.log("the value of greetingMessage is " + greetingMessage);
 greetingMessage.textContent = "Hello " + userName;
+
+function addStartButton() {
+  console.log("I am adding start Button");
+  const startButton = document.createElement("button");
+  startButton.id = "startButton";
+  startButton.textContent = "Start";
+  startButton.addEventListener("click", startGame);
+
+  const startButtonContainer = document.getElementById("startButtonContainer");
+  startButtonContainer.innerHTML = "";
+  startButtonContainer.appendChild(startButton);
+}
+
+function clearStartButton() {
+  console.log("I am clearing start Button");
+
+  const startButtonContainer = document.getElementById("startButtonContainer");
+  startButtonContainer.innerHTML = "";
+}
+
+function clearDeckMessage() {
+  const deckMessageDiv = document.querySelector(".deck_message");
+  deckMessageDiv.innerHTML = "";
+}
+
+function setDeckMessage(message) {
+  const h2Element = document.createElement("h2");
+  h2Element.id = "waitingMessage";
+  h2Element.textContent = message;
+  // Find the container where you want to append the h2 element
+  clearDeckMessage();
+  const deckMessageDiv = document.querySelector(".deck_message");
+  deckMessageDiv.appendChild(h2Element);
+}
+
+// function addStartGameMessage
 
 const socket = io("http://localhost:3000", {
   query: { token, userName, email, userId },
@@ -48,6 +89,7 @@ async function getUserInRoom() {
     // Handle the response
     if (response.ok) {
       const result = await response.json();
+      console.log(JSON.stringify(result));
       console.log(
         "the user in this room:" + JSON.stringify(result.player_list)
       );
@@ -63,6 +105,22 @@ async function getUserInRoom() {
 
         // Append the li element to the div container
         playerList.appendChild(userInfo);
+        // console.log("user.isHost" + user.isHost);
+        // console.log("result.player_list.length" + result.player_list.length);
+        // console.log("result.max_player" + result.max_player);
+        if (user.userId == userId) {
+          if (user.isHost) {
+            if (result.player_list.length == result.max_player) {
+              addStartButton();
+              setDeckMessage(hostWaitingStartMessage);
+            } else {
+              setDeckMessage(hostWaitingRoomFullMessage);
+            }
+          } else {
+            clearStartButton();
+            setDeckMessage(guestWaitingStartMessage);
+          }
+        }
       });
 
       // Add any additional logic (e.g., redirecting the user, showing a success message)
@@ -83,7 +141,6 @@ function leaveRoom() {
   console.log(`Leaving room ${roomId}`);
   window.location.href = "lobby.html"; // Change the URL accordingly
 }
-
 
 function endGame() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -148,7 +205,6 @@ socket.on("cardPlayed", (data) => {
   console.log(data);
 });
 
-
 //=========================startGame====================================
 function startGame() {
   socket.emit("startGame", roomId);
@@ -157,12 +213,14 @@ function startGame() {
 
 socket.on("playersHand", (data) => {
   console.log("I am in playersHand event");
-  data[userId].forEach((card) => {
+  console.log(data);
+  data.forEach((card) => {
     hand.push(getURL(card));
   });
   renderHand();
 });
 socket.on("gameStarted", (data) => {
+  console.log("I am in gameStarted event");
   topPlayedCard = getURL(data.discardDeckTopCard);
   renderDeckCard(topPlayedCard);
 });
@@ -213,8 +271,6 @@ function renderHand() {
 //=========================renderHand====================================
 
 //=========================renderDeck====================================
-
-// function renderDeck() {}
 
 const deckDiv = document.getElementById("deck");
 

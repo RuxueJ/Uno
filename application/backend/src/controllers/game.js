@@ -355,6 +355,7 @@ export async function playerDrawCard(roomId, userId) {
       direction: direction,
     };
   } catch (err) {
+    transaction.rollback();
     console.log(err);
     return null;
   }
@@ -433,6 +434,7 @@ export async function playerPlayCard(roomId, userId, card) {
       nextTurn: playerOrder[nextPlayerIndex],
     };
   } catch (err) {
+    transaction.rollback();
     console.log(err);
     return null;
   }
