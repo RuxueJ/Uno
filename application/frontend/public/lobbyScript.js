@@ -41,7 +41,11 @@ function displayRoomsData(data) {
     const joinButton = document.createElement("button");
     joinButton.classList.add("join-button");
     joinButton.textContent = "Join";
+<<<<<<< HEAD
     if (game.maxPlayers === game.users.length) {
+=======
+    if (game.status === "playing") {
+>>>>>>> 3fd2036 (no join button when game is playing)
       joinButton.style.display = "none";
     } else {
       joinButton.addEventListener("click", () => {
