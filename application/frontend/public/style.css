@@ -43,7 +43,7 @@ body {
   cursor: pointer;
 }
 
-.games-list {
+.gamesList {
   margin-top: 20px;
 }
 
@@ -56,13 +56,14 @@ body {
 .game-info {
   display: flex;
   justify-content: space-between;
+  padding: 5px;
 }
 
 .join-button {
   background-color: #4caf50;
   border: none;
   color: white;
-  padding: 8px 16px;
+  padding: 5px 10px;
   text-align: center;
   text-decoration: none;
   display: inline-block;
@@ -296,4 +297,46 @@ input[type="text"] {
   margin-top: 10px;
   border: 1px solid #ccc;
   border-radius: 5px;
+}
+
+.player-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.player-box {
+  width: calc(
+    100% / 4 - 10px
+  ); /* Adjust the percentage based on your preference */
+  height: 40px; /* Adjust the height based on your preference */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 14px;
+}
+
+.player-box.occupied {
+  background-color: #007bff;
+  color: white;
+}
+
+.player-box.empty {
+  background-color: #f0f0f0;
+}
+
+.join-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 8px 15px;
+  cursor: pointer;
+}
+
+.join-button:hover {
+  background-color: #0056b3;
 }

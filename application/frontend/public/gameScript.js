@@ -1,30 +1,7 @@
-// Dummy data for demonstration
-// const players = ["Player 1", "Player 2", "Player 3"];
-// const chatMessages = [
-//   { user: "Player 1", message: "Hello everyone!" },
-//   { user: "Player 2", message: "Hey there!" },
-//   { user: "Player 3", message: "Welcome to the UNO game room." },
-// ];
-// const deck = [
-//   "0",
-//   "1",
-//   "2",
-//   "3",
-//   "4",
-//   "5",
-//   "6",
-//   "7",
-//   "8",
-//   "9",
-//   "+2",
-//   "Skip",
-//   "Reverse",
-// ];
 let hand = [];
 
 let topPlayedCard = "";
 
-// getUserInRoom();
 
 const token = sessionStorage.getItem("token");
 const userName = sessionStorage.getItem("userName");
@@ -107,12 +84,6 @@ function leaveRoom() {
   window.location.href = "lobby.html"; // Change the URL accordingly
 }
 
-// function startGame() {
-//   const urlParams = new URLSearchParams(window.location.search);
-//   const roomId = urlParams.get("roomId");
-//   socket.emit("startGame", roomId);
-//   console.log(`Starting game ${roomId}`);
-// }
 
 function endGame() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -176,18 +147,7 @@ socket.on("drawnCards", (data) => {
 socket.on("cardPlayed", (data) => {
   console.log(data);
 });
-//=============================================================
-// Event listener for sending messages
-//document.getElementById("send-message").addEventListener("click", () => {
-//  const input = document.getElementById("chat-input");
-//  const message = input.value.trim();
-//  if (message !== "") {
-//    chatMessages.push({ user: "You", message });
-//    renderChatMessages();
-//    input.value = "";
-//  }
-//});
-//=====================================================================
+
 
 //=========================startGame====================================
 function startGame() {
