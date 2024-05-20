@@ -233,7 +233,7 @@ socket.on("playersHand", (data) => {
   renderHand();
 });
 socket.on("gameStarted", (data) => {
-  console.log("I am in gameStarted event");
+  console.log("I am in gameStarted event"+data);
   topPlayedCard = getURL(data.discardDeckTopCard);
   renderDeckCard(topPlayedCard);
 

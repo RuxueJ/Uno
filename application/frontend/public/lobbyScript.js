@@ -148,7 +148,7 @@ document
       maxPlayers: formData.get("numPlayers"),
     };
 
-    console.log("Form submitted", data); // For testing
+    // console.log("Form submitted", data); // For testing
 
     try {
       // Make the POST request to the server
@@ -163,14 +163,18 @@ document
       // Handle the response
       if (response.ok) {
         // const result = await response.json();
-        console.log("Room created successfully:");
+        const result = await response.json();
+        console.log("Room created successfully:" + JSON.stringify(result));
         closeCreateForm();
+
+        console.log("I need to rediect to room");
         window.open(
-          `/public/game.html?roomId=${game.id}&gameName=${encodeURIComponent(
-            game.name
-          )}`,
+          `/public/game.html?roomId=${
+            result.roomId
+          }&gameName=${encodeURIComponent(result.name)}`,
           "_blank"
         );
+        console.log("I success to rediect to room");
 
         // Add any additional logic (e.g., redirecting the user, showing a success message)
       } else {
