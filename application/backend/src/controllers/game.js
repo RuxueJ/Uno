@@ -99,6 +99,10 @@ export async function startGame(roomId, userId) {
         }
 
         const userIds = players.map(player => player.userId);
+        const id_socketIdMap = {};
+        for (let i = 0; i < players.length; i++) {
+            id_socketIdMap[players[i].userId] = players[i].socketId;
+        }
         if(!userIds) {
             console.log('problem extracting userIds from players inside game.js');
             return null;
@@ -194,7 +198,8 @@ export async function startGame(roomId, userId) {
                 "nextTurn": newplayerOrder[currentPlayerIndex],
                 "direction": direction,
                 "playersHand": initPlayerHands,
-                "discardDeckTopCard": topCard
+                "discardDeckTopCard": topCard,
+                "socketIdMap": id_socketIdMap
             }
         } catch (err) {
             console.log(err);

@@ -171,10 +171,39 @@ export async function joinRoom(email, roomId) {
       roomId: roomId,
       userId: userId,
       isHost: false,
-      connected: true,
+      connected: true
     });
 
     return roomUser;
+  } catch (err) {
+    console.log(err);
+    return null;
+  }
+}
+
+export async function putUserInRoom(roomId, userId, socketId) {
+  try {
+    const room = await db.models.room.findOne({ where: { roomId: roomId } });
+    if (!room) {
+      console.log("room does not exist");
+      return null;
+    }
+
+    if (room.status !== "waiting") {
+      console.log("cannot join room; game is in session");
+      return null;
+    }
+
+    const existingroomUser = await db.models.roomUser.findOne({
+      where: { roomId, userId },
+    });
+    if (!existingroomUser) {
+      console.log("user not in room");
+      return null;
+    }
+    existingroomUser.socketId = socketId;
+    await existingroomUser.save();
+      return existingroomUser;
   } catch (err) {
     console.log(err);
     return null;
