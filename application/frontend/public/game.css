@@ -10,26 +10,57 @@ body {
 .container {
   display: flex;
   flex-direction: column;
-  height: 100%; /* Occupy full viewport height */
-  width: 100%;
+  width: 100vw; /* 100% of the viewport width */
+  height: 100vh; /* 100% of the viewport height */
+
+  overflow: hidden; /* Hide overflow content */
+}
+
+#gameRoomHeader {
+  display: flex;
+  justify-content: space-between; /* Distribute items evenly along the main axis */
+  align-items: center; /* Align items vertically */
+  padding: 0.2rem; /* Add padding around the header */
+  background-color: #f0f0f0; /* Set background color */
+  /* border-bottom: 2px solid #ccc;  */
+  /* margin-bottom: 20px; */
+}
+
+#gameRoomName {
+  font-size: 2rem; /* Set font size to 2rem */
+  text-align: center; /* Center align text */
+}
+#greetingMessage {
+  font-size: 1rem; /* Set font size to 2rem */
+  text-align: center; /* Center align text */
+}
+#leaveButton {
+  padding: 0.5rem 1rem; /* Add padding */
+  background-color: #dc3545; /* Set background color */
+  color: #fff; /* Set text color */
+  border: none; /* Remove border */
+  border-radius: 0.25rem; /* Add border radius */
+  cursor: pointer; /* Change cursor to pointer on hover */
+}
+
+#leaveButton:hover {
+  background-color: #c82333; /* Darken background color on hover */
 }
 
 .game-deck {
-  height: 60%;
-  width: 100%;
+  /* height: 60%; */
+  /* width: 100%; */
   display: flex;
+  flex-direction: row;
+  flex-basis: 60%;
   justify-content: space-between;
-  margin-bottom: 20px;
-}
-
-.user-hand {
-  height: 40%;
+  /* margin-bottom: 20px; */
 }
 
 .row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin: 20px;
 }
 
 .column {
@@ -42,9 +73,20 @@ body {
 .player-list {
   width: 25%;
 }
-
 .deck {
   width: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+}
+
+#deck {
+  display: flex;
+  flex-direction: row;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  flex-basis: 80%;
 }
 
 .chat-box {
@@ -52,9 +94,46 @@ body {
 }
 
 .user-hand {
-  margin-top: 20px;
+  /* margin-top: 20px; */
+  flex-basis: 60%;
   background-color: #f0f0f0;
   padding: 20px;
+  /* height: 80%; */
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+}
+
+#hand {
+  flex: 1;
+  width: 100%;
+  height: 30%;
+  overflow-x: scroll;
+  white-space: nowrap;
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+}
+
+.hand_card {
+  display: inline-block;
+  margin-right: 10px; /* Adjust as needed */
+  max-width: 200px; /* Adjust maximum width as needed */
+  height: 80%;
+  flex-shrink: 1;
+}
+
+.deck_card {
+  display: inline-block;
+  margin-right: 10px; /* Adjust as needed */
+  max-width: 250px; /* Adjust maximum width as needed */
+  height: 100%;
+}
+.bottom-button {
+  flex: 1;
+  margin-top: auto;
 }
 
 .player-list {

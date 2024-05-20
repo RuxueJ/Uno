@@ -1,28 +1,12 @@
-// Dummy data for demonstration
-// const players = ["Player 1", "Player 2", "Player 3"];
-// const chatMessages = [
-//   { user: "Player 1", message: "Hello everyone!" },
-//   { user: "Player 2", message: "Hey there!" },
-//   { user: "Player 3", message: "Welcome to the UNO game room." },
-// ];
-// const deck = [
-//   "0",
-//   "1",
-//   "2",
-//   "3",
-//   "4",
-//   "5",
-//   "6",
-//   "7",
-//   "8",
-//   "9",
-//   "+2",
-//   "Skip",
-//   "Reverse",
-// ];
-// const hand = ["Red 1", "Blue 5", "Green +2", "Yellow Reverse"];
+let hand = [];
+let topPlayedCard = "";
 
-// getUserInRoom();
+const hostWaitingRoomFullMessage =
+  "The room is not full. To start the game, please wait for another guest to come...";
+const guestWaitingStartMessage =
+  "Please wait for the host to start the game...";
+const hostWaitingStartMessage =
+  "The room is full, you can start the game by clicking the start button";
 
 const token = sessionStorage.getItem("token");
 const userName = sessionStorage.getItem("userName");
@@ -38,8 +22,48 @@ const gameRoomName = queryParams.get("gameName");
 
 // Set the game room name as the text content of the header element
 const gameRoomNameHeader = document.getElementById("gameRoomName");
-gameRoomNameHeader.textContent =
-  "Hello " + userName + "! Welcome to Room: " + gameRoomName;
+console.log("the value of gameRoomname header is " + gameRoomNameHeader);
+gameRoomNameHeader.textContent = "Game Room: " + gameRoomName;
+
+const greetingMessage = document.getElementById("greetingMessage");
+console.log("the value of greetingMessage is " + greetingMessage);
+greetingMessage.textContent = "Hello " + userName;
+
+function addStartButton() {
+  console.log("I am adding start Button");
+  const startButton = document.createElement("button");
+  startButton.id = "startButton";
+  startButton.textContent = "Start";
+  startButton.addEventListener("click", startGame);
+
+  const startButtonContainer = document.getElementById("startButtonContainer");
+  startButtonContainer.innerHTML = "";
+  startButtonContainer.appendChild(startButton);
+}
+
+function clearStartButton() {
+  console.log("I am clearing start Button");
+
+  const startButtonContainer = document.getElementById("startButtonContainer");
+  startButtonContainer.innerHTML = "";
+}
+
+function clearDeckMessage() {
+  const deckMessageDiv = document.querySelector(".deck_message");
+  deckMessageDiv.innerHTML = "";
+}
+
+function setDeckMessage(message) {
+  const h2Element = document.createElement("h2");
+  h2Element.id = "waitingMessage";
+  h2Element.textContent = message;
+  // Find the container where you want to append the h2 element
+  clearDeckMessage();
+  const deckMessageDiv = document.querySelector(".deck_message");
+  deckMessageDiv.appendChild(h2Element);
+}
+
+// function addStartGameMessage
 
 const socket = io("http://localhost:3000", {
   query: { token, userName, email, userId },
@@ -65,6 +89,7 @@ async function getUserInRoom() {
     // Handle the response
     if (response.ok) {
       const result = await response.json();
+      console.log(JSON.stringify(result));
       console.log(
         "the user in this room:" + JSON.stringify(result.player_list)
       );
@@ -80,6 +105,22 @@ async function getUserInRoom() {
 
         // Append the li element to the div container
         playerList.appendChild(userInfo);
+        // console.log("user.isHost" + user.isHost);
+        // console.log("result.player_list.length" + result.player_list.length);
+        // console.log("result.max_player" + result.max_player);
+        if (user.userId == userId) {
+          if (user.isHost) {
+            if (result.player_list.length == result.max_player) {
+              addStartButton();
+              setDeckMessage(hostWaitingStartMessage);
+            } else {
+              setDeckMessage(hostWaitingRoomFullMessage);
+            }
+          } else {
+            clearStartButton();
+            setDeckMessage(guestWaitingStartMessage);
+          }
+        }
       });
 
       // Add any additional logic (e.g., redirecting the user, showing a success message)
@@ -91,61 +132,6 @@ async function getUserInRoom() {
     console.error("Error creating room:", error);
     // Handle the error (e.g., show an error message)
   }
-}
-
-//this is not the best way to manage page navigation
-//when a user is connected to lobby a socket is opened
-//when that user is redirected to another page like gamePage
-//that user's socket is disconnected
-//here we are getting the info to attach to the new socket connection made for this user for this page
-//I think the socket.on'disconnecting' and our reconnecting logic needs to be checked
-//but for now we can take our screenshots of different games being played at the same time
-
-// Function to render player list
-// function renderPlayerList() {
-//   const playerList = document.getElementById("player-list");
-//   playerList.innerHTML = "";
-//   players.forEach((player) => {
-//     const li = document.createElement("li");
-//     li.textContent = player;
-//     playerList.appendChild(li);
-//   });
-// }
-
-// Function to render chat messages=======================================================
-//function renderChatMessages() {
-//  const chatMessagesDiv = document.getElementById("chat-messages");
-//  chatMessagesDiv.innerHTML = "";
-//  chatMessages.forEach((msg) => {
-//    const div = document.createElement("div");
-//    div.textContent = `${msg.user}: ${msg.message}`;
-//    chatMessagesDiv.appendChild(div);
-//  });
-//}
-//============================================================
-
-// Function to render remaining deck cards
-// function renderDeck() {
-//   const deckDiv = document.getElementById("deck");
-//   deckDiv.innerHTML = "";
-//   deck.forEach((card) => {
-//     const div = document.createElement("div");
-//     div.classList.add("card");
-//     div.textContent = card;
-//     deckDiv.appendChild(div);
-//   });
-// }
-
-// Function to render player's hand cards
-function renderHand() {
-  const handDiv = document.getElementById("hand");
-  handDiv.innerHTML = "";
-  hand.forEach((card) => {
-    const div = document.createElement("div");
-    div.classList.add("card");
-    div.textContent = card;
-    handDiv.appendChild(div);
-  });
 }
 
 function leaveRoom() {
@@ -217,18 +203,52 @@ socket.on("userLeft", () => {
   getUserInRoom();
 });
 
-//=============================================================
-// Event listener for sending messages
-//document.getElementById("send-message").addEventListener("click", () => {
-//  const input = document.getElementById("chat-input");
-//  const message = input.value.trim();
-//  if (message !== "") {
-//    chatMessages.push({ user: "You", message });
-//    renderChatMessages();
-//    input.value = "";
-//  }
-//});
-//=====================================================================
+// Handling "userLeft" event
+socket.on("drawnCards", (data) => {
+  console.log(JSON.stringify(data[0]));
+
+});
+
+socket.on("nextTurn",(data)=>{
+  // check if it is your turn
+})
+
+socket.on("playedCard", (data) => {
+  // top deck card
+  console.log(data);
+});
+
+//=========================startGame====================================
+function startGame() {
+  socket.emit("startGame", roomId);
+  console.log("I am emit startGame event");
+}
+
+socket.on("playersHand", (data) => {
+  console.log("I am in playersHand event");
+  console.log(data);
+  data.forEach((card) => {
+    hand.push(getURL(card));
+  });
+  renderHand();
+});
+socket.on("gameStarted", (data) => {
+  console.log("I am in gameStarted event");
+  topPlayedCard = getURL(data.discardDeckTopCard);
+  renderDeckCard(topPlayedCard);
+
+});
+
+function getURL(card) {
+  let url = "";
+  if (card.type == "number" || card.type == "special") {
+    url = "./static/uno_card-" + card.color + card.value + ".png";
+  } else {
+    url = "./static/uno_card-" + card.value + ".png";
+  }
+  return url;
+}
+//=========================startGame====================================
 
 // Event listener for drawing a card
 document.getElementById("draw-card").addEventListener("click", () => {
@@ -243,8 +263,50 @@ function handleKeypress(event) {
   }
 }
 
-// Initial rendering
-//renderPlayerList();
-//renderChatMessages();//=============================================
-// renderDeck();
-// renderHand();
+//=========================renderHand====================================
+
+function renderHand() {
+  const handDiv = document.getElementById("hand");
+
+  // Loop through the cardImages array and create img elements for each card
+  hand.forEach((card) => {
+    const cardImg = document.createElement("img");
+    cardImg.src = card;
+    cardImg.classList.add("hand_card");
+    handDiv.appendChild(cardImg);
+  });
+
+  handDiv.addEventListener("wheel", function (event) {
+    event.preventDefault();
+    handDiv.scrollLeft += event.deltaY;
+  });
+}
+
+//=========================renderHand====================================
+
+//=========================renderDeck====================================
+
+const deckDiv = document.getElementById("deck");
+
+// Loop through the cardImages array and create img elements for each card
+
+function renderDeckCard(topPlayedCardUrl) {
+  const backUnoImage = document.createElement("img");
+  backUnoImage.src = "./static/uno_card-back.png";
+  backUnoImage.classList.add("deck_card");
+  deckDiv.appendChild(backUnoImage);
+
+  const topPlayImage = document.createElement("img");
+  topPlayImage.src = topPlayedCardUrl;
+  topPlayImage.classList.add("deck_card");
+  deckDiv.appendChild(topPlayImage);
+}
+
+//=========================renderDeck====================================
+
+//=========================drawCard====================================
+const drawCard = document.getElementById("draw-card");
+drawCard.addEventListener("click", () => {
+  socket.emit("drawCard", roomId, userId);
+});
+//=========================drawCard====================================
