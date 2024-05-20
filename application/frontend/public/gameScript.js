@@ -20,7 +20,9 @@
 //   "Skip",
 //   "Reverse",
 // ];
-// const hand = ["Red 1", "Blue 5", "Green +2", "Yellow Reverse"];
+let hand = [];
+
+let topPlayedCard = "";
 
 // getUserInRoom();
 
@@ -38,8 +40,12 @@ const gameRoomName = queryParams.get("gameName");
 
 // Set the game room name as the text content of the header element
 const gameRoomNameHeader = document.getElementById("gameRoomName");
-gameRoomNameHeader.textContent =
-  "Hello " + userName + "! Welcome to Room: " + gameRoomName;
+console.log("the value of gameRoomname header is " + gameRoomNameHeader);
+gameRoomNameHeader.textContent = "Game Room: " + gameRoomName;
+
+const greetingMessage = document.getElementById("greetingMessage");
+console.log("the value of greetingMessage is " + greetingMessage);
+greetingMessage.textContent = "Hello " + userName;
 
 const socket = io("http://localhost:3000", {
   query: { token, userName, email, userId },
@@ -93,61 +99,6 @@ async function getUserInRoom() {
   }
 }
 
-//this is not the best way to manage page navigation
-//when a user is connected to lobby a socket is opened
-//when that user is redirected to another page like gamePage
-//that user's socket is disconnected
-//here we are getting the info to attach to the new socket connection made for this user for this page
-//I think the socket.on'disconnecting' and our reconnecting logic needs to be checked
-//but for now we can take our screenshots of different games being played at the same time
-
-// Function to render player list
-// function renderPlayerList() {
-//   const playerList = document.getElementById("player-list");
-//   playerList.innerHTML = "";
-//   players.forEach((player) => {
-//     const li = document.createElement("li");
-//     li.textContent = player;
-//     playerList.appendChild(li);
-//   });
-// }
-
-// Function to render chat messages=======================================================
-//function renderChatMessages() {
-//  const chatMessagesDiv = document.getElementById("chat-messages");
-//  chatMessagesDiv.innerHTML = "";
-//  chatMessages.forEach((msg) => {
-//    const div = document.createElement("div");
-//    div.textContent = `${msg.user}: ${msg.message}`;
-//    chatMessagesDiv.appendChild(div);
-//  });
-//}
-//============================================================
-
-// Function to render remaining deck cards
-// function renderDeck() {
-//   const deckDiv = document.getElementById("deck");
-//   deckDiv.innerHTML = "";
-//   deck.forEach((card) => {
-//     const div = document.createElement("div");
-//     div.classList.add("card");
-//     div.textContent = card;
-//     deckDiv.appendChild(div);
-//   });
-// }
-
-// Function to render player's hand cards
-function renderHand() {
-  const handDiv = document.getElementById("hand");
-  handDiv.innerHTML = "";
-  hand.forEach((card) => {
-    const div = document.createElement("div");
-    div.classList.add("card");
-    div.textContent = card;
-    handDiv.appendChild(div);
-  });
-}
-
 function leaveRoom() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get("roomId");
@@ -156,12 +107,12 @@ function leaveRoom() {
   window.location.href = "lobby.html"; // Change the URL accordingly
 }
 
-function startGame() {
-  const urlParams = new URLSearchParams(window.location.search);
-  const roomId = urlParams.get("roomId");
-  socket.emit("startGame", roomId);
-  console.log(`Starting game ${roomId}`);
-}
+// function startGame() {
+//   const urlParams = new URLSearchParams(window.location.search);
+//   const roomId = urlParams.get("roomId");
+//   socket.emit("startGame", roomId);
+//   console.log(`Starting game ${roomId}`);
+// }
 
 function endGame() {
   const urlParams = new URLSearchParams(window.location.search);
@@ -217,6 +168,14 @@ socket.on("userLeft", () => {
   getUserInRoom();
 });
 
+// Handling "userLeft" event
+socket.on("drawnCards", (data) => {
+  console.log(JSON.stringify(data[0]));
+});
+
+socket.on("cardPlayed", (data) => {
+  console.log(data);
+});
 //=============================================================
 // Event listener for sending messages
 //document.getElementById("send-message").addEventListener("click", () => {
@@ -229,6 +188,34 @@ socket.on("userLeft", () => {
 //  }
 //});
 //=====================================================================
+
+//=========================startGame====================================
+function startGame() {
+  socket.emit("startGame", roomId);
+  console.log("I am emit startGame event");
+}
+
+socket.on("playersHand", (data) => {
+  console.log("I am in playersHand event");
+  data[userId].forEach((card) => {
+    console.log(card);
+    if (card.type == "number" || card.type == "special") {
+      console.log("I am a number or special card");
+      const url = "./static/uno_card-" + card.color + card.value + ".png";
+      hand.push(url);
+    } else {
+      const url = "./static/uno_card-" + card.value + ".png";
+      hand.push(url);
+    }
+  });
+  console.log(hand);
+  renderHand();
+});
+socket.on("gameStarted", (data) => {
+  console.log("event: game started:" + data);
+  topPlayedCard = data.discardDeckTopCard;
+});
+//=========================startGame====================================
 
 // Event listener for drawing a card
 document.getElementById("draw-card").addEventListener("click", () => {
@@ -244,7 +231,55 @@ function handleKeypress(event) {
 }
 
 // Initial rendering
-//renderPlayerList();
-//renderChatMessages();//=============================================
+// renderPlayerList();
+// renderChatMessages();
 // renderDeck();
 // renderHand();
+
+//=========================renderHand====================================
+
+function renderHand() {
+  const handDiv = document.getElementById("hand");
+
+  // Loop through the cardImages array and create img elements for each card
+  hand.forEach((card) => {
+    const cardImg = document.createElement("img");
+    cardImg.src = card;
+    cardImg.classList.add("hand_card");
+    handDiv.appendChild(cardImg);
+  });
+
+  handDiv.addEventListener("wheel", function (event) {
+    event.preventDefault();
+    handDiv.scrollLeft += event.deltaY;
+  });
+}
+
+//=========================renderHand====================================
+
+//=========================renderDeck====================================
+
+// function renderDeck() {}
+
+const deckDiv = document.getElementById("deck");
+
+// Loop through the cardImages array and create img elements for each card
+
+const backUnoImage = document.createElement("img");
+backUnoImage.src = "./static/uno_card-back.png";
+backUnoImage.classList.add("deck_card");
+deckDiv.appendChild(backUnoImage);
+
+const topPlayImage = document.createElement("img");
+topPlayImage.src = "./static/uno_card-" + topPlayedCard + ".png";
+topPlayImage.classList.add("deck_card");
+deckDiv.appendChild(topPlayImage);
+
+//=========================renderDeck====================================
+
+//=========================drawCard====================================
+const drawCard = document.getElementById("draw-card");
+drawCard.addEventListener("click", () => {
+  socket.emit("drawCard", roomId, userId);
+});
+//=========================drawCard====================================
