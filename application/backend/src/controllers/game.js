@@ -93,6 +93,10 @@ export async function startGame(roomId, userId) {
             console.log('problem getting roomUsers for this room: ' + roomId);
             return null;
         }
+        if (players.length < startAttempt.maxplayer) {
+            console.log('not enough players to start game: ' + roomId);
+            return null;
+        }
 
         const userIds = players.map(player => player.userId);
         if(!userIds) {
@@ -402,6 +406,10 @@ export async function getPlayerList(req, res) {
     const { roomId } = req.params;
     console.log('getting player list for room: ' + roomId);
     try {
+        const maxplayer = await db.models.room.findOne({
+            where: { roomId },
+            attributes: ['maxplayer'],
+        });
         const players = await db.models.roomUser.findAll({
             where: { roomId },
             attributes: ['userId', 'isHost', 'score', 'connected'],
@@ -425,7 +433,7 @@ export async function getPlayerList(req, res) {
         for (let i = 0; i < players.length; i++) {
             players[i].dataValues.userName = userNames[i].userName;
         }
-        res.json({ player_list: players });
+        res.json({ max_player: maxplayer.maxplayer, player_list: players });
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: err.message });
