@@ -10,7 +10,6 @@ async function fetchRoomsData() {
 
     if (response.status === 200) {
       const data = result.gamelist;
-      // console.log("Displaying rooms data:", data);
       displayRoomsData(data);
     }
   } catch (error) {
@@ -36,13 +35,8 @@ function displayRoomsData(data) {
 
     const gameInfo = document.createElement("div");
     gameInfo.classList.add("game-info");
-    let concatenatedString = "";
-    numUser = game.users.length;
-    game.users.forEach((gameUser) => {
-      concatenatedString += `${gameUser.userName} `;
-    });
 
-    gameInfo.innerHTML = `<span>Game ID: ${game.name}</span><span>${game.status}</span><span>${numUser}/${game.maxPlayers}</span><span>Members: ${concatenatedString}</span>`;
+    gameInfo.innerHTML = `<span>Game ID: ${game.name}</span><span>${game.status}</span>`;
 
     const joinButton = document.createElement("button");
     joinButton.classList.add("join-button");
@@ -60,8 +54,23 @@ function displayRoomsData(data) {
       );
     });
 
+    const playerContainer = document.createElement("div");
+    playerContainer.classList.add("player-container");
+    for (let i = 0; i < game.maxPlayers; i++) {
+      const playerBox = document.createElement("div");
+      playerBox.classList.add("player-box");
+      if (game.users[i]) {
+        playerBox.textContent = game.users[i].userName;
+        playerBox.classList.add("occupied");
+      } else {
+        playerBox.textContent = "Empty";
+        playerBox.classList.add("empty");
+      }
+      playerContainer.appendChild(playerBox);
+    }
     gameItem.appendChild(gameInfo);
-    gameItem.appendChild(joinButton);
+    gameInfo.appendChild(joinButton);
+    gameItem.appendChild(playerContainer);
     gamesList.append(gameItem);
   });
 }
@@ -149,6 +158,13 @@ document
         // const result = await response.json();
         console.log("Room created successfully:");
         closeCreateForm();
+        window.open(
+          `/public/game.html?roomId=${game.id}&gameName=${encodeURIComponent(
+            game.name
+          )}`,
+          "_blank"
+        );
+
         // Add any additional logic (e.g., redirecting the user, showing a success message)
       } else {
         console.error("Failed to create room", response.statusText);
