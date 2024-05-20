@@ -301,13 +301,13 @@ input[type="text"] {
 
 .player-container {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: row;
+  flex-wrap: rap;
+  justify-content: space-between;
 }
 
 .player-box {
-  width: calc(
-    100% / 4 - 10px
-  ); /* Adjust the percentage based on your preference */
+  flex: 1 0 auto;
   height: 40px; /* Adjust the height based on your preference */
   border: 1px solid #ccc;
   border-radius: 5px;

@@ -64,6 +64,9 @@ function displayRoomsData(data) {
       const playerBox = document.createElement("div");
       playerBox.classList.add("player-box");
       if (game.users[i]) {
+        if(game.users[i].isHost == true){
+          playerBox.classList.add("isHost");
+        }
         playerBox.textContent = game.users[i].userName;
         playerBox.classList.add("occupied");
       } else {
