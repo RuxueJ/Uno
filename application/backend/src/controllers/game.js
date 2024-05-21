@@ -471,13 +471,27 @@ export async function getPlayerState(userId, roomId) {
     return playerState
 }
 
-export async function getGameState(roomId) {
+export async function getGameState(roomId, userId) {
     const gameState = await db.models.gameState.findOne( { where: {roomId} })
     if(!gameState) {
         console.log('gameState does not exist for: ' + roomId )
         return null
     }
-    return gameState
+    const playerState = await db.models.playerState.findOne( { where: { roomId, userId }});
+    if(!playerState) {
+        console.log('playerState does not exist for: ' + userId);
+        return null;
+    }
+    
+    return {
+        "roomId": roomId,
+        "playerOrder": gameState.playerOrder,
+        "nextTurn": gameState.playerOrder[gameState.currentPlayerIndex],
+        "direction": gameState.direction,
+        "playersHand": playerState.playerHand,
+        "discardDeckTopCard": gameState.discardDeckTopCard
+        // "socketIdMap": id_socketIdMap
+    }
 }
 
 export async function userReconnected(userId, roomId) {

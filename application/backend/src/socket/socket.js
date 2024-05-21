@@ -271,9 +271,6 @@ export function setUpSocketIO(io) {
       //send top card
       //send discardtopcard
       socket.emit('gameStarted', gameState)
-
     });
-
-
   });
 }
