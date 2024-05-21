@@ -3,7 +3,7 @@ import { DataTypes, Model } from "sequelize";
 export default function (sequelize) {
   class Room extends Model {
     get name() {
-      return `${this.name}`;
+      return `${this.getDataValue('name')}`;
     }
   }
 

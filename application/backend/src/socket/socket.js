@@ -16,29 +16,33 @@ export function setUpSocketIO(io) {
     const userName = socket.handshake.query.userName || "User";
     const token = socket.handshake.query.token;
 
-    try {
-      const reconnectAttempt = await roomController.reconnect(userId);
-      if (reconnectAttempt == null) {
-        console.log("no game rooms for this user to reconnect to");
-      } else {
-        console.log("user: " + email + " reconnecting to: " + reconnectAttempt);
-        //may need more logic to reapply game state
-        //rejoin socket room for this game room
-        socket.join(reconnectAttempt);
-        socket.leave("lobby");
-        emitToRoom(
-          io,
-          reconnectAttempt,
-          "user reconnect",
-          "user " + email + "reconnected to room"
-        );
+    socket.on('reconnectAttempt', async (userId) => {
+      try {
+        const reconnectAttempt = await roomController.reconnect(userId);
+        if (reconnectAttempt == null) {
+          console.log("no game rooms for this user to reconnect to");
+        } else {
+          const { roomId, roomName } = reconnectAttempt
+          console.log("user: " + email + " reconnecting to: " + roomId + " with roomName: " + roomName);
+          //may need more logic to reapply game state
+          //rejoin socket room for this game room
+          //if there is a room to join emit it back to front end so we can change page
+          console.log("emitting to roomtoreconnectto " + roomId + "    " + roomName)
+          socket.emit('roomToReconnectTo', {roomId: roomId, roomName: roomName} );
+          emitToRoom(
+            io,
+            reconnectAttempt,
+            "user reconnect",
+            "user " + email + "reconnected to room"
+          );
+        }
+      } catch (err) {
+        console.log(err);
+        socket.emit("reconnectError", {
+          message: "failed to execute reconnection check",
+        });
       }
-    } catch (err) {
-      console.log(err);
-      socket.emit("reconnectError", {
-        message: "failed to execute reconnection check",
-      });
-    }
+    });
 
     socket.on("putUserInRoom", async (roomId) => {
       try {
@@ -68,8 +72,6 @@ export function setUpSocketIO(io) {
         if (joinAttempt === null) {
           throw new Error("error joining room inside sockets.js");
         }
-
-        socket.join(roomId);
         console.log(`Socket ${socket.id} user ${email} joined room ${roomId}`);
         emitToRoom(io, roomId, "userJoin", "user joined the room");
       } catch (err) {
@@ -84,8 +86,6 @@ export function setUpSocketIO(io) {
         if (leaveAttempt == null) {
           throw new Error("error leaving room inside socket.js");
         }
-        socket.leave(roomId);
-        socket.join("lobby");
         console.log(`Socket ${socket.id} user ${email} left room ${roomId}`);
         emitToRoom(io, roomId, "userLeft", "user left the room");
       } catch (err) {

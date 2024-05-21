@@ -41,12 +41,30 @@ function displayRoomsData(data) {
     const joinButton = document.createElement("button");
     joinButton.classList.add("join-button");
     joinButton.textContent = "Join";
-    if (game.maxPlayers === game.users.length) {
+    //if the user is already in this room dont let them join with two windows
+    //this can cause a problem where if the user closes or leaves in one window it sets them to
+    //disconnected but they remain in the game in the other window
+    //need a way to check if the user clicking join is already in the game or not
+    //if any element in game.users has the same userId then set letIn to false
+
+    //this implementation doesnt work because game.users isnt updated I need fetchRoomsData() to consisitently retrivew up to date room data
+    let letIn = true
+    for (let i = 0; i < game.users.length; i++) {
+      if (game.users[i].userId.toString() === userId) {
+        letIn = false
+      }
+    }
+    console.log(letIn)
+    console.log("------------")
+    console.log(userId)
+
+    //disable join button if game is full, game is playing, or this user is already in the lobby
+    if (game.maxPlayers === game.users.length || game.status === 'playing' || !letIn) {
       joinButton.style.display = "none";
     } else {
       joinButton.addEventListener("click", () => {
+
         const roomId = game.id;
-        // Basic session implementation
         socket.emit("joinRoom", roomId);
         console.log(`Joining room ${roomId}`);
         window.open(
@@ -162,16 +180,15 @@ document
 
       // Handle the response
       if (response.ok) {
-        // const result = await response.json();
+        const result = await response.json()
         console.log("Room created successfully:");
         closeCreateForm();
         window.open(
-          `/public/game.html?roomId=${game.id}&gameName=${encodeURIComponent(
-            game.name
+          `/public/game.html?roomId=${result.roomId}&gameName=${encodeURIComponent(
+            result.name
           )}`,
           "_blank"
         );
-
         // Add any additional logic (e.g., redirecting the user, showing a success message)
       } else {
         console.error("Failed to create room", response.statusText);
@@ -190,6 +207,19 @@ const socket = io("http://localhost:3000", {
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,
   reeconnectionDelayMax: 5000,
+});
+
+//check if this user has any rooms to reconnect to
+socket.emit('reconnectAttempt', userId)
+
+socket.on('roomToReconnectTo', ({roomId, roomName}) => {
+    window.open(
+      `/public/game.html?roomId=${roomId}&gameName=${encodeURIComponent(
+        roomName
+      )}`,
+      "_blank"
+    );
+
 });
 
 const messageInput = document.getElementById("messageInput");

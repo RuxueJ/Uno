@@ -121,7 +121,15 @@ export async function createRoom(req, res) {
 
     await transaction.commit();
 
-    res.status(201).json(room);
+    //add roomId to response
+    const response = {
+      roomId: room.dataValues.roomId,
+      name: room.name,
+      status: room.status,
+      maxPlayers: room.maxplayer
+    }
+
+    res.status(201).json(response);
   } catch (err) {
     await transaction.rollback();
     console.log(err);
@@ -189,10 +197,10 @@ export async function putUserInRoom(roomId, userId, socketId) {
       return null;
     }
 
-    if (room.status !== "waiting") {
-      console.log("cannot join room; game is in session");
-      return null;
-    }
+    //if (room.status !== "waiting") {
+    //  console.log("cannot join room; game is in session");
+    //  return null;
+    //}
 
     const existingroomUser = await db.models.roomUser.findOne({
       where: { roomId, userId },
@@ -346,7 +354,13 @@ export async function reconnect(userId) {
     if (userrooms) {
       userrooms.connected = true;
       await userrooms.save();
-      return userrooms.roomId;
+
+      const roomInfo = await db.models.room.findOne({
+        where: {roomId: userrooms.roomId}
+      });
+      //return both id and name
+      const roomName = roomInfo.name
+      return { roomId: userrooms.roomId, roomName }
     } else {
       return null;
     }

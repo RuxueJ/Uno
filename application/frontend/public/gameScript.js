@@ -139,6 +139,7 @@ function leaveRoom() {
   const roomId = urlParams.get("roomId");
   socket.emit("leaveRoom", roomId);
   console.log(`Leaving room ${roomId}`);
+  //because we are changing the window to lobby.html the socket disconnects and goes through socket.on('disconnecting')
   window.location.href = "lobby.html"; // Change the URL accordingly
 }
 
