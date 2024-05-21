@@ -157,6 +157,8 @@ function startGame() {
   console.log(`Starting game ${roomId}`);
   clearDeckMessage();
   clearStartButton();
+  clearDeckMessage();
+  clearStartButton();
 }
 
 function endGame() {
