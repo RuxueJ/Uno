@@ -3,8 +3,8 @@ import db from '@/database';
 
 export function createUnoDeck()  {
     const colors = ['red', 'blue', 'green', 'yellow'];
-    const specialCards = ['skip', 'reverse', 'draw_two'];
-    const wildCards = ['wild', 'wild_draw_four'];
+    const specialCards = ['skip', 'reverse', 'draw2'];
+    const wildCards = ['wildchange', 'wilddraw4'];
     const numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
     let deck = [];
