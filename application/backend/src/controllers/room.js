@@ -242,23 +242,32 @@ export async function leaveRoom(email, roomId) {
 
     const existingRoomUser = roomUsers.find((user) => user.dataValues.userId === userId);
     if (existingRoomUser) {
-      const isHost = existingRoomUser.isHost;
-      if (isHost) {
-        if (userCount > 1) {
-          roomUsers[1].isHost = true;
-          await roomUsers[1].save({ transaction }); // 提交新房主的更改
+
+
+      //case where a user clicks leaveroom when the game is playing
+      if (room.status === "playing") {
+        existingRoomUser.connected = false
+        await existingRoomUser.save()
+        console.log("game is playing so setting player to disconnect on leaveRoom button")
+      } else {
+        const isHost = existingRoomUser.isHost;
+        if (isHost) {
+          if (userCount > 1) {
+            roomUsers[1].isHost = true;
+            await roomUsers[1].save({ transaction }); // 提交新房主的更改
+          }
         }
+        // 尝试删除用户
+        await existingRoomUser.destroy({ transaction });
+        console.log("user " + userId + " removed from room");
+
+        if (userCount === 1) {
+          // 如果房间中没有用户，则删除房间
+          await room.destroy({ transaction });
+          console.log("room " + roomId + " deleted");
+        }  
       }
 
-      // 尝试删除用户
-      await existingRoomUser.destroy({ transaction });
-      console.log("user " + userId + " removed from room");
-
-      if (userCount === 1) {
-        // 如果房间中没有用户，则删除房间
-        await room.destroy({ transaction });
-        console.log("room " + roomId + " deleted");
-      }
 
       await transaction.commit();
       return existingRoomUser;

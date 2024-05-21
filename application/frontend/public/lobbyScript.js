@@ -42,32 +42,41 @@ function displayRoomsData(data) {
     joinButton.classList.add("join-button");
     joinButton.textContent = "Join";
 
+    //let in is true if they are in this game and disconnected
     let letIn = false
     for (let i = 0; i < game.users.length; i++) {
       if (game.users[i].userId.toString() === userId) {
-        //check if the user is disconnected if so then let them in
-        if(game.users[i].connected === false) {
+        if (game.users[i].connected === false) {
           letIn = true
         }
       }
     }
 
-    //disable join button if game is full, game is playing, or this user is already in the lobby
-    if (!letIn && (game.maxPlayers === game.users.length || game.status === 'playing')) {
-      joinButton.style.display = "none";
-    } else {
-      joinButton.addEventListener("click", () => {
+    //in room is true if they are in this game
+    let inRoom = false
+    for (let i = 0; i < game.users.length; i++) {
+      if (game.users[i].userId.toString() === userId) {
+        inRoom = true
+      }
+    }
 
+
+
+    // Conditions for displaying the join button
+    if ((game.status !== "playing" && game.maxPlayers > game.users.length && !inRoom) || (game.status === "playing" && letIn)) {
+      // Show the join button
+      joinButton.addEventListener("click", () => {
         const roomId = game.id;
         socket.emit("joinRoom", roomId);
         console.log(`Joining room ${roomId}`);
         window.open(
-          `/public/game.html?roomId=${game.id}&gameName=${encodeURIComponent(
-            game.name
-          )}`,
+          `/public/game.html?roomId=${game.id}&gameName=${encodeURIComponent(game.name)}`,
           "_blank"
         );
       });
+    } else {
+      // Hide the join button
+      joinButton.style.display = "none";
     }
 
     const playerContainer = document.createElement("div");
@@ -218,7 +227,7 @@ socket.emit('reconnectAttempt', userId)
 //     //   )}`,
 //     //   "_blank"
 //     // );
-    
+
 // });
 
 const messageInput = document.getElementById("messageInput");

@@ -50,6 +50,8 @@ export function setUpSocketIO(io) {
           socket.id
         );
         if (putUserInRoomAttempt === null) {
+          //if the user refreshes the page while the game is waiting
+          //we go back to lobby instead if they close the browser 
           socket.emit('backToLobby')
           throw new Error("error putting user in room inside sockets.js");
         }
@@ -87,7 +89,7 @@ export function setUpSocketIO(io) {
 
     socket.on("leaveRoom", async (roomId) => {
       try {
-        const leaveAttempt = await roomController.leaveRoom(email, roomId);
+        const leaveAttempt = await roomController.disconnect(userId, roomId);
         if (leaveAttempt == null) {
           throw new Error("error leaving room inside socket.js");
         }
