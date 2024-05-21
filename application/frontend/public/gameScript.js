@@ -1,5 +1,6 @@
 let hand = [];
 let topPlayedCard = "";
+let isPlaying = false;
 
 const hostWaitingRoomFullMessage =
   "The room is not full. To start the game, please wait for another guest to come...";
@@ -111,14 +112,16 @@ async function getUserInRoom() {
         if (user.userId == userId) {
           if (user.isHost) {
             if (result.player_list.length == result.max_player) {
-              addStartButton();
-              setDeckMessage(hostWaitingStartMessage);
+              if(!isPlaying) {
+                addStartButton();
+                setDeckMessage(hostWaitingStartMessage);
+              }
             } else {
-              setDeckMessage(hostWaitingRoomFullMessage);
+              if(!isPlaying) setDeckMessage(hostWaitingRoomFullMessage);
             }
           } else {
             clearStartButton();
-            setDeckMessage(guestWaitingStartMessage);
+            if(!isPlaying) setDeckMessage(guestWaitingStartMessage);
           }
         }
       });
@@ -172,6 +175,7 @@ function sendGameMessage() {
 }
 
 socket.on("connect", () => {
+  isPlaying = true;
   console.log("Successfully connected to the server!");
   setTimeout(() => {
     reJoinGame();
