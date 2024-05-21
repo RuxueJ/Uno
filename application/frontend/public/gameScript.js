@@ -200,7 +200,10 @@ socket.on("newRoomMessage", function (data) {
 socket.on("userJoin", () => {
   console.log("I am in userJoin event");
   getUserInRoom();
+  //set the connected attribute to true
+  socket.emit('reconnected', (roomId))
 });
+
 
 // Handling "userLeft" event
 socket.on("userLeft", () => {

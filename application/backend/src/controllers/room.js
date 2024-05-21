@@ -197,11 +197,6 @@ export async function putUserInRoom(roomId, userId, socketId) {
       return null;
     }
 
-    //if (room.status !== "waiting") {
-    //  console.log("cannot join room; game is in session");
-    //  return null;
-    //}
-
     const existingroomUser = await db.models.roomUser.findOne({
       where: { roomId, userId },
     });

@@ -57,6 +57,8 @@ export function setUpSocketIO(io) {
         }
         socket.leave("lobby");
         socket.join(roomId);
+
+
         console.log("put user: " + userId + " back into room: " + roomId);
         emitToRoom(io, roomId, "userJoin", {
           userId: userId,
@@ -230,9 +232,10 @@ export function setUpSocketIO(io) {
     });
 
     //not using this right now
-    socket.on("reconnect", () => {
-      console.log("User reconnected. Socket ID: ", socket.id);
+    socket.on("reconnected", (roomId) => {
+      console.log("User: " + userId + " reconnected to room: " + roomId + ". Socket ID: ", socket.id);
       console.log(socket.rooms);
+      gameController.userReconnected(userId, roomId)
     });
   });
 }

@@ -444,3 +444,33 @@ export async function getPlayerList(req, res) {
         res.status(500).json({ error: err.message });
     }
 }
+
+//used to give a reconnected user their player state back
+export async function getPlayerState(roomId, userId) {
+    const playerState = await db.models.playerState.findOne( { where: { roomId, userId }});
+    if(!playerState) {
+        console.log('playerState does not exist for: ' + userId);
+        return null;
+    }
+    return playerState
+}
+
+export async function getGameState(roomId) {
+    const gameState = await db.models.gameState.findOne( { where: {roomId} })
+    if(!gameState) {
+        console.log('gameState does not exist for: ' + roomId )
+        return null
+    }
+    return gameState
+}
+
+export async function userReconnected(userId, roomId) {
+    const userInfo = await db.models.roomUser.findOne( { where: {userId, roomId }})
+    if (!userInfo) {
+        console.log('unable to find user')
+        return null
+    }
+    userInfo.connected = true
+
+    await userInfo.save()
+}
