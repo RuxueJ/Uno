@@ -467,7 +467,7 @@ export async function getGameState(roomId) {
 export async function userReconnected(userId, roomId) {
     const userInfo = await db.models.roomUser.findOne( { where: {userId, roomId }})
     if (!userInfo) {
-        console.log('unable to find user')
+        console.log('unable to find user: ' + userId + "in room: " + roomId)
         return null
     }
     userInfo.connected = true
