@@ -40,9 +40,7 @@
         <div id="deck">
           <!-- Deck cards will be dynamically added here -->
         </div>
-        <div id = "draw-card-container">
-          <!-- <button id="draw-card">Draw Card</button> -->
-        </div>
+       
 
        
 
@@ -67,7 +65,16 @@
       </div>
       
       <div class="bottom-button">
-        <button id="play-card">Play Card</button>
+        <!-- <div>
+          <h2>It is your turn</h2>
+        </div> -->
+        <div id = "draw-card-container">
+          <button id="draw-card" onclick="drawCard()" >Draw Card</button>
+        </div>
+        <div id = "play-card-container">
+            <button id="play-card" onclick="playCard()">Play Card</button>
+        </div>
+        
       </div>
     </div>
   </div>

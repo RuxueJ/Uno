@@ -140,6 +140,10 @@ body {
 .bottom-button {
   flex: 1;
   margin-top: auto;
+  display: flex;
+  flex-direction: row;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
 }
 
 .player-list {
