@@ -14,7 +14,9 @@ async function fetchRoomsData() {
     }
   } catch (error) {
     console.error("Error fetching rooms data:", error);
-  } 
+  } finally {
+    setTimeout(fetchRoomsData, 3000);
+  }
 }
 
 function refreshGameList() {

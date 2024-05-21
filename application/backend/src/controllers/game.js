@@ -136,14 +136,14 @@ export async function startGame(roomId, userId) {
             //that player will decide which color to set it to
             //when wild cards are shuffled back into a deck reset their color to null
             //if wild4 shuffle back in deck and redraw
-            while(topCard.value === 'wild_draw_four') {
+            while(topCard.value === 'wilddraw4') {
                 const putCardInEmptyArray = []
                 putCardInEmptyArray.push(topCard);
                 reshuffle(putCardInEmptyArray, deck)
                 topCard = drawCard(deck);
             }
 
-            if (topCard.value === 'wild') { 
+            if (topCard.value === 'wildchange') { 
                 const randomNumber = Math.random();
                 topCard.color = randomNumber < 0.25 ? 'red' : randomNumber < 0.5 ? 'blue' : randomNumber < 0.75 ? 'green' : 'yellow';
             }
@@ -284,13 +284,13 @@ export async function playerDrawCard(roomId, userId) {
         // decide how many cards to draw
         const topCard = gameState.discardDeckTopCard;
         let countNeedToDraw;
-        if (topCard.value === 'wild_draw_four') {
+        if (topCard.value === 'wilddraw4') {
             countNeedToDraw = 4;
-        } else if (topCard.value === 'draw_two') {
+        } else if (topCard.value === 'draw2') {
             countNeedToDraw = 0;
             discardDeck = gameState.discardDeck;
             const index = 0;
-            while (index < discardDeck.length && discardDeck[index].value === 'draw_two') {
+            while (index < discardDeck.length && discardDeck[index].value === 'draw2') {
                 countNeedToDraw += 2;
                 index++;
             }
