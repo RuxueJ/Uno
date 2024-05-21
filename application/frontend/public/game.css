@@ -5,6 +5,7 @@ body {
   height: 100%;
   overflow: hidden; /* Disable scrollbars */
   width: 100%;
+  background-color: #f0f0f0;
 }
 
 .container {
@@ -16,6 +17,10 @@ body {
   overflow: hidden; /* Hide overflow content */
 }
 
+.container > div {
+  flex-basis: 0;
+}
+
 #gameRoomHeader {
   display: flex;
   justify-content: space-between; /* Distribute items evenly along the main axis */
@@ -24,6 +29,7 @@ body {
   background-color: #f0f0f0; /* Set background color */
   /* border-bottom: 2px solid #ccc;  */
   /* margin-bottom: 20px; */
+  height: 10vh;
 }
 
 #gameRoomName {
@@ -48,11 +54,10 @@ body {
 }
 
 .game-deck {
-  /* height: 60%; */
-  /* width: 100%; */
+  height: 50vh;
   display: flex;
   flex-direction: row;
-  flex-basis: 60%;
+  /* flex-basis: 60%; */
   justify-content: space-between;
   /* margin-bottom: 20px; */
 }
@@ -60,11 +65,10 @@ body {
 .row {
   display: flex;
   justify-content: space-between;
-  margin: 20px;
 }
 
 .column {
-  padding: 20px;
+  padding: 0 20px;
   background-color: #fff;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -77,7 +81,6 @@ body {
   width: 50%;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Center horizontally */
   align-items: center; /* Center vertically */
 }
 
@@ -86,7 +89,7 @@ body {
   flex-direction: row;
   justify-content: center; /* Center horizontally */
   align-items: center; /* Center vertically */
-  flex-basis: 80%;
+  /* flex-basis: 80%; */
 }
 
 .chat-box {
@@ -95,11 +98,11 @@ body {
 
 .user-hand {
   /* margin-top: 20px; */
-  flex-basis: 60%;
+  /* flex-basis: 60%; */
   background-color: #f0f0f0;
-  padding: 20px;
   /* height: 80%; */
   width: 100%;
+  height: 40vh;
   display: flex;
   flex-direction: column;
   justify-content: center; /* Center horizontally */
@@ -121,29 +124,20 @@ body {
   display: inline-block;
   margin-right: 10px; /* Adjust as needed */
   max-width: 200px; /* Adjust maximum width as needed */
-  height: 80%;
+  height: 60%;
   flex-shrink: 1;
 }
 
 .hand_card:hover {
-  width : 220px;
-  height: 100%;
+  height: 70%;
   transition: 1s ease;
 }
 
 .deck_card {
+  height: 60%;
   display: inline-block;
   margin-right: 10px; /* Adjust as needed */
   max-width: 250px; /* Adjust maximum width as needed */
-  height: 100%;
-}
-.bottom-button {
-  flex: 1;
-  margin-top: auto;
-  display: flex;
-  flex-direction: row;
-  justify-content: center; /* Center horizontally */
-  align-items: center; /* Center vertically */
 }
 
 .player-list {
@@ -216,4 +210,13 @@ input[type="text"] {
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.bottom-button {
+  margin-bottom: 20px;
+}
+
+#messages {
+  height: 30vh;
+  overflow: scroll; 
 }
