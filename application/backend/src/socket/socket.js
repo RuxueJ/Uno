@@ -17,14 +17,12 @@ export function setUpSocketIO(io) {
     const token = socket.handshake.query.token;
 
     socket.on('reconnectAttempt', async (userId) => {
-      console.log("starting reconnectAttempt@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
       setTimeout(async () => {
         try {
           const reconnectAttempt = await roomController.reconnect(userId);
           if (reconnectAttempt == null) {
             console.log("No game rooms for this user to reconnect to");
           } else {
-            console.log("game to reconnect to@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
             const { roomId, roomName } = reconnectAttempt;
             console.log("User: " + email + " reconnecting to: " + roomId + " with roomName: " + roomName);
 
@@ -32,7 +30,7 @@ export function setUpSocketIO(io) {
             //problem here is it redirects and then immediatly goes reJoinGame()
             //this path is when a user closes tab --> then refreshes on lobby page --> hitting redirect in roomToReconnectTo and then immediate reJoinGame()
             //which triggers putUserInRoom
-            socket.emit('roomToReconnectTo', { roomId: roomId, roomName: roomName });
+            //socket.emit('roomToReconnectTo', { roomId: roomId, roomName: roomName });
 
             //this path happens when user refreshes game page
             socket.emit('userReconnect');

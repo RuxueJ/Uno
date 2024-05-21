@@ -42,15 +42,18 @@ function displayRoomsData(data) {
     joinButton.classList.add("join-button");
     joinButton.textContent = "Join";
 
-    let letIn = true
+    let letIn = false
     for (let i = 0; i < game.users.length; i++) {
       if (game.users[i].userId.toString() === userId) {
-        letIn = false
+        //check if the user is disconnected if so then let them in
+        if(game.users[i].connected === false) {
+          letIn = true
+        }
       }
     }
 
     //disable join button if game is full, game is playing, or this user is already in the lobby
-    if (game.maxPlayers === game.users.length || game.status === 'playing' || !letIn) {
+    if (!letIn && (game.maxPlayers === game.users.length || game.status === 'playing')) {
       joinButton.style.display = "none";
     } else {
       joinButton.addEventListener("click", () => {
@@ -207,16 +210,16 @@ const socket = io("http://localhost:3000", {
 //check if this user has any rooms to reconnect to
 socket.emit('reconnectAttempt', userId)
 
-socket.on('roomToReconnectTo', ({roomId, roomName}) => {
-    console.log("inside roomToReconnectTo")
-    window.open(
-      `/public/game.html?roomId=${roomId}&gameName=${encodeURIComponent(
-        roomName
-      )}`,
-      "_blank"
-    );
+// socket.on('roomToReconnectTo', ({roomId, roomName}) => {
+//     console.log("inside roomToReconnectTo")
+//     // window.open(
+//     //   `/public/game.html?roomId=${roomId}&gameName=${encodeURIComponent(
+//     //     roomName
+//     //   )}`,
+//     //   "_blank"
+//     // );
     
-});
+// });
 
 const messageInput = document.getElementById("messageInput");
 const messages = document.getElementById("messages");

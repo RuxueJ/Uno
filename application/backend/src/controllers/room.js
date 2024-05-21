@@ -57,7 +57,8 @@ export async function getRoomsData(req, res) {
           return {
             userId: user.userId,
             userName: userInfo.userName,
-            isHost: user.isHost
+            isHost: user.isHost,
+            connected: user.connected
           };
         });
         // Return the integrated data
