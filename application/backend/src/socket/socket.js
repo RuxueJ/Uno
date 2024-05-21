@@ -52,6 +52,7 @@ export function setUpSocketIO(io) {
           socket.id
         );
         if (putUserInRoomAttempt === null) {
+          socket.emit('backToLobby')
           throw new Error("error putting user in room inside sockets.js");
         }
         socket.leave("lobby");

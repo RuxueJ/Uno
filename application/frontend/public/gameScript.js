@@ -178,6 +178,10 @@ socket.on("connect", () => {
   }, 500); //needs short delay to make sure the socket is fully connected
 });
 
+socket.on('backToLobby', () => {
+  window.location.href = "lobby.html";
+})
+
 function reJoinGame() {
   console.log("rejoining: " + roomId + " for user: " + userId);
   socket.emit("putUserInRoom", roomId);
