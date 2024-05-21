@@ -125,6 +125,12 @@ body {
   flex-shrink: 1;
 }
 
+.hand_card:hover {
+  width : 220px;
+  height: 100%;
+  transition: 1s ease;
+}
+
 .deck_card {
   display: inline-block;
   margin-right: 10px; /* Adjust as needed */
