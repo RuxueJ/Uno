@@ -263,7 +263,7 @@ export function setUpSocketIO(io) {
           socket.emit('playersHand', playersHand)
         }
       }
-      const gameState = await gameController.getGameState(roomId)
+      const gameState = await gameController.getGameState(roomId, userId)
       if(!gameState) {
         console.log("unable to get room's gameState")
       }
