@@ -224,11 +224,22 @@ socket.on("userLeft", () => {
 
 // Handling "userLeft" event
 socket.on("drawnCards", (data) => {
-  console.log(JSON.stringify(data[0]));
+  console.log(JSON.stringify(data));
+  data.forEach((card) => {
+    hand.push(getURL(card));
+  });
+  renderHand();
 });
 
 socket.on("nextTurn", (data) => {
   // check if it is your turn
+  if (data.nextTurn == userId) {
+    showDrawPlayButton();
+    showTurn();
+  } else {
+    // Get the div element by its ID
+    disappearDrawPlayButton();
+  }
 });
 
 socket.on("playedCard", (data) => {
@@ -242,6 +253,27 @@ function startGame() {
   console.log("I am emit startGame event");
 }
 
+function disappearDrawPlayButton() {
+  var divElement = document.getElementById("draw-card-container");
+
+  // Set its display property to "none"
+  divElement.style.display = "none";
+  var divElement = document.getElementById("play-card-container");
+
+  // Set its display property to "none"
+  divElement.style.display = "none";
+}
+
+function showDrawPlayButton() {
+  var divElement = document.getElementById("draw-card-container");
+
+  // Set its display property to "none"
+  divElement.style.display = "inline";
+  var divElement = document.getElementById("play-card-container");
+
+  // Set its display property to "none"
+  divElement.style.display = "inline";
+}
 socket.on("playersHand", (data) => {
   console.log("I am in playersHand event");
   console.log(data);
@@ -251,10 +283,18 @@ socket.on("playersHand", (data) => {
   renderHand();
 });
 socket.on("gameStarted", (data) => {
-  console.log("I am in gameStarted event" + data);
+  console.log("I am in gameStarted event" + JSON.stringify(data));
   topPlayedCard = getURL(data.discardDeckTopCard);
   clearDeckMessage();
   renderDeckCard(topPlayedCard);
+  clearStartButton();
+  if (data.nextTurn == userId) {
+    showDrawPlayButton();
+    showTurn();
+  } else {
+    // Get the div element by its ID
+    disappearDrawPlayButton();
+  }
 });
 
 function getURL(card) {
@@ -268,12 +308,6 @@ function getURL(card) {
 }
 //=========================startGame====================================
 
-// Event listener for drawing a card
-document.getElementById("draw-card").addEventListener("click", () => {
-  // Add logic to draw a card
-  alert("Drawing a card...");
-});
-
 function handleKeypress(event) {
   if (event.key === "Enter") {
     sendGameMessage();
@@ -285,6 +319,7 @@ function handleKeypress(event) {
 
 function renderHand() {
   const handDiv = document.getElementById("hand");
+  handDiv.innerHTML = "";
 
   // Loop through the cardImages array and create img elements for each card
   hand.forEach((card) => {
@@ -323,8 +358,12 @@ function renderDeckCard(topPlayedCardUrl) {
 //=========================renderDeck====================================
 
 //=========================drawCard====================================
-const drawCard = document.getElementById("draw-card");
-drawCard.addEventListener("click", () => {
+
+function drawCard() {
   socket.emit("drawCard", roomId, userId);
-});
+}
+
+function playCard() {
+  socket.emit("playCard", roomId, userId);
+}
 //=========================drawCard====================================
