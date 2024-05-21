@@ -1,6 +1,6 @@
 export const checkCards = (deckTopCard, cardsInHand) => {
     let cardsToplay = []
-    if (deckTopCard === null || deckTopCard === undefined) {
+    if (deckTopCard === null || cardsInHand === undefined || cardsInHand.length === 0) {
         return cardsToplay
     }
 

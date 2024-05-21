@@ -64,6 +64,7 @@ export function setUpSocketIO(io) {
         emitToRoom(io, roomId, "userJoin", {
           userId: userId,
           userName: userName,
+          gamePlaying: putUserInRoomAttempt.gamePlaying
         });
 
         socket.emit('userReconnect')
@@ -156,9 +157,13 @@ export function setUpSocketIO(io) {
         }
         console.log("successfully drew card: " + roomId);
         socket.emit("drawnCards", drawStatus.drawnCards);
+        const nextTurn = {
+          "nextTurn": drawStatus.nextTurn,
+          "direction": drawStatus.direction
+        }
         io.to(roomId).emit(
           "nextTurn",
-          `User ${userName})} drew ${countNeedToDraw} cards.`
+          nextTurn
         );
       } catch (err) {
         console.log("problem drawing card: " + roomId + " in socket.js");
@@ -178,9 +183,13 @@ export function setUpSocketIO(io) {
         }
         console.log("successfully played card: " + roomId);
         io.to(roomId).emit("playedCard", playStatus);
+        const nextTurn = {
+          "nextTurn": drawStatus.nextTurn,
+          "direction": drawStatus.direction
+        }
         io.to(roomId).emit(
           "nextTurn",
-          `User ${userName})} play ${countNeedToDraw} cards.`
+          nextTurn
         );
       } catch (err) {
         console.log("problem playing card: " + roomId + " in socket.js");
@@ -238,6 +247,10 @@ export function setUpSocketIO(io) {
     socket.on("reconnected", async (roomId) => {
       console.log("User: " + userId + " reconnected to room: " + roomId + ". Socket ID: ", socket.id);
       console.log(socket.rooms);
+      const gameRoomIsPlaying = await gameController.getRoomIsPlaying(roomId);
+      if (!gameRoomIsPlaying) {
+        console.log("Game is not playing, will redirect user to lobby");
+      }
       await gameController.userReconnected(userId, roomId)
 
       const playerState = await gameController.getPlayerState(userId, roomId)
@@ -251,7 +264,6 @@ export function setUpSocketIO(io) {
           socket.emit('playersHand', playersHand)
         }
       }
-     
       const gameState = await gameController.getGameState(roomId)
       if(!gameState) {
         console.log("unable to get room's gameState")
