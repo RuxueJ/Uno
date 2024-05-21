@@ -148,6 +148,8 @@ function startGame() {
   const roomId = urlParams.get("roomId");
   socket.emit("startGame", roomId);
   console.log(`Starting game ${roomId}`);
+  clearDeckMessage();
+  clearStartButton();
 }
 
 function endGame() {
@@ -178,12 +180,11 @@ socket.on("connect", () => {
   }, 500); //needs short delay to make sure the socket is fully connected
 });
 
+socket.emit("reconnectAttempt", userId);
 
-socket.emit('reconnectAttempt', userId)
-
-socket.on('backToLobby', () => {
+socket.on("backToLobby", () => {
   window.location.href = "lobby.html";
-})
+});
 
 function reJoinGame() {
   console.log("rejoining: " + roomId + " for user: " + userId);
@@ -203,18 +204,15 @@ socket.on("newRoomMessage", function (data) {
 socket.on("userJoin", () => {
   console.log("I am in userJoin event");
   getUserInRoom();
-
 });
 
-socket.on('userReconnect', () => {
-  console.log("I am in userReconnect event")
+socket.on("userReconnect", () => {
+  console.log("I am in userReconnect event");
   getUserInRoom();
-  socket.emit('reconnected', roomId)
+  socket.emit("reconnected", roomId);
   clearDeckMessage();
   clearStartButton();
-
-})
-
+});
 
 // Handling "userLeft" event
 socket.on("userLeft", () => {
@@ -233,6 +231,7 @@ socket.on("drawnCards", (data) => {
 
 socket.on("nextTurn", (data) => {
   // check if it is your turn
+  console.log("I am in nextTurn event");
   if (data.nextTurn == userId) {
     showDrawPlayButton();
     showTurn();
@@ -245,6 +244,9 @@ socket.on("nextTurn", (data) => {
 socket.on("playedCard", (data) => {
   // top deck card
   console.log(data);
+
+
+  
 });
 
 //=========================startGame====================================
@@ -291,6 +293,7 @@ socket.on("gameStarted", (data) => {
   if (data.nextTurn == userId) {
     showDrawPlayButton();
     showTurn();
+    showDrawPlayButton();
   } else {
     // Get the div element by its ID
     disappearDrawPlayButton();

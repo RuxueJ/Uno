@@ -43,34 +43,40 @@ function displayRoomsData(data) {
     joinButton.textContent = "Join";
 
     //let in is true if they are in this game and disconnected
-    let letIn = false
+    let letIn = false;
     for (let i = 0; i < game.users.length; i++) {
       if (game.users[i].userId.toString() === userId) {
         if (game.users[i].connected === false) {
-          letIn = true
+          letIn = true;
+          joinButton.textContent = "Rejoin";
         }
       }
     }
 
     //in room is true if they are in this game
-    let inRoom = false
+    let inRoom = false;
     for (let i = 0; i < game.users.length; i++) {
       if (game.users[i].userId.toString() === userId) {
-        inRoom = true
+        inRoom = true;
       }
     }
 
-
-
     // Conditions for displaying the join button
-    if ((game.status !== "playing" && game.maxPlayers > game.users.length && !inRoom) || (game.status === "playing" && letIn)) {
+    if (
+      (game.status !== "playing" &&
+        game.maxPlayers > game.users.length &&
+        !inRoom) ||
+      (game.status === "playing" && letIn)
+    ) {
       // Show the join button
       joinButton.addEventListener("click", () => {
         const roomId = game.id;
         socket.emit("joinRoom", roomId);
         console.log(`Joining room ${roomId}`);
         window.open(
-          `/public/game.html?roomId=${game.id}&gameName=${encodeURIComponent(game.name)}`,
+          `/public/game.html?roomId=${game.id}&gameName=${encodeURIComponent(
+            game.name
+          )}`,
           "_blank"
         );
       });
@@ -189,9 +195,9 @@ document
 
         console.log("I need to rediect to room");
         window.open(
-          `/public/game.html?roomId=${result.roomId}&gameName=${encodeURIComponent(
-            result.name
-          )}`,
+          `/public/game.html?roomId=${
+            result.roomId
+          }&gameName=${encodeURIComponent(result.name)}`,
           "_blank"
         );
         console.log("I success to rediect to room");
@@ -217,7 +223,7 @@ const socket = io("http://localhost:3000", {
 });
 
 //check if this user has any rooms to reconnect to
-socket.emit('reconnectAttempt', userId)
+socket.emit("reconnectAttempt", userId);
 
 // socket.on('roomToReconnectTo', ({roomId, roomName}) => {
 //     console.log("inside roomToReconnectTo")

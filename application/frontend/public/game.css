@@ -3,7 +3,7 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden; /* Disable scrollbars */
+  /* overflow: hidden;  */
   width: 100%;
 }
 
@@ -13,7 +13,7 @@ body {
   width: 100vw; /* 100% of the viewport width */
   height: 100vh; /* 100% of the viewport height */
 
-  overflow: hidden; /* Hide overflow content */
+  /* overflow: hidden;  */
 }
 
 #gameRoomHeader {
@@ -126,7 +126,7 @@ body {
 }
 
 .hand_card:hover {
-  width : 220px;
+  width: 220px;
   height: 100%;
   transition: 1s ease;
 }
