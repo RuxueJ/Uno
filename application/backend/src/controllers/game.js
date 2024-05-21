@@ -446,7 +446,7 @@ export async function getPlayerList(req, res) {
 }
 
 //used to give a reconnected user their player state back
-export async function getPlayerState(roomId, userId) {
+export async function getPlayerState(userId, roomId) {
     const playerState = await db.models.playerState.findOne( { where: { roomId, userId }});
     if(!playerState) {
         console.log('playerState does not exist for: ' + userId);
@@ -471,6 +471,17 @@ export async function userReconnected(userId, roomId) {
         return null
     }
     userInfo.connected = true
+
+    await userInfo.save()
+}
+
+export async function userDisconnected(userId, roomId) {
+    const userInfo = await db.models.roomUser.findOne( { where: {userId, roomId }})
+    if (!userInfo) {
+        console.log('unable to find user: ' + userId + "in room: " + roomId)
+        return null
+    }
+    userInfo.connected = false
 
     await userInfo.save()
 }

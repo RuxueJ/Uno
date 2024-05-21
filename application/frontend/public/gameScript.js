@@ -178,6 +178,9 @@ socket.on("connect", () => {
   }, 500); //needs short delay to make sure the socket is fully connected
 });
 
+
+socket.emit('reconnectAttempt', userId)
+
 socket.on('backToLobby', () => {
   window.location.href = "lobby.html";
 })
@@ -201,10 +204,16 @@ socket.on("userJoin", () => {
   console.log("I am in userJoin event");
   getUserInRoom();
 
-  //set the connected attribute to true
-  socket.emit('reconnected', (roomId))
-
 });
+
+socket.on('userReconnect', () => {
+  console.log("I am in userReconnect event")
+  getUserInRoom();
+  socket.emit('reconnected', roomId)
+  clearDeckMessage();
+  clearStartButton();
+
+})
 
 
 // Handling "userLeft" event

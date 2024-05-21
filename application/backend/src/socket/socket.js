@@ -17,31 +17,31 @@ export function setUpSocketIO(io) {
     const token = socket.handshake.query.token;
 
     socket.on('reconnectAttempt', async (userId) => {
-      try {
-        const reconnectAttempt = await roomController.reconnect(userId);
-        if (reconnectAttempt == null) {
-          console.log("no game rooms for this user to reconnect to");
-        } else {
-          const { roomId, roomName } = reconnectAttempt
-          console.log("user: " + email + " reconnecting to: " + roomId + " with roomName: " + roomName);
-          //may need more logic to reapply game state
-          //rejoin socket room for this game room
-          //if there is a room to join emit it back to front end so we can change page
-          console.log("emitting to roomtoreconnectto " + roomId + "    " + roomName)
-          socket.emit('roomToReconnectTo', {roomId: roomId, roomName: roomName} );
-          emitToRoom(
-            io,
-            reconnectAttempt,
-            "user reconnect",
-            "user " + email + "reconnected to room"
-          );
+      console.log("starting reconnectAttempt@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+      setTimeout(async () => {
+        try {
+          const reconnectAttempt = await roomController.reconnect(userId);
+          if (reconnectAttempt == null) {
+            console.log("No game rooms for this user to reconnect to");
+          } else {
+            console.log("game to reconnect to@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+            const { roomId, roomName } = reconnectAttempt;
+            console.log("User: " + email + " reconnecting to: " + roomId + " with roomName: " + roomName);
+
+
+            //problem here is it redirects and then immediatly goes reJoinGame()
+            //this path is when a user closes tab --> then refreshes on lobby page --> hitting redirect in roomToReconnectTo and then immediate reJoinGame()
+            //which triggers putUserInRoom
+            socket.emit('roomToReconnectTo', { roomId: roomId, roomName: roomName });
+
+            //this path happens when user refreshes game page
+            socket.emit('userReconnect');
+          }
+        } catch (err) {
+          console.log(err);
+          socket.emit("reconnectError", { message: "Failed to execute reconnection check" });
         }
-      } catch (err) {
-        console.log(err);
-        socket.emit("reconnectError", {
-          message: "failed to execute reconnection check",
-        });
-      }
+      }, 2000); // Delay of 1 second (1000 milliseconds)
     });
 
     socket.on("putUserInRoom", async (roomId) => {
@@ -58,12 +58,16 @@ export function setUpSocketIO(io) {
         socket.leave("lobby");
         socket.join(roomId);
 
+        //add a check if the user was already in this room if so then emit a userReconnect
 
         console.log("put user: " + userId + " back into room: " + roomId);
         emitToRoom(io, roomId, "userJoin", {
           userId: userId,
           userName: userName,
         });
+
+        socket.emit('userReconnect')
+
       } catch (err) {
         console.log(err);
       }
@@ -232,10 +236,34 @@ export function setUpSocketIO(io) {
     });
 
     //not using this right now
-    socket.on("reconnected", (roomId) => {
+    socket.on("reconnected", async (roomId) => {
       console.log("User: " + userId + " reconnected to room: " + roomId + ". Socket ID: ", socket.id);
       console.log(socket.rooms);
-      gameController.userReconnected(userId, roomId)
+      await gameController.userReconnected(userId, roomId)
+
+      const playerState = await gameController.getPlayerState(userId, roomId)
+      if(!playerState) {
+        console.log("unable to get user's playerState")
+      } else {
+        const playersHand = playerState.dataValues.playerHand;
+        if(!playersHand) {
+          console.log("unable to get player's hand")
+        } else {
+          socket.emit('playersHand', playersHand)
+        }
+      }
+     
+      const gameState = await gameController.getGameState(roomId)
+      if(!gameState) {
+        console.log("unable to get room's gameState")
+      }
+
+      //send top card
+      //send discardtopcard
+      socket.emit('gameStarted', gameState)
+
     });
+
+
   });
 }

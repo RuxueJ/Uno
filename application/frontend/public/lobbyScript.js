@@ -208,13 +208,14 @@ const socket = io("http://localhost:3000", {
 socket.emit('reconnectAttempt', userId)
 
 socket.on('roomToReconnectTo', ({roomId, roomName}) => {
+    console.log("inside roomToReconnectTo")
     window.open(
       `/public/game.html?roomId=${roomId}&gameName=${encodeURIComponent(
         roomName
       )}`,
       "_blank"
     );
-
+    
 });
 
 const messageInput = document.getElementById("messageInput");
