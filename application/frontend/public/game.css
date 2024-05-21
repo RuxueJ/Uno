@@ -3,6 +3,8 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
+  /* overflow: hidden;  */
+  /* overflow: hidden;  */
   width: 100%;
   background-color: #f0f0f0;
   background-color: #f0f0f0;
@@ -15,10 +17,6 @@ body {
   height: 100vh; /* 100% of the viewport height */
 
   overflow: hidden; /* Hide overflow content */
-}
-
-.container > div {
-  flex-basis: 0;
 }
 
 #gameRoomHeader {
@@ -137,7 +135,9 @@ body {
 }
 
 .hand_card:hover {
-  height: 70%;
+  width: 220px;
+  width: 220px;
+  height: 100%;
   transition: 1s ease;
 }
 
