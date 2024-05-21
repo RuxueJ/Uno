@@ -109,21 +109,20 @@ async function getUserInRoom() {
         // console.log("user.isHost" + user.isHost);
         // console.log("result.player_list.length" + result.player_list.length);
         // console.log("result.max_player" + result.max_player);
-        if (user.userId == userId) {
-          if (user.isHost) {
-            if (result.player_list.length == result.max_player) {
-              if(!isPlaying) {
+        if(!isPlaying && user.userId == userId) {
+            if (user.isHost) {
+              if (result.player_list.length == result.max_player) {
                 addStartButton();
                 setDeckMessage(hostWaitingStartMessage);
+              } else {
+                setDeckMessage(hostWaitingRoomFullMessage);
               }
             } else {
-              if(!isPlaying) setDeckMessage(hostWaitingRoomFullMessage);
+              clearStartButton();
+              setDeckMessage(guestWaitingStartMessage);
             }
-          } else {
-            clearStartButton();
-            if(!isPlaying) setDeckMessage(guestWaitingStartMessage);
-          }
         }
+
       });
 
       // Add any additional logic (e.g., redirecting the user, showing a success message)
@@ -175,7 +174,6 @@ function sendGameMessage() {
 }
 
 socket.on("connect", () => {
-  isPlaying = true;
   console.log("Successfully connected to the server!");
   setTimeout(() => {
     reJoinGame();
@@ -247,6 +245,7 @@ socket.on("nextTurn", (data) => {
 });
 
 socket.on("playedCard", (data) => {
+  
   // top deck card
   console.log(data);
 });
@@ -254,6 +253,7 @@ socket.on("playedCard", (data) => {
 //=========================startGame====================================
 function startGame() {
   socket.emit("startGame", roomId);
+  isPlaying = true;
   console.log("I am emit startGame event");
 }
 
@@ -287,6 +287,7 @@ socket.on("playersHand", (data) => {
   renderHand();
 });
 socket.on("gameStarted", (data) => {
+  if(data) isPlaying = true;
   console.log("I am in gameStarted event" + JSON.stringify(data));
   topPlayedCard = getURL(data.discardDeckTopCard);
   clearDeckMessage();
