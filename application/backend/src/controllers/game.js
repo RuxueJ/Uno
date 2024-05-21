@@ -427,9 +427,9 @@ export async function getPlayerList(req, res) {
     const { roomId } = req.params;
     console.log('getting player list for room: ' + roomId);
     try {
-        const maxplayer = await db.models.room.findOne({
+        const roomCrated = await db.models.room.findOne({
             where: { roomId },
-            attributes: ['maxplayer'],
+            attributes: ['maxplayer', 'status'],
         });
         const players = await db.models.roomUser.findAll({
             where: { roomId },
@@ -454,7 +454,7 @@ export async function getPlayerList(req, res) {
         for (let i = 0; i < players.length; i++) {
             players[i].dataValues.userName = userNames[i].userName;
         }
-        res.json({ max_player: maxplayer.maxplayer, player_list: players });
+        res.json({ max_player: roomCrated.maxplayer, player_list: players, gamePlaying: roomCrated.status === "playing"});
     } catch (err) {
         console.log(err);
         res.status(500).json({ error: err.message });

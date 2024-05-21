@@ -208,8 +208,7 @@ export async function putUserInRoom(roomId, userId, socketId) {
     existingroomUser.socketId = socketId;
     await existingroomUser.save();
     return {
-      "existingroomUser": existingroomUser,
-      "gamePlaying": room.status === "playing"
+      "existingroomUser": existingroomUser
     };
   } catch (err) {
     console.log(err);

@@ -63,8 +63,7 @@ export function setUpSocketIO(io) {
         console.log("put user: " + userId + " back into room: " + roomId);
         emitToRoom(io, roomId, "userJoin", {
           userId: userId,
-          userName: userName,
-          gamePlaying: putUserInRoomAttempt.gamePlaying
+          userName: userName
         });
 
         socket.emit('userReconnect')
