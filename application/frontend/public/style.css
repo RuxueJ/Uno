@@ -128,7 +128,6 @@ body {
   border: 1px solid #ddd;
   padding: 10px;
   background: #fff;
-  height: 60vh;
   overflow-y: scroll;
 }
 #sendButton {
@@ -233,10 +232,6 @@ body {
   margin-bottom: 20px;
 }
 
-.user-hand {
-  height: 40%;
-}
-
 .row {
   display: flex;
   justify-content: space-between;
@@ -244,7 +239,7 @@ body {
 }
 
 .column {
-  padding: 20px;
+  padding: 0 20px !important;
   background-color: #fff;
   border-radius: 5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
