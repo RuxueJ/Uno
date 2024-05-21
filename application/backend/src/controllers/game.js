@@ -1,4 +1,5 @@
 import db from '@/database';
+import { checkUtil } from '@/utils'
 
 
 export function createUnoDeck()  {
@@ -350,6 +351,21 @@ export async function playerPlayCard(roomId, userId, card) {
             console.log('playerState does not exist for: ' + userId);
             return null;
         }
+        
+        // check if card can be played
+        const deckTopCard = gameState.discardDeckTopCard;
+        const cardsInHand = playerState.playerHand;
+        const cardsToPlay = checkUtil.checkCards(deckTopCard, cardsInHand);
+        if (cardsToPlay.length === 0) {
+            console.log('no cards to play');
+            return null;
+        } else {
+            const cardToPlay = cardsToPlay.find(playerCard => playerCard.type === card.type && playerCard.color === card.color && playerCard.value === card.value);
+            if (!cardToPlay) {
+                console.log('card cannot be played');
+                return null;
+            }
+        }
 
         // get index of card to be played
         const index = playerState.playerHand.findIndex(playerCard => playerCard.type === card.type && playerCard.color === card.color && playerCard.value === card.value);
@@ -484,4 +500,13 @@ export async function userDisconnected(userId, roomId) {
     userInfo.connected = false
 
     await userInfo.save()
+}
+
+export async function getRoomIsPlaying(roomId) {
+    const room = await db.models.room.findOne( { where: { roomId }})
+    if (!room) {
+        console.log('unable to find room: ' + roomId)
+        return null
+    }
+    return room.status === 'playing'
 }
