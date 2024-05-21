@@ -48,6 +48,7 @@ function displayRoomsData(data) {
       if (game.users[i].userId.toString() === userId) {
         if (game.users[i].connected === false) {
           letIn = true
+          break
         }
       }
     }
@@ -57,6 +58,7 @@ function displayRoomsData(data) {
     for (let i = 0; i < game.users.length; i++) {
       if (game.users[i].userId.toString() === userId) {
         inRoom = true
+        break
       }
     }
 

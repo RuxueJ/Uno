@@ -235,7 +235,6 @@ export function setUpSocketIO(io) {
       console.log(`Attempting to reconnect (attempt ${attemptNumber})`);
     });
 
-    //not using this right now
     socket.on("reconnected", async (roomId) => {
       console.log("User: " + userId + " reconnected to room: " + roomId + ". Socket ID: ", socket.id);
       console.log(socket.rooms);

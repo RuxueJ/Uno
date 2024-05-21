@@ -214,7 +214,7 @@ export async function putUserInRoom(roomId, userId, socketId) {
   }
 }
 
-export async function leaveRoom(email, roomId) {
+export async function leaveRoom(userId, roomId) {
   const transaction = await db.transaction();
   try {
     const room = await db.models.room.findOne({ where: { roomId: roomId }, transaction });
@@ -224,14 +224,6 @@ export async function leaveRoom(email, roomId) {
       return null;
     }
 
-    // 获取 userId
-    const user = await db.models.user.findOne({ where: { email: email }, transaction });
-    if (!user) {
-      console.log("user does not exist");
-      await transaction.rollback();
-      return null;
-    }
-    const userId = user.userId;
 
     const roomUsers = await db.models.roomUser.findAll({
       where: { roomId },
@@ -357,8 +349,8 @@ export async function reconnect(userId) {
       where: { userId, connected: false },
     });
     if (userrooms) {
-      userrooms.connected = true;
-      await userrooms.save();
+      //userrooms.connected = true;
+      //await userrooms.save();
 
       const roomInfo = await db.models.room.findOne({
         where: {roomId: userrooms.roomId}
