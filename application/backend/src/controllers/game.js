@@ -319,6 +319,8 @@ export async function playerDrawCard(roomId, userId) {
         } else {
             nextPlayerIndex = currentPlayerIndex === 0 ? playerOrder.length - 1 : currentPlayerIndex - 1;
         }
+        
+        gameState.currentPlayerIndex = nextPlayerIndex;
 
         await gameState.save( { transaction });
 
