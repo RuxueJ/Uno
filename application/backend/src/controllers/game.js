@@ -349,11 +349,15 @@ export async function playerPlayCard(roomId, userId, card) {
             return null;
         }
 
+       
+
         const playerState = await db.models.playerState.findOne( { where: { roomId, userId }});
         if(!playerState) {
             console.log('playerState does not exist for: ' + userId);
             return null;
         }
+
+        
         
         // check if card can be played
         const deckTopCard = gameState.discardDeckTopCard;

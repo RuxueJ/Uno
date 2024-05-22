@@ -1,7 +1,8 @@
 let hand = [];
 let topPlayedCard;
-let topPlayedCardUrl = "";
+// let topPlayedCardUrl = "";
 let cardsToPlay = [];
+let cardToPlay;
 
 const hostWaitingRoomFullMessage =
   "The room is not full. To start the game, please wait for another guest to come...";
@@ -265,9 +266,10 @@ socket.on("userLeft", () => {
 socket.on("drawnCards", (data) => {
   console.log(JSON.stringify(data));
   data.forEach((card) => {
-    hand.push(getURL(card));
+    hand.push(card);
+    console.log("drawnCards: " + getURL(card));
   });
-  renderHand();
+  // renderHand();
 });
 
 socket.on("nextTurn", (data) => {
@@ -280,11 +282,16 @@ socket.on("nextTurn", (data) => {
     // Get the div element by its ID
     disappearDrawPlayButton();
   }
+  renderDeckCard();
+  renderHand();
 });
 
 socket.on("playedCard", (data) => {
   // top deck card
-  console.log(data);
+  topPlayedCard = data.discardDesckTop;
+  // renderDeckCard();
+  // renderHand();
+  // console.log(data);
 });
 
 //=========================startGame====================================
@@ -313,8 +320,15 @@ function showDrawPlayButton() {
   divElement.style.display = "inline";
   var divElement = document.getElementById("play-card-container");
 
+  var playCardBtn = document.getElementById("play-card");
+
   // Set its display property to "none"
   divElement.style.display = "inline";
+  if (cardsToPlay.length === 0) {
+    playCardBtn.disabled = true;
+  } else {
+    playCardBtn.disabled = false;
+  }
 }
 
 socket.on("playersHand", (data) => {
@@ -332,22 +346,16 @@ socket.on("gameStarted", (data) => {
   if (data) isPlaying = true;
   console.log("I am in gameStarted event" + JSON.stringify(data));
 
-  hand = [];
-
-  data.playersHand.forEach((card) => {
-    hand.push(card);
-  });
-
   topPlayedCard = data.discardDeckTopCard;
 
   console.log("topPlayedCard: " + JSON.stringify(topPlayedCard));
 
-  topPlayedCardUrl = getURL(topPlayedCard);
-  console.log("topPlayedCardUrl: " + topPlayedCardUrl);
+  // topPlayedCardUrl = getURL(topPlayedCard);
+  // console.log("topPlayedCardUrl: " + topPlayedCardUrl);
   cardsToPlay = checkCards(topPlayedCard, hand);
   renderHand();
   clearDeckMessage();
-  renderDeckCard(topPlayedCardUrl);
+  renderDeckCard();
   clearStartButton();
 
   console.log("I am in gameStarted socket evnet");
@@ -355,9 +363,6 @@ socket.on("gameStarted", (data) => {
   console.log("data.nextTurn" + data.nextTurn);
   console.log("userId" + userId);
   if (data.nextTurn == userId) {
-    // showDrawPlayButton();
-    // showTurn();
-    showDrawPlayButton();
     // showTurn();
     showDrawPlayButton();
   } else {
@@ -369,9 +374,10 @@ socket.on("gameStarted", (data) => {
 function getURL(card) {
   let url = "";
   if (card.type == "number" || card.type == "special") {
-    url = "./static/uno_card-" + card.color + card.value + ".png";
+    url =
+      "./static/" + card.type + "-" + card.color + "-" + card.value + ".png";
   } else {
-    url = "./static/uno_card-" + card.value + ".png";
+    url = "./static/" + card.type + "-" + card.value + ".png";
   }
   return url;
 }
@@ -385,7 +391,14 @@ function handleKeypress(event) {
 }
 
 //=========================renderHand====================================
-
+function handleCardClick(cardImg) {
+  // Remove 'expanded' class from all cards
+  document.querySelectorAll(".hand_card_play").forEach((card) => {
+    card.classList.remove("expanded");
+  });
+  // Toggle 'expanded' class only for the clicked card
+  cardImg.classList.toggle("expanded");
+}
 function renderHand() {
   console.log("I am in renderhand function");
   const handDiv = document.getElementById("hand");
@@ -402,6 +415,10 @@ function renderHand() {
       const cardImg = document.createElement("img");
       cardImg.src = getURL(card);
       cardImg.classList.add("hand_card_play");
+      cardImg.addEventListener("click", () => {
+        handleCardClick(cardImg);
+        cardToPlay = card;
+      });
       handDiv.appendChild(cardImg);
     } else {
       const cardImg = document.createElement("img");
@@ -423,17 +440,17 @@ function renderHand() {
 
 // Loop through the cardImages array and create img elements for each card
 
-function renderDeckCard(topPlayedCardUrl) {
+function renderDeckCard() {
   const deckDiv = document.getElementById("deck");
   deckDiv.innerHTML = "";
 
   const backUnoImage = document.createElement("img");
-  backUnoImage.src = "./static/uno_card-back.png";
+  backUnoImage.src = "./static/back.png";
   backUnoImage.classList.add("deck_card");
   deckDiv.appendChild(backUnoImage);
 
   const topPlayImage = document.createElement("img");
-  topPlayImage.src = topPlayedCardUrl;
+  topPlayImage.src = getURL(topPlayedCard);
   topPlayImage.classList.add("deck_card");
   deckDiv.appendChild(topPlayImage);
 }
@@ -447,6 +464,6 @@ function drawCard() {
 }
 
 function playCard() {
-  socket.emit("playCard", roomId, userId,card);
+  socket.emit("playCard", roomId, userId, cardToPlay);
 }
 //=========================drawCard====================================

@@ -133,6 +133,11 @@ body {
   height: 60%;
   flex-shrink: 1;
 }
+
+.hand_card_play.expanded {
+  height: 100%; /* Expand height when card is clicked */
+}
+
 .hand_card_not_play {
   display: inline-block;
   margin-right: 10px; /* Adjust as needed */
