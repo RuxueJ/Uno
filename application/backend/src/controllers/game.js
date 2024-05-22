@@ -1,5 +1,6 @@
 import db from '@/database';
 import { checkUtil } from '@/utils'
+import { col } from 'sequelize';
 
 
 export function createUnoDeck()  {
@@ -279,7 +280,7 @@ export async function playerDrawCard(roomId, userId) {
 
         // update current player index
         const playerOrder = gameState.playerOrder;
-        const currentPlayerIndex = Array.from(playerOrder).findIndex(playerId => playerId === userId);
+        const currentPlayerIndex = Array.from(playerOrder).findIndex(playerId => playerId === Number(userId));
         gameState.currentPlayerIndex = currentPlayerIndex;
 
         // decide how many cards to draw
@@ -289,9 +290,8 @@ export async function playerDrawCard(roomId, userId) {
             countNeedToDraw = 4;
         } else if (topCard.value === 'draw2') {
             countNeedToDraw = 0;
-            discardDeck = gameState.discardDeck;
-            const index = 0;
-            while (index < discardDeck.length && discardDeck[index].value === 'draw2') {
+            let index = 0;
+            while (index < gameState.discardDeck.length && gameState.discardDeck[index].value === 'draw2') {
                 countNeedToDraw += 2;
                 index++;
             }
