@@ -157,8 +157,6 @@ function startGame() {
   console.log(`Starting game ${roomId}`);
   clearDeckMessage();
   clearStartButton();
-  clearDeckMessage();
-  clearStartButton();
 }
 
 function endGame() {
@@ -190,7 +188,6 @@ socket.on("connect", () => {
 });
 
 socket.emit("reconnectAttempt", userId);
-
 socket.on("backToLobby", () => {
   window.location.href = "lobby.html";
 });
@@ -218,10 +215,14 @@ socket.on("userJoin", (data) => {
 
 socket.on("userReconnect", () => {
   console.log("I am in userReconnect event");
-  getUserInRoom();
-  socket.emit("reconnected", roomId);
-  clearDeckMessage();
-  clearStartButton();
+  socket.on("userReconnect", () => {
+    console.log("I am in userReconnect event");
+    getUserInRoom();
+    socket.emit("reconnected", roomId);
+    socket.emit("reconnected", roomId);
+    clearDeckMessage();
+    clearStartButton();
+  });
 });
 
 // Handling "userLeft" event
