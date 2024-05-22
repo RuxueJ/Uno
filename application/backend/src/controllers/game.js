@@ -408,6 +408,7 @@ export async function playerPlayCard(roomId, userId, card) {
         } else if (nextPlayerIndex >= playerOrder.length) {
             nextPlayerIndex = nextPlayerIndex % playerOrder.length;
         }
+        gameState.currentPlayerIndex = nextPlayerIndex;
         
         await gameState.save( { transaction });
 
