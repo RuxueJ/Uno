@@ -3,7 +3,6 @@ body {
   margin: 0;
   padding: 0;
   height: 100%;
-  overflow: hidden; /* Disable scrollbars */
   width: 100%;
   background-color: #f0f0f0;
 }
@@ -14,7 +13,7 @@ body {
   width: 100vw; /* 100% of the viewport width */
   height: 100vh; /* 100% of the viewport height */
 
-  overflow: hidden; /* Hide overflow content */
+  /* overflow: hidden;  */
 }
 
 .container > div {
@@ -129,7 +128,9 @@ body {
 }
 
 .hand_card:hover {
-  height: 70%;
+  width: 220px;
+  width: 220px;
+  height: 100%;
   transition: 1s ease;
 }
 

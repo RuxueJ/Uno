@@ -109,7 +109,12 @@ async function getUserInRoom() {
         // console.log("user.isHost" + user.isHost);
         // console.log("result.player_list.length" + result.player_list.length);
         // console.log("result.max_player" + result.max_player);
-        if(!isPlaying && user.userId == userId) {
+
+        if (result.gamePlaying) {
+          clearDeckMessage();
+          clearStartButton();
+        } else {
+          if (user.userId == userId) {
             if (user.isHost) {
               if (result.player_list.length == result.max_player) {
                 addStartButton();
@@ -121,8 +126,8 @@ async function getUserInRoom() {
               clearStartButton();
               setDeckMessage(guestWaitingStartMessage);
             }
+          }
         }
-
       });
 
       // Add any additional logic (e.g., redirecting the user, showing a success message)
@@ -150,6 +155,8 @@ function startGame() {
   const roomId = urlParams.get("roomId");
   socket.emit("startGame", roomId);
   console.log(`Starting game ${roomId}`);
+  clearDeckMessage();
+  clearStartButton();
 }
 
 function endGame() {
@@ -180,12 +187,10 @@ socket.on("connect", () => {
   }, 500); //needs short delay to make sure the socket is fully connected
 });
 
-
-socket.emit('reconnectAttempt', userId)
-
-socket.on('backToLobby', () => {
+socket.emit("reconnectAttempt", userId);
+socket.on("backToLobby", () => {
   window.location.href = "lobby.html";
-})
+});
 
 function reJoinGame() {
   console.log("rejoining: " + roomId + " for user: " + userId);
@@ -202,21 +207,23 @@ socket.on("newRoomMessage", function (data) {
 });
 
 // Handling "userJoin" event
-socket.on("userJoin", () => {
+socket.on("userJoin", (data) => {
   console.log("I am in userJoin event");
+  // console.log("data.gamePlaying" + data.gamePlaying);
   getUserInRoom();
-
 });
 
-socket.on('userReconnect', () => {
-  console.log("I am in userReconnect event")
-  getUserInRoom();
-  socket.emit('reconnected', roomId)
-  clearDeckMessage();
-  clearStartButton();
-
-})
-
+socket.on("userReconnect", () => {
+  console.log("I am in userReconnect event");
+  socket.on("userReconnect", () => {
+    console.log("I am in userReconnect event");
+    getUserInRoom();
+    socket.emit("reconnected", roomId);
+    socket.emit("reconnected", roomId);
+    clearDeckMessage();
+    clearStartButton();
+  });
+});
 
 // Handling "userLeft" event
 socket.on("userLeft", () => {
@@ -235,9 +242,13 @@ socket.on("drawnCards", (data) => {
 
 socket.on("nextTurn", (data) => {
   // check if it is your turn
+  console.log("I am in nextTurn socket evnet");
+  console.log("I am in nextTurn event");
+  console.log("data.nextTurn" + data.nextTurn);
+  console.log("userId" + userId);
   if (data.nextTurn == userId) {
     showDrawPlayButton();
-    showTurn();
+    // showTurn();
   } else {
     // Get the div element by its ID
     disappearDrawPlayButton();
@@ -245,7 +256,6 @@ socket.on("nextTurn", (data) => {
 });
 
 socket.on("playedCard", (data) => {
-  
   // top deck card
   console.log(data);
 });
@@ -258,6 +268,7 @@ function startGame() {
 }
 
 function disappearDrawPlayButton() {
+  console.log("I am in disappear draw play button");
   var divElement = document.getElementById("draw-card-container");
 
   // Set its display property to "none"
@@ -281,21 +292,27 @@ function showDrawPlayButton() {
 socket.on("playersHand", (data) => {
   console.log("I am in playersHand event");
   console.log(data);
+  hand = [];
   data.forEach((card) => {
     hand.push(getURL(card));
   });
   renderHand();
 });
 socket.on("gameStarted", (data) => {
-  if(data) isPlaying = true;
+  if (data) isPlaying = true;
   console.log("I am in gameStarted event" + JSON.stringify(data));
   topPlayedCard = getURL(data.discardDeckTopCard);
   clearDeckMessage();
   renderDeckCard(topPlayedCard);
   clearStartButton();
+  console.log("I am in gameStarted socket evnet");
+  console.log("I am in nextTurn event");
+  console.log("data.nextTurn" + data.nextTurn);
+  console.log("userId" + userId);
   if (data.nextTurn == userId) {
+    // showDrawPlayButton();
+    // showTurn();
     showDrawPlayButton();
-    showTurn();
   } else {
     // Get the div element by its ID
     disappearDrawPlayButton();
@@ -348,6 +365,7 @@ function renderHand() {
 
 function renderDeckCard(topPlayedCardUrl) {
   const deckDiv = document.getElementById("deck");
+  deckDiv.innerHTML = "";
 
   const backUnoImage = document.createElement("img");
   backUnoImage.src = "./static/uno_card-back.png";
