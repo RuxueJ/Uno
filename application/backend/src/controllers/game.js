@@ -1,6 +1,5 @@
 import db from '@/database';
 import { checkUtil } from '@/utils'
-import { col } from 'sequelize';
 
 
 export function createUnoDeck()  {
@@ -380,7 +379,7 @@ export async function playerPlayCard(roomId, userId, card) {
 
         // update current player index
         const playerOrder = gameState.playerOrder;
-        const currentPlayerIndex = Array.from(playerOrder).findIndex(playerId => playerId === userId);
+        const currentPlayerIndex = Array.from(playerOrder).findIndex(playerId => playerId === Number(userId));
         gameState.currentPlayerIndex = currentPlayerIndex;
 
         // update discard deck
