@@ -401,6 +401,8 @@ export async function playerPlayCard(roomId, userId, card) {
             nextPlayerIndex = currentPlayerIndex + gameState.direction;
         } else if (card.value === 'skip') {
             nextPlayerIndex = currentPlayerIndex + gameState.direction * 2;
+        } else {
+            nextPlayerIndex = currentPlayerIndex + gameState.direction;
         }
 
         if (nextPlayerIndex < 0) {
