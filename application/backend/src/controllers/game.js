@@ -304,9 +304,11 @@ export async function playerDrawCard(roomId, userId) {
         for (let i = 0; i < countNeedToDraw; i++) {
             newCards.push(drawCard(gameState.drawDeck));
         }
+        gameState.changed('drawDeck', true);
 
         playerState.playerHand = playerState.playerHand.concat(newCards);
         playerState.playerHandCount = playerState.playerHandCount + countNeedToDraw;
+        playerState.changed('playerHand', true);
         await playerState.save( { transaction });
 
         // decide next player index
@@ -382,11 +384,14 @@ export async function playerPlayCard(roomId, userId, card) {
         // update discard deck
         playerState.playerHand.splice(index, 1);
         playerState.playerHandCount = playerState.playerHandCount - 1;
+        playerState.changed('playerHand', true);
         await playerState.save( { transaction });
 
         // update discard deck
         gameState.discardDeck.unshift(card);
         gameState.discardDeckTopCard = card;
+        gameState.changed('discardDeck', true);
+        gameState.changed('discardDeckTopCard', true);
         let nextPlayerIndex;
         
         // decide direction and next turn
