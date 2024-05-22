@@ -265,13 +265,13 @@ export async function cleanUpGame(roomId) {
 export async function playerDrawCard(roomId, userId) {
     const transaction = await db.transaction();
     try {
-        const gameState = await db.models.gameState.findOne( { where: { roomId }});
+        const gameState = await db.models.gameState.findOne( { where: { roomId }, transaction});
         if(!gameState) {
             console.log('gameState does not exist for: ' + roomId);
             return null;
         }
 
-        const playerState = await db.models.playerState.findOne( { where: { roomId, userId }});
+        const playerState = await db.models.playerState.findOne( { where: { roomId, userId }, transaction});
         if(!playerState) {
             console.log('playerState does not exist for: ' + userId);
             return null;
@@ -343,7 +343,7 @@ export async function playerDrawCard(roomId, userId) {
 export async function playerPlayCard(roomId, userId, card) {
     const transaction = await db.transaction();
     try {
-        const gameState = await db.models.gameState.findOne( { where: { roomId }});
+        const gameState = await db.models.gameState.findOne( { where: { roomId }, transaction});
         if(!gameState) {
             console.log('gameState does not exist for: ' + roomId);
             return null;
@@ -351,7 +351,7 @@ export async function playerPlayCard(roomId, userId, card) {
 
        
 
-        const playerState = await db.models.playerState.findOne( { where: { roomId, userId }});
+        const playerState = await db.models.playerState.findOne( { where: { roomId, userId }, transaction});
         if(!playerState) {
             console.log('playerState does not exist for: ' + userId);
             return null;
