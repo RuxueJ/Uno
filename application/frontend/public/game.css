@@ -125,7 +125,7 @@ body {
   align-items: center; /* Center vertically */
 }
 
-.hand_card {
+.hand_card_play {
   display: inline-block;
   margin-right: 10px; /* Adjust as needed */
   max-width: 200px; /* Adjust maximum width as needed */
@@ -133,8 +133,18 @@ body {
   height: 60%;
   flex-shrink: 1;
 }
+.hand_card_not_play {
+  display: inline-block;
+  margin-right: 10px; /* Adjust as needed */
+  max-width: 200px; /* Adjust maximum width as needed */
+  height: 60%;
+  height: 60%;
+  flex-shrink: 1; 
+  opacity: 0.5; /* Adjust the opacity to make the card appear grayed out */
+  pointer-events: none; /* Prevent clicking on the card */
+}
 
-.hand_card:hover {
+.hand_card_play:hover {
   width: 220px;
   width: 220px;
   height: 100%;

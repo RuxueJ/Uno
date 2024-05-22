@@ -1,6 +1,7 @@
 let hand = [];
-let topPlayedCard = "";
-let isPlaying = false;
+let topPlayedCard;
+let topPlayedCardUrl = "";
+let cardsToPlay = [];
 
 const hostWaitingRoomFullMessage =
   "The room is not full. To start the game, please wait for another guest to come...";
@@ -62,6 +63,31 @@ function setDeckMessage(message) {
   clearDeckMessage();
   const deckMessageDiv = document.querySelector(".deck_message");
   deckMessageDiv.appendChild(h2Element);
+}
+
+function checkCards() {
+  console.log(
+    " i am in checkCards function: deckTopCard:" + JSON.stringify(topPlayedCard)
+  );
+  console.log("deckTopCard.color:" + topPlayedCard.color);
+  console.log("deckTopCard.value:" + topPlayedCard.value);
+  if (topPlayedCard === null || hand === undefined || hand.length === 0) {
+    return cardsToPlay;
+  }
+
+  cardsToPlay = [];
+
+  hand.forEach((card) => {
+    if (
+      card.color === topPlayedCard.color ||
+      card.value === topPlayedCard.value ||
+      card.type === "wild"
+    ) {
+      cardsToPlay.push(card);
+    }
+  });
+
+  return cardsToPlay;
 }
 
 // function addStartGameMessage
@@ -191,9 +217,9 @@ socket.emit("reconnectAttempt", userId);
 socket.emit("reconnectAttempt", userId);
 
 socket.on("backToLobby", () => {
-socket.on("backToLobby", () => {
-  window.location.href = "lobby.html";
-});
+  socket.on("backToLobby", () => {
+    window.location.href = "lobby.html";
+  });
 });
 
 function reJoinGame() {
@@ -219,14 +245,14 @@ socket.on("userJoin", (data) => {
 
 socket.on("userReconnect", () => {
   console.log("I am in userReconnect event");
-socket.on("userReconnect", () => {
-  console.log("I am in userReconnect event");
-  getUserInRoom();
-  socket.emit("reconnected", roomId);
-  socket.emit("reconnected", roomId);
-  clearDeckMessage();
-  clearStartButton();
-});
+  socket.on("userReconnect", () => {
+    console.log("I am in userReconnect event");
+    getUserInRoom();
+    socket.emit("reconnected", roomId);
+    socket.emit("reconnected", roomId);
+    clearDeckMessage();
+    clearStartButton();
+  });
 });
 
 // Handling "userLeft" event
@@ -259,9 +285,6 @@ socket.on("nextTurn", (data) => {
 socket.on("playedCard", (data) => {
   // top deck card
   console.log(data);
-
-
-  
 });
 
 //=========================startGame====================================
@@ -293,22 +316,40 @@ function showDrawPlayButton() {
   // Set its display property to "none"
   divElement.style.display = "inline";
 }
+
 socket.on("playersHand", (data) => {
   console.log("I am in playersHand event");
-  console.log(data);
+  console.log(JSON.stringify(data));
+
   hand = [];
+
+  // cardsToPlay = checkCards(topPlayedCard, data.playersHand);
   data.forEach((card) => {
-    hand.push(getURL(card));
+    hand.push(card);
   });
-  renderHand();
 });
 socket.on("gameStarted", (data) => {
   if (data) isPlaying = true;
   console.log("I am in gameStarted event" + JSON.stringify(data));
-  topPlayedCard = getURL(data.discardDeckTopCard);
+
+  hand = [];
+
+  data.playersHand.forEach((card) => {
+    hand.push(card);
+  });
+
+  topPlayedCard = data.discardDeckTopCard;
+
+  console.log("topPlayedCard: " + JSON.stringify(topPlayedCard));
+
+  topPlayedCardUrl = getURL(topPlayedCard);
+  console.log("topPlayedCardUrl: " + topPlayedCardUrl);
+  cardsToPlay = checkCards(topPlayedCard, hand);
+  renderHand();
   clearDeckMessage();
-  renderDeckCard(topPlayedCard);
+  renderDeckCard(topPlayedCardUrl);
   clearStartButton();
+
   console.log("I am in gameStarted socket evnet");
   console.log("I am in nextTurn event");
   console.log("data.nextTurn" + data.nextTurn);
@@ -317,7 +358,7 @@ socket.on("gameStarted", (data) => {
     // showDrawPlayButton();
     // showTurn();
     showDrawPlayButton();
-    showTurn();
+    // showTurn();
     showDrawPlayButton();
   } else {
     // Get the div element by its ID
@@ -346,15 +387,28 @@ function handleKeypress(event) {
 //=========================renderHand====================================
 
 function renderHand() {
+  console.log("I am in renderhand function");
   const handDiv = document.getElementById("hand");
   handDiv.innerHTML = "";
 
+  console.log("hand: " + JSON.stringify(hand));
+  console.log("topPlayedCard " + JSON.stringify(topPlayedCard));
+
+  console.log("cardsToPlay: " + JSON.stringify(cardsToPlay));
+
   // Loop through the cardImages array and create img elements for each card
   hand.forEach((card) => {
-    const cardImg = document.createElement("img");
-    cardImg.src = card;
-    cardImg.classList.add("hand_card");
-    handDiv.appendChild(cardImg);
+    if (cardsToPlay.includes(card)) {
+      const cardImg = document.createElement("img");
+      cardImg.src = getURL(card);
+      cardImg.classList.add("hand_card_play");
+      handDiv.appendChild(cardImg);
+    } else {
+      const cardImg = document.createElement("img");
+      cardImg.src = getURL(card);
+      cardImg.classList.add("hand_card_not_play");
+      handDiv.appendChild(cardImg);
+    }
   });
 
   handDiv.addEventListener("wheel", function (event) {
@@ -393,6 +447,6 @@ function drawCard() {
 }
 
 function playCard() {
-  socket.emit("playCard", roomId, userId);
+  socket.emit("playCard", roomId, userId,card);
 }
 //=========================drawCard====================================
