@@ -416,6 +416,23 @@ socket.on("getPlayersHandsCount", (data) => {
   }
 })
 
+socket.on("getPlayersHandsCount", (data) => {
+  if(Object.keys(data).length > 0) {
+    playersCardcount = data;
+    renderPlayerCardsCount(data);
+    for(d in data) {
+      if(data[d] === 1) showUno();
+    }
+  }
+})
+
+function showEndGame() {
+  const overlay = document.querySelector(".overlay");
+  const endGamePopup = document.querySelector(".endgame-popup");
+  endGamePopup.style.display = "block";
+  overlay.style.display = "block";
+}
+
 function showUno() {
   const body = document.querySelector("body");
   const unoText = document.createElement("div");
