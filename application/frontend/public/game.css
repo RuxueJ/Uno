@@ -297,3 +297,25 @@ input[type="text"] {
   gap: 10px;
 }
 
+.unoText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: uno-animation 3s;
+  color: #4caf50;
+  background-color: #ccc;
+}
+
+@keyframes uno-animation {
+  0% {
+    font-size: 16rem;
+  }
+  100% {
+    font-size : 32rem;
+  }
+}
+
+.hide {
+  display: none;
+}

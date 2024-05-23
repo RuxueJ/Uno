@@ -409,8 +409,22 @@ socket.on("getPlayersHandsCount", (data) => {
   if(Object.keys(data).length > 0) {
     playersCardcount = data;
     renderPlayerCardsCount(data);
+    for(d in data) {
+      if(data[d] === 1) showUno();
+    }
   }
 })
+
+function showUno() {
+  const body = document.querySelector("body");
+  const unoText = document.createElement("div");
+  unoText.innerHTML = "UNO!!!!!";
+  unoText.className = 'unoText';
+  body.appendChild(unoText);
+  setTimeout(() => {
+    unoText.className = 'hide';
+  }, [3000])
+}
 
 function showTurn(currentPlayingUser) {
   const playerList = document.getElementById("playerList");
