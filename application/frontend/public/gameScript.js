@@ -21,6 +21,11 @@ const userName = sessionStorage.getItem("userName");
 const userId = sessionStorage.getItem("userId");
 const email = sessionStorage.getItem("email");
 
+if (!token || !userName || !userId || !email) {
+  window.location.href = "signIn.html";
+  alert("Please sign in first");
+}
+
 const urlParams = new URLSearchParams(window.location.search);
 const roomId = urlParams.get("roomId");
 

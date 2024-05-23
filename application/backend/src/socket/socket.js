@@ -222,6 +222,17 @@ export function setUpSocketIO(io) {
       }
     });
 
+    socket.on("endGame", async (roomId, winnerId) => {
+      try {
+        io.to(roomId).emit("gameEnded", winnerId);
+        await gameController.endGame(roomId, winnerId);
+        console.log("successfully ended game: " + roomId);
+      } catch (err) {
+        console.log(err);
+        socket.emit("endGameFailure", roomId);
+      }
+    });
+
     socket.on("disconnecting", () => {
       const roomIds = Array.from(socket.rooms).filter(
         (roomId) => roomId !== socket.id && roomId !== "lobby"
