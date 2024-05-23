@@ -26,12 +26,23 @@
       </div>
     </div>
 
+    <div class = "wild-animation-container" style = "display: none;">
+      <div class="wild-content">
+        <button class="color-btn" style="background-color: red;" onclick="chooseColor('red');closeWildAnimation()"></button>
+        <button class="color-btn" style="background-color: green;" onclick="chooseColor('green');closeWildAnimation()"></button>
+        <button class="color-btn" style="background-color: blue;" onclick="chooseColor('blue');closeWildAnimation()"></button>
+        <button class="color-btn" style="background-color: yellow;" onclick="chooseColor('yellow');closeWildAnimation()"></button>
+      </div>
+    </div>
+
+    <div class="overlay" style="display: none;"></div>
+
     <div class="row game-deck">
       <div class="column player-list">
         <h2 class="text-2xl mb-6">Player List</h2>
         <div id="playerList"></div>
       </div>
-      <div class="column deck">
+      <div class="column deck" id = "deck-container">
         <div class="deck_message">
           <!-- <h2 id = "waitingMessage">Please wait host to start the game...</h2> -->
         </div>

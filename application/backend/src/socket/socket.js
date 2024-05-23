@@ -16,7 +16,7 @@ export function setUpSocketIO(io) {
     const userName = socket.handshake.query.userName || "User";
     const token = socket.handshake.query.token;
 
-    socket.on('reconnectAttempt', async (userId) => {
+    socket.on("reconnectAttempt", async (userId) => {
       setTimeout(async () => {
         try {
           const reconnectAttempt = await roomController.reconnect(userId);
@@ -24,8 +24,14 @@ export function setUpSocketIO(io) {
             console.log("No game rooms for this user to reconnect to");
           } else {
             const { roomId, roomName } = reconnectAttempt;
-            console.log("User: " + email + " reconnecting to: " + roomId + " with roomName: " + roomName);
-
+            console.log(
+              "User: " +
+                email +
+                " reconnecting to: " +
+                roomId +
+                " with roomName: " +
+                roomName
+            );
 
             //problem here is it redirects and then immediatly goes reJoinGame()
             //this path is when a user closes tab --> then refreshes on lobby page --> hitting redirect in roomToReconnectTo and then immediate reJoinGame()
@@ -33,11 +39,13 @@ export function setUpSocketIO(io) {
             //socket.emit('roomToReconnectTo', { roomId: roomId, roomName: roomName });
 
             //this path happens when user refreshes game page
-            socket.emit('userReconnect');
+            socket.emit("userReconnect");
           }
         } catch (err) {
           console.log(err);
-          socket.emit("reconnectError", { message: "Failed to execute reconnection check" });
+          socket.emit("reconnectError", {
+            message: "Failed to execute reconnection check",
+          });
         }
       }, 2000); // Delay of 1 second (1000 milliseconds)
     });
@@ -51,8 +59,8 @@ export function setUpSocketIO(io) {
         );
         if (putUserInRoomAttempt === null) {
           //if the user refreshes the page while the game is waiting
-          //we go back to lobby instead if they close the browser 
-          socket.emit('backToLobby')
+          //we go back to lobby instead if they close the browser
+          socket.emit("backToLobby");
           throw new Error("error putting user in room inside sockets.js");
         }
         socket.leave("lobby");
@@ -63,11 +71,10 @@ export function setUpSocketIO(io) {
         console.log("put user: " + userId + " back into room: " + roomId);
         emitToRoom(io, roomId, "userJoin", {
           userId: userId,
-          userName: userName
+          userName: userName,
         });
 
-        socket.emit('userReconnect')
-
+        socket.emit("userReconnect");
       } catch (err) {
         console.log(err);
       }
@@ -136,11 +143,16 @@ export function setUpSocketIO(io) {
         console.log(
           "startStatus.playersHand" + JSON.stringify(startStatus.playersHand)
         );
+        console.log(
+          "startStatus.discardDeckTopCard" +
+            JSON.stringify(startStatus.discardDeckTopCard)
+        );
+
         Object.entries(startStatus.socketIdMap).forEach(([key, value]) => {
           io.to(value).emit("playersHand", startStatus.playersHand[key]);
         });
         delete startStatus.playersHand;
-
+        io.to(roomId).emit("updateDrawAmount", startStatus.drawAmount);
         io.to(roomId).emit("gameStarted", startStatus);
       } catch (err) {
         console.log("problem starting game: " + roomId + " in socket.js");
@@ -159,13 +171,11 @@ export function setUpSocketIO(io) {
         const cardsInHand = await gameController.getUserHandsCounts(roomId);
         io.to(roomId).emit("getPlayersHandsCount", cardsInHand.playersHandsCount);
         const nextTurn = {
-          "nextTurn": drawStatus.nextTurn,
-          "direction": drawStatus.direction
-        }
-        io.to(roomId).emit(
-          "nextTurn",
-          nextTurn
-        );
+          nextTurn: drawStatus.nextTurn,
+          direction: drawStatus.direction,
+        };
+        io.to(roomId).emit("updateDrawAmount", drawStatus.drawAmount);
+        io.to(roomId).emit("nextTurn", nextTurn);
       } catch (err) {
         console.log("problem drawing card: " + roomId + " in socket.js");
         socket.emit("failedDraw", roomId);
@@ -187,14 +197,13 @@ export function setUpSocketIO(io) {
         const cardsInHand = await gameController.getUserHandsCounts(roomId);
         io.to(roomId).emit("getPlayersHandsCount", cardsInHand.playersHandsCount);
         const nextTurn = {
-          "nextTurn": drawStatus.nextTurn,
-          "direction": drawStatus.direction
-        }
-        io.to(roomId).emit(
-          "nextTurn",
-          nextTurn
-        );
+          nextTurn: playStatus.nextTurn,
+          direction: playStatus.direction,
+        };
+        io.to(roomId).emit("updateDrawAmount", playStatus.drawAmount);
+        io.to(roomId).emit("nextTurn", nextTurn);
       } catch (err) {
+        console.log(err);
         console.log("problem playing card: " + roomId + " in socket.js");
         socket.emit("failedPlay", roomId);
       }
@@ -248,37 +257,42 @@ export function setUpSocketIO(io) {
     });
 
     socket.on("reconnected", async (roomId) => {
-      console.log("User: " + userId + " reconnected to room: " + roomId + ". Socket ID: ", socket.id);
+      console.log(
+        "User: " + userId + " reconnected to room: " + roomId + ". Socket ID: ",
+        socket.id
+      );
       console.log(socket.rooms);
       const gameRoomIsPlaying = await gameController.getRoomIsPlaying(roomId);
       if (!gameRoomIsPlaying) {
         console.log("Game is not playing, will redirect user to lobby");
       }
-      await gameController.userReconnected(userId, roomId)
+      await gameController.userReconnected(userId, roomId);
 
-      const playerState = await gameController.getPlayerState(userId, roomId)
-      if(!playerState) {
-        console.log("unable to get user's playerState")
+      const playerState = await gameController.getPlayerState(userId, roomId);
+      if (!playerState) {
+        console.log("unable to get user's playerState");
       } else {
         const playersHand = playerState.dataValues.playerHand;
-        if(!playersHand) {
-          console.log("unable to get player's hand")
+        if (!playersHand) {
+          console.log("unable to get player's hand");
         } else {
-          socket.emit('playersHand', playersHand)
+          socket.emit("playersHand", playersHand);
         }
       }
-      const gameState = await gameController.getGameState(roomId, userId)
-      if(!gameState) {
-        console.log("unable to get room's gameState")
+      const gameState = await gameController.getGameState(roomId, userId);
+      if (!gameState) {
+        console.log("unable to get room's gameState");
       }
 
       //send top card
       //send discardtopcard
+
       socket.emit('gameStarted', gameState)
 
       //send player's hand
       const cardsInHand = await gameController.getUserHandsCounts(roomId);
       socket.emit("getPlayersHandsCount", cardsInHand.playersHandsCount);
+
     });
   });
 }

@@ -1,8 +1,14 @@
 let hand = [];
+
+let topPlayedCard;
+let cardsToPlay = [];
+let cardToPlay;
+let drawAmount = 0;
 let topPlayedCard = "";
 let isPlaying = false;
 let players;
 let nextPlayer;
+
 
 const hostWaitingRoomFullMessage =
   "The room is not full. To start the game, please wait for another guest to come...";
@@ -25,11 +31,11 @@ const gameRoomName = queryParams.get("gameName");
 
 // Set the game room name as the text content of the header element
 const gameRoomNameHeader = document.getElementById("gameRoomName");
-console.log("the value of gameRoomname header is " + gameRoomNameHeader);
+// console.log("the value of gameRoomname header is " + gameRoomNameHeader);
 gameRoomNameHeader.textContent = "Game Room: " + gameRoomName;
 
 const greetingMessage = document.getElementById("greetingMessage");
-console.log("the value of greetingMessage is " + greetingMessage);
+// console.log("the value of greetingMessage is " + greetingMessage);
 greetingMessage.textContent = "Hello " + userName;
 
 function addStartButton() {
@@ -64,6 +70,43 @@ function setDeckMessage(message) {
   clearDeckMessage();
   const deckMessageDiv = document.querySelector(".deck_message");
   deckMessageDiv.appendChild(h2Element);
+}
+
+function updataCardsToPlay() {
+  cardsToPlay = [];
+
+  if (topPlayedCard === null || hand === undefined || hand.length === 0) {
+    console.log("topPlayedCard is null or hand is empty");
+    return [];
+  }
+
+  if (
+    (topPlayedCard.value === "draw2" || topPlayedCard.value == "wilddraw4") &&
+    drawAmount == 0
+  ) {
+    console.log("topPlayedCard is draw2 or wilddraw4 and drawAmount is 0");
+    return [];
+  }
+
+  if (topPlayedCard.type == "wild") {
+    hand.forEach((card) => {
+      if (card.color === topPlayedCard.color || card.type === "wild") {
+        cardsToPlay.push(card);
+      }
+    });
+  } else {
+    hand.forEach((card) => {
+      if (
+        card.color === topPlayedCard.color ||
+        card.value === topPlayedCard.value ||
+        card.type === "wild"
+      ) {
+        cardsToPlay.push(card);
+      }
+    });
+  }
+
+  return cardsToPlay;
 }
 
 // function addStartGameMessage
@@ -193,13 +236,12 @@ socket.on("connect", () => {
   }, 500); //needs short delay to make sure the socket is fully connected
 });
 
-socket.emit("reconnectAttempt", userId);
-socket.emit("reconnectAttempt", userId);
+// socket.emit("reconnectAttempt", userId);
 
 socket.on("backToLobby", () => {
-socket.on("backToLobby", () => {
-  window.location.href = "lobby.html";
-});
+  socket.on("backToLobby", () => {
+    window.location.href = "lobby.html";
+  });
 });
 
 function reJoinGame() {
@@ -225,14 +267,7 @@ socket.on("userJoin", (data) => {
 
 socket.on("userReconnect", () => {
   console.log("I am in userReconnect event");
-socket.on("userReconnect", () => {
-  console.log("I am in userReconnect event");
-  getUserInRoom();
   socket.emit("reconnected", roomId);
-  socket.emit("reconnected", roomId);
-  clearDeckMessage();
-  clearStartButton();
-});
 });
 
 // Handling "userLeft" event
@@ -243,11 +278,10 @@ socket.on("userLeft", () => {
 
 // Handling "userLeft" event
 socket.on("drawnCards", (data) => {
-  console.log(JSON.stringify(data));
+  console.log("I am in drawnCards event");
   data.forEach((card) => {
-    hand.push(getURL(card));
+    hand.push(card);
   });
-  renderHand();
 });
 
 socket.on("nextTurn", (data) => {
@@ -261,12 +295,20 @@ socket.on("nextTurn", (data) => {
     // Get the div element by its ID
     disappearDrawPlayButton();
   }
+
+  // showTurn();
+  cardsToPlay = updataCardsToPlay();
+  renderDeckCard();
+  renderHand();
+  showCurrentColor(topPlayedCard);
 });
 
 socket.on("playedCard", (data) => {
-  // top deck card
-  console.log(data);
 
+  console.log(
+    "I am in playedCard event,data.discardDesckTop: " + data.discardDesckTop
+  );
+  topPlayedCard = data.discardDesckTop;
 
 });
 
@@ -296,33 +338,68 @@ function showDrawPlayButton() {
   divElement.style.display = "inline";
   var divElement = document.getElementById("play-card-container");
 
+  var playCardBtn = document.getElementById("play-card");
+
   // Set its display property to "none"
   divElement.style.display = "inline";
+  // if (cardsToPlay.length == 0) {
+  //   playCardBtn.disabled = true;
+  // } else {
+  //   playCardBtn.disabled = false;
+  // }
+  // console.log(
+  //   "I am in show DrawPlay button funcion, and playcardbutton is: " +
+  //     playCardBtn.disabled
+  // );
 }
+
+function showCurrentColor(currentCard) {
+  const deck = document.getElementById("deck-container");
+  deck.style.backgroundColor = currentCard.color;
+}
+
+socket.on("updateDrawAmount", (data) => {
+  drawAmount = Number(data);
+});
+
 socket.on("playersHand", (data) => {
   console.log("I am in playersHand event");
-  console.log(data);
+  console.log(JSON.stringify(data));
+
   hand = [];
+
+  // cardsToPlay = checkCards(topPlayedCard, data.playersHand);
   data.forEach((card) => {
-    hand.push(getURL(card));
+    hand.push(card);
   });
-  renderHand();
 });
 socket.on("gameStarted", (data) => {
   if (data) isPlaying = true;
   console.log("I am in gameStarted event" + JSON.stringify(data));
-  topPlayedCard = getURL(data.discardDeckTopCard);
+
+
+  topPlayedCard = data.discardDeckTopCard;
+  showCurrentColor(topPlayedCard);
+
+  console.log("topPlayedCard: " + JSON.stringify(topPlayedCard));
+
+  // topPlayedCardUrl = getURL(topPlayedCard);
+  // console.log("topPlayedCardUrl: " + topPlayedCardUrl);
+  cardsToPlay = updataCardsToPlay();
+  renderHand();
+
+//   topPlayedCard = getURL(data.discardDeckTopCard);
   showTurn(data.nextTurn);
+
   clearDeckMessage();
-  renderDeckCard(topPlayedCard);
+  renderDeckCard();
   clearStartButton();
+
   console.log("I am in gameStarted socket evnet");
   console.log("I am in nextTurn event");
   console.log("data.nextTurn" + data.nextTurn);
   console.log("userId" + userId);
   if (data.nextTurn == userId) {
-    // showDrawPlayButton();
-    showDrawPlayButton();
     showDrawPlayButton();
   } else {
     // Get the div element by its ID
@@ -365,9 +442,10 @@ function renderPlayerCardsCount(data) {
 function getURL(card) {
   let url = "";
   if (card.type == "number" || card.type == "special") {
-    url = "./static/uno_card-" + card.color + card.value + ".png";
+    url =
+      "./static/" + card.type + "-" + card.color + "-" + card.value + ".png";
   } else {
-    url = "./static/uno_card-" + card.value + ".png";
+    url = "./static/" + card.type + "-" + card.value + ".png";
   }
   return url;
 }
@@ -381,17 +459,42 @@ function handleKeypress(event) {
 }
 
 //=========================renderHand====================================
-
+function handleCardClick(cardImg) {
+  // Remove 'expanded' class from all cards
+  document.querySelectorAll(".hand_card_play").forEach((card) => {
+    card.classList.remove("expanded");
+  });
+  // Toggle 'expanded' class only for the clicked card
+  cardImg.classList.toggle("expanded");
+}
 function renderHand() {
+  console.log("I am in renderhand function");
   const handDiv = document.getElementById("hand");
   handDiv.innerHTML = "";
 
+  console.log("hand: " + JSON.stringify(hand));
+  console.log("topPlayedCard " + JSON.stringify(topPlayedCard));
+
+  console.log("cardsToPlay: " + JSON.stringify(cardsToPlay));
+
   // Loop through the cardImages array and create img elements for each card
   hand.forEach((card) => {
-    const cardImg = document.createElement("img");
-    cardImg.src = card;
-    cardImg.classList.add("hand_card");
-    handDiv.appendChild(cardImg);
+    if (cardsToPlay.includes(card)) {
+      const cardImg = document.createElement("img");
+      cardImg.src = getURL(card);
+      cardImg.classList.add("hand_card_play");
+      cardImg.addEventListener("click", () => {
+        handleCardClick(cardImg);
+        cardToPlay = card;
+        console.log("cardToPlay: " + JSON.stringify(cardToPlay));
+      });
+      handDiv.appendChild(cardImg);
+    } else {
+      const cardImg = document.createElement("img");
+      cardImg.src = getURL(card);
+      cardImg.classList.add("hand_card_not_play");
+      handDiv.appendChild(cardImg);
+    }
   });
 
   handDiv.addEventListener("wheel", function (event) {
@@ -406,17 +509,17 @@ function renderHand() {
 
 // Loop through the cardImages array and create img elements for each card
 
-function renderDeckCard(topPlayedCardUrl) {
+function renderDeckCard() {
   const deckDiv = document.getElementById("deck");
   deckDiv.innerHTML = "";
 
   const backUnoImage = document.createElement("img");
-  backUnoImage.src = "./static/uno_card-back.png";
+  backUnoImage.src = "./static/back.png";
   backUnoImage.classList.add("deck_card");
   deckDiv.appendChild(backUnoImage);
 
   const topPlayImage = document.createElement("img");
-  topPlayImage.src = topPlayedCardUrl;
+  topPlayImage.src = getURL(topPlayedCard);
   topPlayImage.classList.add("deck_card");
   deckDiv.appendChild(topPlayImage);
 }
@@ -429,7 +532,54 @@ function drawCard() {
   socket.emit("drawCard", roomId, userId);
 }
 
+function showWildAnimation() {
+  const modal = document.querySelector(".wild-animation-container");
+  const overlay = document.querySelector(".overlay");
+  modal.style.display = "block";
+  overlay.style.display = "block";
+}
+
+function closeWildAnimation() {
+  const modal = document.querySelector(".wild-animation-container");
+  const overlay = document.querySelector(".overlay");
+  // Hide the form container
+  modal.style.display = "none";
+  // Hide the overlay
+  overlay.style.display = "none";
+  console.log("i am in closeCreateForm function");
+}
+
+function chooseColor(color) {
+  if (cardToPlay.type === "wild") {
+    cardToPlay.color = color;
+    topPlayedCard = cardToPlay;
+    console.log(
+      "after choosing the color, the cardToPlay is:" +
+        JSON.stringify(cardToPlay)
+    );
+    socket.emit("playCard", roomId, userId, cardToPlay);
+    showCurrentColor(topPlayedCard);
+  } else {
+    console.log("setting color for wild card has error");
+  }
+}
+
 function playCard() {
-  socket.emit("playCard", roomId, userId);
+  console.log("I am in playCard function");
+
+  if (cardToPlay.type === "wild") {
+    console.log("cardToPlay.type is wild and shows animation");
+    let indexToRemove = hand.indexOf(cardToPlay);
+    if (indexToRemove !== -1) {
+      hand.splice(indexToRemove, 1);
+    }
+    showWildAnimation();
+  } else {
+    let indexToRemove = hand.indexOf(cardToPlay);
+    if (indexToRemove !== -1) {
+      hand.splice(indexToRemove, 1);
+    }
+    socket.emit("playCard", roomId, userId, cardToPlay);
+  }
 }
 //=========================drawCard====================================
