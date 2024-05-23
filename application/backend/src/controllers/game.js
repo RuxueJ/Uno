@@ -181,7 +181,7 @@ export async function startGame(roomId, userId) {
                 currentPlayerIndex: currentPlayerIndex,
                 direction: direction,
                 playerOrder: newplayerOrder,
-                drawAmount: 1,
+                drawAmount: 0,
                 drawDeck: deck,
                 discardDeck: newDiscardDeck,
                 discardDeckTopCard: topCard,
@@ -200,7 +200,8 @@ export async function startGame(roomId, userId) {
                 "direction": direction,
                 "playersHand": initPlayerHands,
                 "discardDeckTopCard": topCard,
-                "socketIdMap": id_socketIdMap
+                "socketIdMap": id_socketIdMap,
+                "drawAmount": 0
             }
         } catch (err) {
             console.log(err);
@@ -288,12 +289,7 @@ export async function playerDrawCard(roomId, userId) {
         if (topCard.value === 'wilddraw4') {
             countNeedToDraw = 4;
         } else if (topCard.value === 'draw2') {
-            countNeedToDraw = 0;
-            let index = 0;
-            while (index < gameState.discardDeck.length && gameState.discardDeck[index].value === 'draw2') {
-                countNeedToDraw += 2;
-                index++;
-            }
+            countNeedToDraw = 2;
         } else {
             countNeedToDraw = 1;
         }
@@ -304,6 +300,7 @@ export async function playerDrawCard(roomId, userId) {
             newCards.push(drawCard(gameState.drawDeck));
         }
         gameState.changed('drawDeck', true);
+        gameState.drawAmount = countNeedToDraw;
 
         playerState.playerHand = playerState.playerHand.concat(newCards);
         playerState.playerHandCount = playerState.playerHandCount + countNeedToDraw;
@@ -330,7 +327,8 @@ export async function playerDrawCard(roomId, userId) {
             "drawnCards": newCards,
             "cardsCountDrawn": countNeedToDraw,
             "nextTurn": playerOrder[nextPlayerIndex],
-            "direction": direction
+            "direction": direction,
+            "drawAmount": countNeedToDraw
         };
     } catch (err) {
         transaction.rollback();
@@ -349,7 +347,7 @@ export async function playerPlayCard(roomId, userId, card) {
             return null;
         }
 
-       
+        gameState.drawAmount = 0;
 
         const playerState = await db.models.playerState.findOne( { where: { roomId, userId }, transaction});
         if(!playerState) {
@@ -357,8 +355,6 @@ export async function playerPlayCard(roomId, userId, card) {
             return null;
         }
 
-        
-        
         // check if card can be played
         const deckTopCard = gameState.discardDeckTopCard;
         const cardsInHand = playerState.playerHand;
@@ -427,6 +423,7 @@ export async function playerPlayCard(roomId, userId, card) {
             "playerHandCount": playerState.playerHandCount,
             "direction": gameState.direction,
             "nextTurn": playerOrder[nextPlayerIndex],
+            "drawAmount": 0
         };
     } catch (err) {
         transaction.rollback();
@@ -502,7 +499,8 @@ export async function getGameState(roomId, userId) {
         "nextTurn": gameState.playerOrder[gameState.currentPlayerIndex],
         "direction": gameState.direction,
         "playersHand": playerState.playerHand,
-        "discardDeckTopCard": gameState.discardDeckTopCard
+        "discardDeckTopCard": gameState.discardDeckTopCard,
+        "drawAmount": gameState.drawAmount
         // "socketIdMap": id_socketIdMap
     }
 }

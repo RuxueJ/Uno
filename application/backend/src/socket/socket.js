@@ -152,6 +152,7 @@ export function setUpSocketIO(io) {
           io.to(value).emit("playersHand", startStatus.playersHand[key]);
         });
         delete startStatus.playersHand;
+        io.to(roomId).emit("updateDrawAmount", startStatus.drawAmount);
         io.to(roomId).emit("gameStarted", startStatus);
       } catch (err) {
         console.log("problem starting game: " + roomId + " in socket.js");
@@ -171,6 +172,7 @@ export function setUpSocketIO(io) {
           nextTurn: drawStatus.nextTurn,
           direction: drawStatus.direction,
         };
+        io.to(roomId).emit("updateDrawAmount", drawStatus.drawAmount);
         io.to(roomId).emit("nextTurn", nextTurn);
       } catch (err) {
         console.log("problem drawing card: " + roomId + " in socket.js");
@@ -194,6 +196,7 @@ export function setUpSocketIO(io) {
           nextTurn: playStatus.nextTurn,
           direction: playStatus.direction,
         };
+        io.to(roomId).emit("updateDrawAmount", playStatus.drawAmount);
         io.to(roomId).emit("nextTurn", nextTurn);
       } catch (err) {
         console.log(err);

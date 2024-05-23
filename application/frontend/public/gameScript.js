@@ -2,6 +2,7 @@ let hand = [];
 let topPlayedCard;
 let cardsToPlay = [];
 let cardToPlay;
+let drawAmount = 0;
 
 const hostWaitingRoomFullMessage =
   "The room is not full. To start the game, please wait for another guest to come...";
@@ -69,11 +70,13 @@ function updataCardsToPlay() {
   cardsToPlay = [];
 
   if (topPlayedCard === null || hand === undefined || hand.length === 0) {
-    return cardsToPlay;
+    console.log("topPlayedCard is null or hand is empty");
+    return [];
   }
 
-  if (topPlayedCard.value === "draw2") {
-    return cardToPlay;
+  if ((topPlayedCard.value === "draw2" || topPlayedCard.value == 'wilddraw4') && drawAmount == 0) {
+    console.log("topPlayedCard is draw2 or wilddraw4 and drawAmount is 0");
+    return [];
   }
 
   hand.forEach((card) => {
@@ -328,6 +331,10 @@ function showCurrentColor(currentCard) {
   deck.style.backgroundColor = currentCard.color;
 }
 
+socket.on("updateDrawAmount", (data) => {
+  drawAmount = Number(data);
+})
+
 socket.on("playersHand", (data) => {
   console.log("I am in playersHand event");
   console.log(JSON.stringify(data));
@@ -482,8 +489,8 @@ function closeWildAnimation() {
 function chooseColor(color) {
   if (cardToPlay.type === "wild") {
     cardToPlay.color = color;
-    topPlayedCard.color = color;
-    showCurrentColor(topPlayedCard);
+    // topPlayedCard.color = color;
+    // showCurrentColor(topPlayedCard);
   } else {
     console.log("setting color for wild card has error");
   }
@@ -491,9 +498,9 @@ function chooseColor(color) {
 
 function playCard() {
   console.log("I am in playCard function");
-  console.log("cardToPlay.type: " + cardToPlay.type);
 
   if (cardToPlay.type === "wild") {
+    console.log("wild color: ", cardToPlay.color);
     showWildAnimation();
   }
 
