@@ -184,7 +184,9 @@ async function getUserInRoom() {
         }
       });
       if(nextPlayer) {
+        console.log("------in this showturn?----------")
         showTurn();
+        console.log("------end in this showturn?----------")
       }
       // Add any additional logic (e.g., redirecting the user, showing a success message)
     } else {
@@ -266,14 +268,15 @@ socket.on("newRoomMessage", function (data) {
 });
 
 // Handling "userJoin" event
-socket.on("userJoin", (data) => {
+socket.on("userJoin", async (data) => {
   console.log("I am in userJoin event");
   // console.log("data.gamePlaying" + data.gamePlaying);
-  getUserInRoom();
+  await getUserInRoom();
 });
 
-socket.on("userReconnect", () => {
+socket.on("userReconnect", async () => {
   console.log("I am in userReconnect event");
+  await getUserInRoom();
   socket.emit("reconnected", roomId);
 });
 
@@ -290,6 +293,19 @@ socket.on("drawnCards", (data) => {
     hand.push(card);
   });
 });
+
+socket.on("getNextTurn", (data) => {
+  console.log("I am in getNextTrun")
+  console.log(data)
+  console.log(userId)
+  showTurn(data.nextTurn)
+  if (data.nextTurn == userId) {
+    showDrawPlayButton();
+  } else {
+    // Get the div element by its ID
+    disappearDrawPlayButton();
+  }
+})
 
 socket.on("nextTurn", (data) => {
   // check if it is your turn
@@ -452,6 +468,8 @@ function showUno() {
 }
 
 function showTurn(currentPlayingUser) {
+  console.log("I am in showTrun")
+  console.log(players)
   const playerList = document.getElementById("playerList");
   playerList.innerHTML = "";
   if(!players) return;
