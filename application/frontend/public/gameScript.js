@@ -243,11 +243,11 @@ socket.on("connect", () => {
 
 // socket.emit("reconnectAttempt", userId);
 
-socket.on("backToLobby", () => {
+
   socket.on("backToLobby", () => {
     window.location.href = "lobby.html";
   });
-});
+
 
 function reJoinGame() {
   console.log("rejoining: " + roomId + " for user: " + userId);
