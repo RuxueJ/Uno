@@ -4,7 +4,6 @@ import { tokenUtil } from '@/utils';
 export default async function authenticate(req, res, next) {
   // Get authorization header from request
   const authorization = req.headers.authorization || '';
-  const refreshToken = req.headers.refreshtoken || '';
 
   // Firstly, set request user to null
   req.user = null;
@@ -21,7 +20,12 @@ export default async function authenticate(req, res, next) {
 
   // Extract token from header
   const token = authorization.substring(7);
-  const tokenData = tokenUtil.verifyToken(token);
+  let tokenData;
+  try {
+    tokenData = tokenUtil.verifyToken(token);
+  } catch (err) {
+    return next({ status: 401, message: 'Invalid token' });
+  }
 
   // Find user from database
   const user = await db.models.user.findByPk(tokenData.id).catch(() => null);
@@ -33,29 +37,6 @@ export default async function authenticate(req, res, next) {
 
   // Set request user
   req.user = user;
-
-  // Check if the token renewal time is coming
-  const now = new Date();
-  const exp = new Date(tokenData.exp * 1000);
-  const difference = exp.getTime() - now.getTime();
-  const minutes = Math.round(difference / 60000);
-
-  // Check for refresh token and time left
-  if (refreshToken && minutes < 15) {
-    // Verify refresh token and get refresh token data
-    const refreshTokenData = tokenUtil.verifyToken(refreshToken);
-
-    // Check the user of refresh token
-    if (refreshTokenData.id === tokenData.id) {
-      // Generate new tokens
-      const newToken = user.generateToken();
-      const newRefreshToken = user.generateToken('2h');
-
-      // Set response headers
-      res.setHeader('Token', newToken);
-      res.setHeader('RefreshToken', newRefreshToken);
-    }
-  }
 
   // Go to next middleware
   return next();

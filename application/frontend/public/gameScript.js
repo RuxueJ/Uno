@@ -116,7 +116,8 @@ function updataCardsToPlay() {
 // function addStartGameMessage
 
 const socket = io("http://localhost:3000", {
-  query: { token, userName, email, userId },
+  auth: { token: token },
+  query: { userName, email, userId },
   transports: ["websocket"],
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,
@@ -132,6 +133,7 @@ async function getUserInRoom() {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
       }
     );

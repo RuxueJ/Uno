@@ -11,7 +11,13 @@ if (!token || !userName || !userId || !email) {
 
 async function fetchRoomsData() {
   try {
-    const response = await fetch("http://localhost:3000/api/room/list");
+    const response = await fetch("http://localhost:3000/api/room/list", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      },
+    });
     if (!response.ok) {
       throw new Error("Failed to fetch rooms data");
     }
@@ -190,6 +196,7 @@ document
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
         },
         body: JSON.stringify(data),
       });
@@ -222,7 +229,8 @@ document
 
 // chat system also where we make the socket connection for meow
 const socket = io("http://localhost:3000", {
-  query: { token, userName, email, userId },
+  auth: { token: token },
+  query: { userName, email, userId },
   transports: ["websocket"],
   reconnectionAttempts: 5,
   reconnectionDelay: 1000,

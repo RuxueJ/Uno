@@ -1,6 +1,5 @@
 import * as roomController from "@/controllers/room.js";
 import * as gameController from "@/controllers/game.js";
-import * as userController from "@/controllers/user.js";
 
 export function emitToRoom(io, roomId, eventName, eventData) {
   io.to(roomId).emit(eventName, eventData);
@@ -14,7 +13,6 @@ export function setUpSocketIO(io) {
     const userId = socket.handshake.query.userId;
     const email = socket.handshake.query.email;
     const userName = socket.handshake.query.userName || "User";
-    const token = socket.handshake.query.token;
 
     socket.on("reconnectAttempt", async (userId) => {
       setTimeout(async () => {
