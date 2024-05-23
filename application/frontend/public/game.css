@@ -237,3 +237,9 @@ input[type="text"] {
   height: 30vh;
   overflow: scroll; 
 }
+
+#playerList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}

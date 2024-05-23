@@ -338,6 +338,9 @@ function showTurn(currentPlayingUser) {
     const child = document.createElement("li");
     if(player.userId === currentPlayingUser) {
       child.textContent = player.userName + "     <<<<<< Turn!";
+      child.style.fontSize = '24px';
+      child.style.fontWeight = 'bold';
+      child.style.color = '#007bff';
     } else {
       child.textContent = player.userName;
     }
