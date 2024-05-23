@@ -254,9 +254,9 @@ socket.on("nextTurn", (data) => {
   // check if it is your turn
   console.log("I am in nextTurn event");
   nextPlayer = data.nextTurn;
+  showTurn(data.nextTurn);
   if (data.nextTurn == userId) {
     showDrawPlayButton();
-    showTurn(data.nextTurn);
   } else {
     // Get the div element by its ID
     disappearDrawPlayButton();
@@ -268,7 +268,6 @@ socket.on("playedCard", (data) => {
   console.log(data);
 
 
-  
 });
 
 //=========================startGame====================================
