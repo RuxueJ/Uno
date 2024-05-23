@@ -329,12 +329,15 @@ socket.on("gameStarted", (data) => {
     disappearDrawPlayButton();
   }
 });
-
+socket.on("getPlayersHandsCount", (data) => {
+  renderPlayerCardsCount(data);
+})
 function showTurn(currentPlayingUser) {
   const playerList = document.getElementById("playerList");
   playerList.innerHTML = "";
   for(let player of players) {
     const child = document.createElement("li");
+    child.id = player.userId;
     if(player.userId === currentPlayingUser) {
       child.textContent = player.userName + "     <<<<<< Turn!";
       child.style.fontSize = '24px';
@@ -347,6 +350,18 @@ function showTurn(currentPlayingUser) {
   }
 }
 
+function renderPlayerCardsCount(data) {
+  const playerList = document.getElementById("playerList");
+  const players = [...playerList.children];
+  for(const player of players) {
+    const text = player.innerHTML;
+    if(text.includes('card count')) break;
+    const textParts = text.split(' ');
+    textParts.splice(1, 0, `[card count : ${data[player.id]}]`);
+    const finalText = textParts.join(" ");
+    player.innerHTML = finalText;
+  }
+}
 function getURL(card) {
   let url = "";
   if (card.type == "number" || card.type == "special") {
