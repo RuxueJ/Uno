@@ -1,6 +1,5 @@
 let hand = [];
 
-let topPlayedCard;
 let cardsToPlay = [];
 let cardToPlay;
 let drawAmount = 0;
@@ -8,7 +7,7 @@ let topPlayedCard = "";
 let isPlaying = false;
 let players;
 let nextPlayer;
-
+let playersCardcount;
 
 const hostWaitingRoomFullMessage =
   "The room is not full. To start the game, please wait for another guest to come...";
@@ -407,27 +406,36 @@ socket.on("gameStarted", (data) => {
   }
 });
 socket.on("getPlayersHandsCount", (data) => {
-  renderPlayerCardsCount(data);
+  if(Object.keys(data).length > 0) {
+    playersCardcount = data;
+    renderPlayerCardsCount(data);
+  }
 })
+
 function showTurn(currentPlayingUser) {
   const playerList = document.getElementById("playerList");
   playerList.innerHTML = "";
   for(let player of players) {
+    let cardCountInfo = "";
+    if(playersCardcount) {
+      cardCountInfo = `[card count : ${playersCardcount[player.userId]}]`;
+    }
     const child = document.createElement("li");
     child.id = player.userId;
     if(player.userId === currentPlayingUser) {
-      child.textContent = player.userName + "     <<<<<< Turn!";
+      child.textContent = player.userName + cardCountInfo + "     <<<<<< Turn!";
       child.style.fontSize = '24px';
       child.style.fontWeight = 'bold';
       child.style.color = '#007bff';
     } else {
-      child.textContent = player.userName;
+      child.textContent = player.userName + cardCountInfo;
     }
     playerList.appendChild(child)
   }
 }
 
 function renderPlayerCardsCount(data) {
+  console.log(data);
   const playerList = document.getElementById("playerList");
   const players = [...playerList.children];
   for(const player of players) {
@@ -439,6 +447,7 @@ function renderPlayerCardsCount(data) {
     player.innerHTML = finalText;
   }
 }
+
 function getURL(card) {
   let url = "";
   if (card.type == "number" || card.type == "special") {
