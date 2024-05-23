@@ -191,11 +191,12 @@ export function setUpSocketIO(io) {
         console.log("successfully played card: " + roomId);
         io.to(roomId).emit("playedCard", playStatus);
         const nextTurn = {
-          nextTurn: drawStatus.nextTurn,
-          direction: drawStatus.direction,
+          nextTurn: playStatus.nextTurn,
+          direction: playStatus.direction,
         };
         io.to(roomId).emit("nextTurn", nextTurn);
       } catch (err) {
+        console.log(err);
         console.log("problem playing card: " + roomId + " in socket.js");
         socket.emit("failedPlay", roomId);
       }

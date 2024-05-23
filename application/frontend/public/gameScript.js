@@ -1,6 +1,5 @@
 let hand = [];
 let topPlayedCard;
-// let topPlayedCardUrl = "";
 let cardsToPlay = [];
 let cardToPlay;
 
@@ -25,11 +24,11 @@ const gameRoomName = queryParams.get("gameName");
 
 // Set the game room name as the text content of the header element
 const gameRoomNameHeader = document.getElementById("gameRoomName");
-console.log("the value of gameRoomname header is " + gameRoomNameHeader);
+// console.log("the value of gameRoomname header is " + gameRoomNameHeader);
 gameRoomNameHeader.textContent = "Game Room: " + gameRoomName;
 
 const greetingMessage = document.getElementById("greetingMessage");
-console.log("the value of greetingMessage is " + greetingMessage);
+// console.log("the value of greetingMessage is " + greetingMessage);
 greetingMessage.textContent = "Hello " + userName;
 
 function addStartButton() {
@@ -66,17 +65,16 @@ function setDeckMessage(message) {
   deckMessageDiv.appendChild(h2Element);
 }
 
-function checkCards() {
-  console.log(
-    " i am in checkCards function: deckTopCard:" + JSON.stringify(topPlayedCard)
-  );
-  console.log("deckTopCard.color:" + topPlayedCard.color);
-  console.log("deckTopCard.value:" + topPlayedCard.value);
+function updataCardsToPlay() {
+  cardsToPlay = [];
+
   if (topPlayedCard === null || hand === undefined || hand.length === 0) {
     return cardsToPlay;
   }
 
-  cardsToPlay = [];
+  if (topPlayedCard.value === "draw2") {
+    return cardToPlay;
+  }
 
   hand.forEach((card) => {
     if (
@@ -214,8 +212,7 @@ socket.on("connect", () => {
   }, 500); //needs short delay to make sure the socket is fully connected
 });
 
-socket.emit("reconnectAttempt", userId);
-socket.emit("reconnectAttempt", userId);
+// socket.emit("reconnectAttempt", userId);
 
 socket.on("backToLobby", () => {
   socket.on("backToLobby", () => {
@@ -246,14 +243,7 @@ socket.on("userJoin", (data) => {
 
 socket.on("userReconnect", () => {
   console.log("I am in userReconnect event");
-  socket.on("userReconnect", () => {
-    console.log("I am in userReconnect event");
-    getUserInRoom();
-    socket.emit("reconnected", roomId);
-    socket.emit("reconnected", roomId);
-    clearDeckMessage();
-    clearStartButton();
-  });
+  socket.emit("reconnected", roomId);
 });
 
 // Handling "userLeft" event
@@ -264,12 +254,10 @@ socket.on("userLeft", () => {
 
 // Handling "userLeft" event
 socket.on("drawnCards", (data) => {
-  console.log(JSON.stringify(data));
+  console.log("I am in drawnCards event");
   data.forEach((card) => {
     hand.push(card);
-    console.log("drawnCards: " + getURL(card));
   });
-  // renderHand();
 });
 
 socket.on("nextTurn", (data) => {
@@ -277,21 +265,21 @@ socket.on("nextTurn", (data) => {
   console.log("I am in nextTurn event");
   if (data.nextTurn == userId) {
     showDrawPlayButton();
-    // showTurn();
   } else {
     // Get the div element by its ID
     disappearDrawPlayButton();
   }
+
+  // showTurn();
+  cardsToPlay = updataCardsToPlay();
   renderDeckCard();
   renderHand();
+  showCurrentColor(topPlayedCard);
 });
 
 socket.on("playedCard", (data) => {
-  // top deck card
+  console.log("I am in playedCard event");
   topPlayedCard = data.discardDesckTop;
-  // renderDeckCard();
-  // renderHand();
-  // console.log(data);
 });
 
 //=========================startGame====================================
@@ -324,11 +312,20 @@ function showDrawPlayButton() {
 
   // Set its display property to "none"
   divElement.style.display = "inline";
-  if (cardsToPlay.length === 0) {
-    playCardBtn.disabled = true;
-  } else {
-    playCardBtn.disabled = false;
-  }
+  // if (cardsToPlay.length == 0) {
+  //   playCardBtn.disabled = true;
+  // } else {
+  //   playCardBtn.disabled = false;
+  // }
+  // console.log(
+  //   "I am in show DrawPlay button funcion, and playcardbutton is: " +
+  //     playCardBtn.disabled
+  // );
+}
+
+function showCurrentColor(currentCard) {
+  const deck = document.getElementById("deck-container");
+  deck.style.backgroundColor = currentCard.color;
 }
 
 socket.on("playersHand", (data) => {
@@ -347,12 +344,13 @@ socket.on("gameStarted", (data) => {
   console.log("I am in gameStarted event" + JSON.stringify(data));
 
   topPlayedCard = data.discardDeckTopCard;
+  showCurrentColor(topPlayedCard);
 
   console.log("topPlayedCard: " + JSON.stringify(topPlayedCard));
 
   // topPlayedCardUrl = getURL(topPlayedCard);
   // console.log("topPlayedCardUrl: " + topPlayedCardUrl);
-  cardsToPlay = checkCards(topPlayedCard, hand);
+  cardsToPlay = updataCardsToPlay();
   renderHand();
   clearDeckMessage();
   renderDeckCard();
@@ -418,6 +416,7 @@ function renderHand() {
       cardImg.addEventListener("click", () => {
         handleCardClick(cardImg);
         cardToPlay = card;
+        console.log("cardToPlay: " + JSON.stringify(cardToPlay));
       });
       handDiv.appendChild(cardImg);
     } else {
@@ -463,7 +462,47 @@ function drawCard() {
   socket.emit("drawCard", roomId, userId);
 }
 
+function showWildAnimation() {
+  const modal = document.querySelector(".wild-animation-container");
+  const overlay = document.querySelector(".overlay");
+  modal.style.display = "block";
+  overlay.style.display = "block";
+}
+
+function closeWildAnimation() {
+  const modal = document.querySelector(".wild-animation-container");
+  const overlay = document.querySelector(".overlay");
+  // Hide the form container
+  modal.style.display = "none";
+  // Hide the overlay
+  overlay.style.display = "none";
+  console.log("i am in closeCreateForm function");
+}
+
+function chooseColor(color) {
+  if (cardToPlay.type === "wild") {
+    cardToPlay.color = color;
+    topPlayedCard.color = color;
+    showCurrentColor(topPlayedCard);
+  } else {
+    console.log("setting color for wild card has error");
+  }
+}
+
 function playCard() {
+  console.log("I am in playCard function");
+  console.log("cardToPlay.type: " + cardToPlay.type);
+
+  if (cardToPlay.type === "wild") {
+    showWildAnimation();
+  }
+
+  // remove the cardToPlay from hand list
+  let indexToRemove = hand.indexOf(cardToPlay);
+  if (indexToRemove !== -1) {
+    hand.splice(indexToRemove, 1);
+  }
+
   socket.emit("playCard", roomId, userId, cardToPlay);
 }
 //=========================drawCard====================================
