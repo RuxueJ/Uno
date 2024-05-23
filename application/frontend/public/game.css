@@ -327,7 +327,4 @@ input[type="text"] {
   background-color: white;
   padding: 20px;
   border-radius: 10px;
-  display: flex !important;
-  flex-direction: column;
-  justify-content: space-around;
 }
