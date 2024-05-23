@@ -31,12 +31,6 @@ export function setUpSocketIO(io) {
                 roomName
             );
 
-            //problem here is it redirects and then immediatly goes reJoinGame()
-            //this path is when a user closes tab --> then refreshes on lobby page --> hitting redirect in roomToReconnectTo and then immediate reJoinGame()
-            //which triggers putUserInRoom
-            //socket.emit('roomToReconnectTo', { roomId: roomId, roomName: roomName });
-
-            //this path happens when user refreshes game page
             socket.emit("userReconnect");
           }
         } catch (err) {
@@ -277,6 +271,7 @@ export function setUpSocketIO(io) {
       }
       await gameController.userReconnected(userId, roomId);
 
+
       const playerState = await gameController.getPlayerState(userId, roomId);
       if (!playerState) {
         console.log("unable to get user's playerState");
@@ -301,7 +296,7 @@ export function setUpSocketIO(io) {
       //send player's hand
       const cardsInHand = await gameController.getUserHandsCounts(roomId);
       socket.emit("getPlayersHandsCount", cardsInHand.playersHandsCount);
-
+      socket.emit("getNextTurn", gameState)
     });
   });
 }
