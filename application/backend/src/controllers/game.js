@@ -541,3 +541,18 @@ export async function getRoomIsPlaying(roomId) {
     }
     return room.status === 'playing'
 }
+
+export async function getUserHandsCounts(roomId) {
+    const playerStates = await db.models.playerState.findAll( { where: { roomId }})
+    if (!playerStates) {
+        console.log('unable to find playerStates for room: ' + roomId)
+        return null
+    }
+    const playerHands = {}
+    for (let i = 0; i < playerStates.length; i++) {
+        playerHands[playerStates[i].userId] = playerStates[i].playerHandCount
+    }
+    return {
+        "playersHandsCount": playerHands
+    }
+}

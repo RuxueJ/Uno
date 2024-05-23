@@ -1,8 +1,14 @@
 let hand = [];
+
 let topPlayedCard;
 let cardsToPlay = [];
 let cardToPlay;
 let drawAmount = 0;
+let topPlayedCard = "";
+let isPlaying = false;
+let players;
+let nextPlayer;
+
 
 const hostWaitingRoomFullMessage =
   "The room is not full. To start the game, please wait for another guest to come...";
@@ -133,18 +139,20 @@ async function getUserInRoom() {
       console.log(
         "the user in this room:" + JSON.stringify(result.player_list)
       );
+      players = result.player_list;
       const playerList = document.getElementById("playerList");
-      playerList.innerHTML = "";
-
+      const playerListNeedtoBeUpdated = playerList.children.length === 0;
+      if(playerListNeedtoBeUpdated) playerList.innerHTML = "";
       result.player_list.forEach((user) => {
         // Access properties of each object
-        const userInfo = document.createElement("li");
+        if(playerListNeedtoBeUpdated) {
+          const userInfo = document.createElement("li");
+          // Set the text content of the li element
+          userInfo.textContent = user.userName;
+          // Append the li element to the div container
+          playerList.appendChild(userInfo);
+        }
 
-        // Set the text content of the li element
-        userInfo.textContent = user.userName;
-
-        // Append the li element to the div container
-        playerList.appendChild(userInfo);
         // console.log("user.isHost" + user.isHost);
         // console.log("result.player_list.length" + result.player_list.length);
         // console.log("result.max_player" + result.max_player);
@@ -168,7 +176,9 @@ async function getUserInRoom() {
           }
         }
       });
-
+      if(nextPlayer) {
+        showTurn();
+      }
       // Add any additional logic (e.g., redirecting the user, showing a success message)
     } else {
       console.error("Failed to create room", response.statusText);
@@ -277,6 +287,8 @@ socket.on("drawnCards", (data) => {
 socket.on("nextTurn", (data) => {
   // check if it is your turn
   console.log("I am in nextTurn event");
+  nextPlayer = data.nextTurn;
+  showTurn(data.nextTurn);
   if (data.nextTurn == userId) {
     showDrawPlayButton();
   } else {
@@ -292,10 +304,12 @@ socket.on("nextTurn", (data) => {
 });
 
 socket.on("playedCard", (data) => {
+
   console.log(
     "I am in playedCard event,data.discardDesckTop: " + data.discardDesckTop
   );
   topPlayedCard = data.discardDesckTop;
+
 });
 
 //=========================startGame====================================
@@ -363,6 +377,7 @@ socket.on("gameStarted", (data) => {
   if (data) isPlaying = true;
   console.log("I am in gameStarted event" + JSON.stringify(data));
 
+
   topPlayedCard = data.discardDeckTopCard;
   showCurrentColor(topPlayedCard);
 
@@ -372,6 +387,10 @@ socket.on("gameStarted", (data) => {
   // console.log("topPlayedCardUrl: " + topPlayedCardUrl);
   cardsToPlay = updataCardsToPlay();
   renderHand();
+
+//   topPlayedCard = getURL(data.discardDeckTopCard);
+  showTurn(data.nextTurn);
+
   clearDeckMessage();
   renderDeckCard();
   clearStartButton();
@@ -381,14 +400,45 @@ socket.on("gameStarted", (data) => {
   console.log("data.nextTurn" + data.nextTurn);
   console.log("userId" + userId);
   if (data.nextTurn == userId) {
-    // showTurn();
     showDrawPlayButton();
   } else {
     // Get the div element by its ID
     disappearDrawPlayButton();
   }
 });
+socket.on("getPlayersHandsCount", (data) => {
+  renderPlayerCardsCount(data);
+})
+function showTurn(currentPlayingUser) {
+  const playerList = document.getElementById("playerList");
+  playerList.innerHTML = "";
+  for(let player of players) {
+    const child = document.createElement("li");
+    child.id = player.userId;
+    if(player.userId === currentPlayingUser) {
+      child.textContent = player.userName + "     <<<<<< Turn!";
+      child.style.fontSize = '24px';
+      child.style.fontWeight = 'bold';
+      child.style.color = '#007bff';
+    } else {
+      child.textContent = player.userName;
+    }
+    playerList.appendChild(child)
+  }
+}
 
+function renderPlayerCardsCount(data) {
+  const playerList = document.getElementById("playerList");
+  const players = [...playerList.children];
+  for(const player of players) {
+    const text = player.innerHTML;
+    if(text.includes('card count')) break;
+    const textParts = text.split(' ');
+    textParts.splice(1, 0, `[card count : ${data[player.id]}]`);
+    const finalText = textParts.join(" ");
+    player.innerHTML = finalText;
+  }
+}
 function getURL(card) {
   let url = "";
   if (card.type == "number" || card.type == "special") {

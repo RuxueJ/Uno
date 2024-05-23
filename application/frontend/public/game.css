@@ -288,3 +288,12 @@ input[type="text"] {
 .color-btn:hover {
   opacity: 0.7;
 }
+
+
+
+#playerList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
