@@ -148,6 +148,7 @@ async function getUserInRoom() {
           const userInfo = document.createElement("li");
           // Set the text content of the li element
           userInfo.textContent = user.userName;
+          userInfo.id = user.userId;
           // Append the li element to the div container
           playerList.appendChild(userInfo);
         }
@@ -429,9 +430,11 @@ function showUno() {
 function showTurn(currentPlayingUser) {
   const playerList = document.getElementById("playerList");
   playerList.innerHTML = "";
+  if(!players) return;
   for(let player of players) {
     let cardCountInfo = "";
     if(playersCardcount) {
+      console.log(playersCardcount)
       cardCountInfo = `[card count : ${playersCardcount[player.userId]}]`;
     }
     const child = document.createElement("li");
@@ -456,6 +459,7 @@ function renderPlayerCardsCount(data) {
     const text = player.innerHTML;
     if(text.includes('card count')) break;
     const textParts = text.split(' ');
+    console.log("here", player.id)
     textParts.splice(1, 0, `[card count : ${data[player.id]}]`);
     const finalText = textParts.join(" ");
     player.innerHTML = finalText;
