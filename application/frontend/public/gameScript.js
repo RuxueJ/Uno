@@ -210,6 +210,9 @@ function leaveRoom() {
 
 function stayRoom() {
   window.location.reload();
+  const endGamePopup = document.querySelector(".endgame-popup");
+  endGamePopup.style.display = "none";
+  overlay.style.display = "none";
 }
 
 function startGame() {
@@ -401,6 +404,7 @@ socket.on("playersHand", (data) => {
   });
 });
 socket.on("gameStarted", (data) => {
+  console.log(players)
   if (data) isPlaying = true;
   console.log("I am in gameStarted event" + JSON.stringify(data));
 
@@ -437,34 +441,36 @@ socket.on("getPlayersHandsCount", (data) => {
   if(Object.keys(data).length > 0) {
     playersCardcount = data;
     renderPlayerCardsCount(data);
-    for(d in data) {
-      if(data[d] === 1) showUno();
+    for(userId in data) {
+      if(data[userId] === 0) socket.emit("endGame", roomId, userId);
+    }
+    for(userId in data) {
+      if(data[userId] === 1) showUno();
     }
   }
 })
 
-socket.on("getPlayersHandsCount", (data) => {
-  if(Object.keys(data).length > 0) {
-    playersCardcount = data;
-    renderPlayerCardsCount(data);
-    for(d in data) {
-      if(data[d] === 1) showUno();
-    }
-  }
-})
-
-socket.on("endGame", (data) => {
+socket.on("gameEnded", (data) => {
+  console.log("gameEnded");
   showEndGame(data);
 })
 
 
 function showEndGame(data) {
+  let winnerName = "";
+  for(const player of players) {
+    if(data === player.userId) winnerName = player.userName;
+  }
   const overlay = document.querySelector(".overlay");
   const endGamePopup = document.querySelector(".endgame-popup");
   const endGameMessage = document.querySelector("#end-message");;
-  endGameMessage.innerHTML = `Game End! The winner is ${players[data]}`;
+  endGameMessage.innerHTML = `Game End! The winner is ${winnerName}`;
   endGamePopup.style.display = "block";
   overlay.style.display = "block";
+
+  setTimeout(() => {
+    stayRoom();
+  }, 3000)
 }
 
 function showUno() {
