@@ -1,3 +1,14 @@
+const token = sessionStorage.getItem("token");
+const userName = sessionStorage.getItem("userName");
+const userId = sessionStorage.getItem("userId");
+const email = sessionStorage.getItem("email");
+
+if (!token || !userName || !userId || !email) {
+  window.location.href = "signIn.html";
+  alert("Please sign in first");
+}
+
+
 async function fetchRoomsData() {
   try {
     const response = await fetch("http://localhost:3000/api/room/list");
@@ -120,10 +131,6 @@ document.getElementById("profileBtn").addEventListener("click", () => {
   console.log("Profile / Logout clicked");
 });
 
-const token = sessionStorage.getItem("token");
-const userName = sessionStorage.getItem("userName");
-const userId = sessionStorage.getItem("userId");
-const email = sessionStorage.getItem("email");
 
 if (token && userName) {
   const greeting = document.getElementById("greeting");
