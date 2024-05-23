@@ -356,22 +356,28 @@ export async function playerPlayCard(roomId, userId, card) {
         }
 
         // check if card can be played
-        const deckTopCard = gameState.discardDeckTopCard;
-        const cardsInHand = playerState.playerHand;
-        const cardsToPlay = checkUtil.checkCards(deckTopCard, cardsInHand);
-        if (cardsToPlay.length === 0) {
-            console.log('no cards to play');
-            return null;
-        } else {
-            const cardToPlay = cardsToPlay.find(playerCard => playerCard.type === card.type && playerCard.color === card.color && playerCard.value === card.value);
-            if (!cardToPlay) {
-                console.log('card cannot be played');
-                return null;
-            }
-        }
+        // const deckTopCard = gameState.discardDeckTopCard;
+        // const cardsInHand = playerState.playerHand;
+        // const cardsToPlay = checkUtil.checkCards(deckTopCard, cardsInHand);
+        // if (cardsToPlay.length === 0) {
+        //     console.log('no cards to play');
+        //     return null;
+        // } else {
+            // const cardToPlay = cardsToPlay.find(playerCard => playerCard.type === card.type && playerCard.color === card.color && playerCard.value === card.value);
+            // if (!cardToPlay) {
+            //     console.log('card cannot be played');
+            //     return null;
+            // }
+        // }
 
         // get index of card to be played
-        const index = playerState.playerHand.findIndex(playerCard => playerCard.type === card.type && playerCard.color === card.color && playerCard.value === card.value);
+        let index;
+        if(card.type == "wild"){
+            index = playerState.playerHand.findIndex(playerCard => playerCard.type === card.type  && playerCard.value === card.value);
+        }else{
+            index = playerState.playerHand.findIndex(playerCard => playerCard.type === card.type && playerCard.color === card.color && playerCard.value === card.value);
+        }
+        
         if (index === -1) {
             console.log('card not found in player hand');
             return null;

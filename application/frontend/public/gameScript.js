@@ -74,20 +74,31 @@ function updataCardsToPlay() {
     return [];
   }
 
-  if ((topPlayedCard.value === "draw2" || topPlayedCard.value == 'wilddraw4') && drawAmount == 0) {
+  if (
+    (topPlayedCard.value === "draw2" || topPlayedCard.value == "wilddraw4") &&
+    drawAmount == 0
+  ) {
     console.log("topPlayedCard is draw2 or wilddraw4 and drawAmount is 0");
     return [];
   }
 
-  hand.forEach((card) => {
-    if (
-      card.color === topPlayedCard.color ||
-      card.value === topPlayedCard.value ||
-      card.type === "wild"
-    ) {
-      cardsToPlay.push(card);
-    }
-  });
+  if (topPlayedCard.type == "wild") {
+    hand.forEach((card) => {
+      if (card.color === topPlayedCard.color || card.type === "wild") {
+        cardsToPlay.push(card);
+      }
+    });
+  } else {
+    hand.forEach((card) => {
+      if (
+        card.color === topPlayedCard.color ||
+        card.value === topPlayedCard.value ||
+        card.type === "wild"
+      ) {
+        cardsToPlay.push(card);
+      }
+    });
+  }
 
   return cardsToPlay;
 }
@@ -281,7 +292,9 @@ socket.on("nextTurn", (data) => {
 });
 
 socket.on("playedCard", (data) => {
-  console.log("I am in playedCard event");
+  console.log(
+    "I am in playedCard event,data.discardDesckTop: " + data.discardDesckTop
+  );
   topPlayedCard = data.discardDesckTop;
 });
 
@@ -333,7 +346,7 @@ function showCurrentColor(currentCard) {
 
 socket.on("updateDrawAmount", (data) => {
   drawAmount = Number(data);
-})
+});
 
 socket.on("playersHand", (data) => {
   console.log("I am in playersHand event");
@@ -489,8 +502,13 @@ function closeWildAnimation() {
 function chooseColor(color) {
   if (cardToPlay.type === "wild") {
     cardToPlay.color = color;
-    // topPlayedCard.color = color;
-    // showCurrentColor(topPlayedCard);
+    topPlayedCard = cardToPlay;
+    console.log(
+      "after choosing the color, the cardToPlay is:" +
+        JSON.stringify(cardToPlay)
+    );
+    socket.emit("playCard", roomId, userId, cardToPlay);
+    showCurrentColor(topPlayedCard);
   } else {
     console.log("setting color for wild card has error");
   }
@@ -500,16 +518,18 @@ function playCard() {
   console.log("I am in playCard function");
 
   if (cardToPlay.type === "wild") {
-    console.log("wild color: ", cardToPlay.color);
+    console.log("cardToPlay.type is wild and shows animation");
+    let indexToRemove = hand.indexOf(cardToPlay);
+    if (indexToRemove !== -1) {
+      hand.splice(indexToRemove, 1);
+    }
     showWildAnimation();
+  } else {
+    let indexToRemove = hand.indexOf(cardToPlay);
+    if (indexToRemove !== -1) {
+      hand.splice(indexToRemove, 1);
+    }
+    socket.emit("playCard", roomId, userId, cardToPlay);
   }
-
-  // remove the cardToPlay from hand list
-  let indexToRemove = hand.indexOf(cardToPlay);
-  if (indexToRemove !== -1) {
-    hand.splice(indexToRemove, 1);
-  }
-
-  socket.emit("playCard", roomId, userId, cardToPlay);
 }
 //=========================drawCard====================================
