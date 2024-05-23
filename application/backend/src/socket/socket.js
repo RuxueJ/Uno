@@ -156,6 +156,8 @@ export function setUpSocketIO(io) {
         }
         console.log("successfully drew card: " + roomId);
         socket.emit("drawnCards", drawStatus.drawnCards);
+        const cardsInHand = await gameController.getUserHandsCounts(roomId);
+        io.to(roomId).emit("getPlayersHandsCount", cardsInHand.playersHandsCount);
         const nextTurn = {
           "nextTurn": drawStatus.nextTurn,
           "direction": drawStatus.direction
@@ -182,6 +184,8 @@ export function setUpSocketIO(io) {
         }
         console.log("successfully played card: " + roomId);
         io.to(roomId).emit("playedCard", playStatus);
+        const cardsInHand = await gameController.getUserHandsCounts(roomId);
+        io.to(roomId).emit("getPlayersHandsCount", cardsInHand.playersHandsCount);
         const nextTurn = {
           "nextTurn": drawStatus.nextTurn,
           "direction": drawStatus.direction
@@ -271,6 +275,10 @@ export function setUpSocketIO(io) {
       //send top card
       //send discardtopcard
       socket.emit('gameStarted', gameState)
+
+      //send player's hand
+      const cardsInHand = await gameController.getUserHandsCounts(roomId);
+      socket.emit("getPlayersHandsCount", cardsInHand.playersHandsCount);
     });
   });
 }
