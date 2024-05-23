@@ -13,6 +13,7 @@ import app from '@/app';
 import db from '@/database';
 import * as configs from '@/config';
 import { socketSetup } from '@/socket';
+import socketAuth from '@/middleware/socketAuth';
 
 /**
  * Start debug library
@@ -41,6 +42,7 @@ const server = http.createServer(app);
 const io = new SocketIOServer(server, {
   cors: configs.corsConfig
 });
+io.use(socketAuth);
 socketSetup.setUpSocketIO(io);
 
 //export io for attaching userId to a socket instance

@@ -10,7 +10,7 @@ export default function (sequelize) {
         }
 
         generateToken(expiresIn = '1h') {
-            const data = { id: this.id, email: this.email };
+            const data = { id: this.userId, email: this.email };
             return tokenUtil.generateToken(data, expiresIn);
         }
 
