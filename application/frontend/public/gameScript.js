@@ -206,6 +206,10 @@ function leaveRoom() {
   window.location.href = "lobby.html"; // Change the URL accordingly
 }
 
+function stayRoom() {
+  window.location.reload();
+}
+
 function startGame() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get("roomId");
@@ -433,9 +437,16 @@ socket.on("getPlayersHandsCount", (data) => {
   }
 })
 
-function showEndGame() {
+socket.on("endGame", (data) => {
+  showEndGame(data);
+})
+
+
+function showEndGame(data) {
   const overlay = document.querySelector(".overlay");
   const endGamePopup = document.querySelector(".endgame-popup");
+  const endGameMessage = document.querySelector("#end-message");;
+  endGameMessage.innerHTML = `Game End! The winner is ${players[data]}`;
   endGamePopup.style.display = "block";
   overlay.style.display = "block";
 }

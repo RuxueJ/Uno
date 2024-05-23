@@ -328,3 +328,7 @@ input[type="text"] {
   padding: 20px;
   border-radius: 10px;
 }
+
+#end-message {
+  margin-bottom: 20px;
+}
