@@ -79,23 +79,19 @@ export async function startGame(roomId, userId) {
 
         const startAttempt = await db.models.room.findOne( { where: { roomId } } );
         if(!startAttempt) {
-            console.log('cannot find game to start: ' + roomId);
             return null;
         }
 
         const roomLead = await db.models.roomUser.findOne( { where: { roomId, userId, isHost: true } } );
         if (!roomLead) {
-            console.log('you are not the room leader: ' + userId);
             return null;
         }
 
         const players = await db.models.roomUser.findAll( { where: {roomId} } )
         if(players.length === 0) {
-            console.log('problem getting roomUsers for this room: ' + roomId);
             return null;
         }
         if (players.length < startAttempt.maxplayer) {
-            console.log('not enough players to start game: ' + roomId);
             return null;
         }
 
@@ -105,16 +101,12 @@ export async function startGame(roomId, userId) {
             id_socketIdMap[players[i].userId] = players[i].socketId;
         }
         if(!userIds) {
-            console.log('problem extracting userIds from players inside game.js');
             return null;
         }
 
         try {
             const newDeck = createUnoDeck();
-            console.log("-----------Deck-----------")
             const deck = shuffle(newDeck);
-            console.log(deck);
-            console.log("-----------Init Player Hands-----------")
             const initPlayerHands = initializePlayerHand(deck, userIds);
             // to fill playerHands array we call draw(deck)
             //all players need to be initalized then move on so the deck contents are consistent
@@ -129,9 +121,7 @@ export async function startGame(roomId, userId) {
                 }, { transaction });
                 return playerState;
             })
-            console.log("---------TopCard-------------")
             let topCard = drawCard(deck)
-            console.log(topCard);
             //if wild player picks color --> in the inital game_state if the top card is wild
             //then its color will be null --> when the first turn begins
             //that player will decide which color to set it to
@@ -149,18 +139,9 @@ export async function startGame(roomId, userId) {
                 topCard.color = randomNumber < 0.25 ? 'red' : randomNumber < 0.5 ? 'blue' : randomNumber < 0.75 ? 'green' : 'yellow';
             }
 
-            console.log("----------empty discard deck------------")
             const newDiscardDeck = []
-            console.log(newDiscardDeck)
-            console.log("---------discard deck after draw-------------")
             newDiscardDeck.unshift(topCard)    //add card to beginning of the discardDeck array
-            console.log(newDiscardDeck)
-            console.log("-----------players-----------")
-            console.log(userIds)
-            console.log("-----------new players-----------")
             const newplayerOrder = shuffle(userIds)
-            console.log(newplayerOrder);
-            console.log("----------------------")
 
             //initalize all the player states then move on to gamestate
             await Promise.all(playerCreationPromises);
@@ -189,8 +170,6 @@ export async function startGame(roomId, userId) {
 
             startAttempt.status = "playing";
             await startAttempt.save({ transaction });
-
-            console.log("starting new game: " + roomId)
             await transaction.commit();
 
             return {
@@ -219,23 +198,19 @@ export async function cleanUpGame(roomId) {
     try {
         const room = await db.models.room.findOne({ where: { roomId }} );
         if(!room) {
-            console.log('room does not exist: ' + roomId);
             return null;
         }
         if(room.status !== 'playing') {
-            console.log('there is no game to end');
             return null;
         }
 
         const gameState = await db.models.gameState.findOne( { where: { roomId }});
         if(!gameState) {
-            console.log('gameState does not exist for: ' + roomId);
             return null;
         }
 
         const playerStates = await db.models.playerState.findAll( { where: { roomId }} );
         if(playerStates.length === 0) {
-            console.log('no player states for this game: ' + roomId);
             return null;
         }
 
@@ -248,10 +223,7 @@ export async function cleanUpGame(roomId) {
 
             room.status = 'waiting';
             await room.save( { transaction });
-
             await gameState.destroy({ transaction });
-            console.log('cleaned up game: ' + roomId);
-
             await transaction.commit();
         } catch (innerErr) {
             console.log(innerErr);
@@ -268,13 +240,11 @@ export async function playerDrawCard(roomId, userId) {
     try {
         const gameState = await db.models.gameState.findOne( { where: { roomId }, transaction});
         if(!gameState) {
-            console.log('gameState does not exist for: ' + roomId);
             return null;
         }
 
         const playerState = await db.models.playerState.findOne( { where: { roomId, userId }, transaction});
         if(!playerState) {
-            console.log('playerState does not exist for: ' + userId);
             return null;
         }
 
@@ -343,7 +313,6 @@ export async function playerPlayCard(roomId, userId, card) {
     try {
         const gameState = await db.models.gameState.findOne( { where: { roomId }, transaction});
         if(!gameState) {
-            console.log('gameState does not exist for: ' + roomId);
             return null;
         }
 
@@ -355,21 +324,6 @@ export async function playerPlayCard(roomId, userId, card) {
             return null;
         }
 
-        // check if card can be played
-        // const deckTopCard = gameState.discardDeckTopCard;
-        // const cardsInHand = playerState.playerHand;
-        // const cardsToPlay = checkUtil.checkCards(deckTopCard, cardsInHand);
-        // if (cardsToPlay.length === 0) {
-        //     console.log('no cards to play');
-        //     return null;
-        // } else {
-            // const cardToPlay = cardsToPlay.find(playerCard => playerCard.type === card.type && playerCard.color === card.color && playerCard.value === card.value);
-            // if (!cardToPlay) {
-            //     console.log('card cannot be played');
-            //     return null;
-            // }
-        // }
-
         // get index of card to be played
         let index;
         if(card.type == "wild"){
@@ -379,7 +333,6 @@ export async function playerPlayCard(roomId, userId, card) {
         }
         
         if (index === -1) {
-            console.log('card not found in player hand');
             return null;
         }
 
@@ -441,7 +394,6 @@ export async function playerPlayCard(roomId, userId, card) {
 export async function getPlayerList(req, res) {
     // get method roomId from req
     const { roomId } = req.params;
-    console.log('getting player list for room: ' + roomId);
     try {
         const roomCrated = await db.models.room.findOne({
             where: { roomId },
@@ -453,12 +405,10 @@ export async function getPlayerList(req, res) {
             order: [['isHost', 'DESC']]
         });
         if (!players) {
-            console.log('problem getting player list');
             return null;
         }
         const userIds = players.map(player => player.userId);
         if(!userIds) {
-            console.log('problem extracting userIds from players inside game.js');
             return null;
         }
         const userNames = await db.models.user.findAll({
@@ -481,7 +431,6 @@ export async function getPlayerList(req, res) {
 export async function getPlayerState(userId, roomId) {
     const playerState = await db.models.playerState.findOne( { where: { roomId, userId }});
     if(!playerState) {
-        console.log('playerState does not exist for: ' + userId);
         return null;
     }
     return playerState
@@ -490,12 +439,10 @@ export async function getPlayerState(userId, roomId) {
 export async function getGameState(roomId, userId) {
     const gameState = await db.models.gameState.findOne( { where: {roomId} })
     if(!gameState) {
-        console.log('gameState does not exist for: ' + roomId )
         return null
     }
     const playerState = await db.models.playerState.findOne( { where: { roomId, userId }});
     if(!playerState) {
-        console.log('playerState does not exist for: ' + userId);
         return null;
     }
     
@@ -514,7 +461,6 @@ export async function getGameState(roomId, userId) {
 export async function userReconnected(userId, roomId) {
     const userInfo = await db.models.roomUser.findOne( { where: {userId, roomId }})
     if (!userInfo) {
-        console.log('unable to find user: ' + userId + "in room: " + roomId)
         return null
     }
     userInfo.connected = true
@@ -525,7 +471,6 @@ export async function userReconnected(userId, roomId) {
 export async function userDisconnected(userId, roomId) {
     const userInfo = await db.models.roomUser.findOne( { where: {userId, roomId }})
     if (!userInfo) {
-        console.log('unable to find user: ' + userId + "in room: " + roomId)
         return null
     }
     userInfo.connected = false
@@ -536,7 +481,6 @@ export async function userDisconnected(userId, roomId) {
 export async function getRoomIsPlaying(roomId) {
     const room = await db.models.room.findOne( { where: { roomId }})
     if (!room) {
-        console.log('unable to find room: ' + roomId)
         return null
     }
     return room.status === 'playing'
@@ -545,7 +489,6 @@ export async function getRoomIsPlaying(roomId) {
 export async function getUserHandsCounts(roomId) {
     const playerStates = await db.models.playerState.findAll( { where: { roomId }})
     if (!playerStates) {
-        console.log('unable to find playerStates for room: ' + roomId)
         return null
     }
     const playerHands = {}
@@ -563,28 +506,24 @@ export async function endGame(roomId, winnerId) {
         // delete gamestate
         const gameState = await db.models.gameState.findOne( { where: { roomId }, transaction});
         if(!gameState) {
-            console.log('gameState does not exist for: ' + roomId);
             return null;
         }
         gameState.destroy({ transaction });
         // delete playerstates
         const playerStates = await db.models.playerState.findAll( { where: { roomId }, transaction});
         if(!playerStates) {
-            console.log('playerStates do not exist for: ' + roomId);
             return null;
         }
         await Promise.all(playerStates.map(playerState => playerState.destroy({ transaction })));
         // delete roomusers
         const roomUsers = await db.models.roomUser.findAll( { where: { roomId }, transaction});
         if(!roomUsers) {
-            console.log('roomUsers do not exist for: ' + roomId);
             return null;
         }
         await Promise.all(roomUsers.map(roomUser => roomUser.destroy({ transaction })));
         // delete room
         const room = await db.models.room.findOne( { where: { roomId }, transaction});
         if(!room) {
-            console.log('room does not exist: ' + roomId);
             return null;
         }
         room.destroy({ transaction });

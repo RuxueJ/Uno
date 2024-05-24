@@ -4,7 +4,7 @@ export async function getRoomsData(req, res) {
   try {
     // Function to retrieve room data
     const getRoomData = async () => {
-      // 查询所有房间     query all rooms
+      // query all rooms
       const rooms = await db.models.room.findAll({
         attributes: ["roomId", "name", "status", "maxplayer", "createtime"],
         order: [["roomId", "DESC"]],
@@ -93,10 +93,6 @@ export async function createRoom(req, res) {
 
   try {
     const { name, userId, maxPlayers } = req.body;
-
-    console.log(req.body);
-
-    // 创建房间     create room
     const room = await db.models.room.create(
       {
         name,
@@ -105,8 +101,6 @@ export async function createRoom(req, res) {
       },
       { transaction }
     );
-    console.log("Room created:", room);
-    console.log("Room.id:", room.dataValues.roomId);
 
     // create room user
     const roomUser = await db.models.roomUser.create(
@@ -142,18 +136,15 @@ export async function joinRoom(email, roomId) {
   try {
     const room = await db.models.room.findOne({ where: { roomId: roomId } });
     if (!room) {
-      console.log("room does not exist");
       return null;
     }
 
     if (room.status !== "waiting") {
-      console.log("cannot join room; game is in session");
       return null;
     }
 
     const user = await db.models.user.findOne({ where: { email: email } });
     if (!user) {
-      console.log("user does not exist");
       return null;
     }
     const userId = user.userId;
@@ -162,7 +153,6 @@ export async function joinRoom(email, roomId) {
       where: { roomId, userId },
     });
     if (existingroomUser) {
-      console.log("user already in room");
       return null;
     }
 
@@ -171,7 +161,6 @@ export async function joinRoom(email, roomId) {
     });
     if (totalPlayers) {
       if (totalPlayers.length >= room.dataValues.maxplayer) {
-        console.log("room is full");
         return null;
       }
     }
@@ -194,7 +183,6 @@ export async function putUserInRoom(roomId, userId, socketId) {
   try {
     const room = await db.models.room.findOne({ where: { roomId: roomId } });
     if (!room) {
-      console.log("room does not exist");
       return null;
     }
 
@@ -202,7 +190,6 @@ export async function putUserInRoom(roomId, userId, socketId) {
       where: { roomId, userId },
     });
     if (!existingroomUser) {
-      console.log("user not in room");
       return null;
     }
     existingroomUser.socketId = socketId;
@@ -221,7 +208,6 @@ export async function leaveRoom(userId, roomId) {
   try {
     const room = await db.models.room.findOne({ where: { roomId: roomId }, transaction });
     if (!room) {
-      console.log("room does not exist");
       await transaction.rollback();
       return null;
     }
@@ -242,23 +228,18 @@ export async function leaveRoom(userId, roomId) {
       if (room.status === "playing") {
         existingRoomUser.connected = false
         await existingRoomUser.save()
-        console.log("game is playing so setting player to disconnect on leaveRoom button")
       } else {
         const isHost = existingRoomUser.isHost;
         if (isHost) {
           if (userCount > 1) {
             roomUsers[1].isHost = true;
-            await roomUsers[1].save({ transaction }); // 提交新房主的更改
+            await roomUsers[1].save({ transaction }); 
           }
         }
-        // 尝试删除用户
         await existingRoomUser.destroy({ transaction });
-        console.log("user " + userId + " removed from room");
 
         if (userCount === 1) {
-          // 如果房间中没有用户，则删除房间
           await room.destroy({ transaction });
-          console.log("room " + roomId + " deleted");
         }  
       }
 
@@ -266,7 +247,6 @@ export async function leaveRoom(userId, roomId) {
       await transaction.commit();
       return existingRoomUser;
     } else {
-      console.log("user " + userId + " doesn't exist in room");
       await transaction.rollback();
       return null;
     }
@@ -284,11 +264,9 @@ export async function disconnect(userId, roomId) {
   //logic is when its their turn if they are not connected then
   //have them draw or something and go next turn
   const transaction = await db.transaction();
-  console.log("starting disconnect in room.js");
   try {
     const room = await db.models.room.findOne({ where: { roomId: roomId } });
     if (!room) {
-      console.log("room does not exist");
       return null;
     }
 
@@ -300,9 +278,6 @@ export async function disconnect(userId, roomId) {
     const userCount = roomUsers.length;
 
     const existingRoomUser = roomUsers.find((user) => user.userId === Number(userId));
-    console.log("userId: ", userId);
-    console.log("roomUsers: ", roomUsers);
-    console.log("existingRoomUser: ", existingRoomUser);
 
     if (existingRoomUser) {
       //at the end of the game kick all players who are still not connected
@@ -326,13 +301,12 @@ export async function disconnect(userId, roomId) {
       //if room is playing then set connected for this user as false so we can reconnect
         existingRoomUser.connected = false;
         await existingRoomUser.save({ transaction });
-        console.log("user " + userId + " disconnected");
       }
       await transaction.commit();
       return existingRoomUser;
     } else {
       transaction.rollback();
-      console.log("user " + userId + " is not in the room");
+  
       return null;
     }
   } catch (err) {
@@ -351,9 +325,6 @@ export async function reconnect(userId) {
       where: { userId, connected: false },
     });
     if (userrooms) {
-      //userrooms.connected = true;
-      //await userrooms.save();
-
       const roomInfo = await db.models.room.findOne({
         where: {roomId: userrooms.roomId}
       });

@@ -23,8 +23,6 @@ async function fetchRoomsData() {
     }
 
     const result = await response.json();
-    console.log("Fetched rooms data:", result);
-
     if (response.status === 200) {
       const data = result.gamelist;
       displayRoomsData(data);
@@ -89,7 +87,6 @@ function displayRoomsData(data) {
       joinButton.addEventListener("click", () => {
         const roomId = game.id;
         socket.emit("joinRoom", roomId);
-        console.log(`Joining room ${roomId}`);
         window.open(
           `/public/game.html?roomId=${game.id}&gameName=${encodeURIComponent(
             game.name
@@ -134,7 +131,6 @@ document.getElementById("profileBtn").addEventListener("click", () => {
   sessionStorage.removeItem("token");
   sessionStorage.removeItem("username");
   window.location.href = "SignIn.html";
-  console.log("Profile / Logout clicked");
 });
 
 
@@ -168,7 +164,6 @@ function closeCreateForm() {
 
   // Hide the overlay
   overlay.style.display = "none";
-  console.log("i am in closeCreateForm function");
 }
 
 document.getElementById("cancelBtn").addEventListener("click", () => {
@@ -187,9 +182,6 @@ document
       userId: userId,
       maxPlayers: formData.get("numPlayers"),
     };
-
-    // console.log("Form submitted", data); // For testing
-
     try {
       // Make the POST request to the server
       const response = await fetch("http://localhost:3000/api/room/create", {
@@ -204,17 +196,13 @@ document
       // Handle the response
       if (response.ok) {
         const result = await response.json();
-        console.log("Room created successfully:" + JSON.stringify(result));
         closeCreateForm();
-
-        console.log("I need to rediect to room");
         window.open(
           `/public/game.html?roomId=${
             result.roomId
           }&gameName=${encodeURIComponent(result.name)}`,
           "_blank"
         );
-        console.log("I success to rediect to room");
 
         // Add any additional logic (e.g., redirecting the user, showing a success message)
       } else {
@@ -240,23 +228,11 @@ const socket = io("http://localhost:3000", {
 //check if this user has any rooms to reconnect to
 socket.emit("reconnectAttempt", userId);
 
-// socket.on('roomToReconnectTo', ({roomId, roomName}) => {
-//     console.log("inside roomToReconnectTo")
-//     // window.open(
-//     //   `/public/game.html?roomId=${roomId}&gameName=${encodeURIComponent(
-//     //     roomName
-//     //   )}`,
-//     //   "_blank"
-//     // );
-
-// });
-
 const messageInput = document.getElementById("messageInput");
 const messages = document.getElementById("messages");
 const sendButton = document.getElementById("sendButton");
 
 socket.on("newLobbyMessage", function (data) {
-  console.log("I am getting data:" + data);
   const messageElement = document.createElement("div");
   messageElement.textContent = `${data.userName} @ ${data.timeStamp}: ${data.message}`;
   messages.appendChild(messageElement);

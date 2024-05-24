@@ -7,7 +7,6 @@ export function emitToRoom(io, roomId, eventName, eventData) {
 
 export function setUpSocketIO(io) {
   io.on("connection", async (socket) => {
-    console.log("A user connected. Socket ID: ", socket.id);
     socket.join("lobby");
     //user info attached to this socket
     const userId = socket.handshake.query.userId;
