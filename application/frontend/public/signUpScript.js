@@ -7,10 +7,8 @@ function validateForm(event) {
     !checkPasswordMatch()
   ) {
     event.preventDefault(); // Prevent default form submission
-    console.log("should not submit");
     return false;
   }
-  console.log("should submit");
   return true;
 }
 

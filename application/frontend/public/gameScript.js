@@ -35,15 +35,12 @@ const gameRoomName = queryParams.get("gameName");
 
 // Set the game room name as the text content of the header element
 const gameRoomNameHeader = document.getElementById("gameRoomName");
-// console.log("the value of gameRoomname header is " + gameRoomNameHeader);
 gameRoomNameHeader.textContent = "Game Room: " + gameRoomName;
 
 const greetingMessage = document.getElementById("greetingMessage");
-// console.log("the value of greetingMessage is " + greetingMessage);
 greetingMessage.textContent = "Hello " + userName;
 
 function addStartButton() {
-  console.log("I am adding start Button");
   const startButton = document.createElement("button");
   startButton.id = "startButton";
   startButton.textContent = "Start";
@@ -55,8 +52,6 @@ function addStartButton() {
 }
 
 function clearStartButton() {
-  console.log("I am clearing start Button");
-
   const startButtonContainer = document.getElementById("startButtonContainer");
   startButtonContainer.innerHTML = "";
 }
@@ -80,7 +75,6 @@ function updataCardsToPlay() {
   cardsToPlay = [];
 
   if (topPlayedCard === null || hand === undefined || hand.length === 0) {
-    console.log("topPlayedCard is null or hand is empty");
     return [];
   }
 
@@ -88,7 +82,6 @@ function updataCardsToPlay() {
     (topPlayedCard.value === "draw2" || topPlayedCard.value == "wilddraw4") &&
     drawAmount == 0
   ) {
-    console.log("topPlayedCard is draw2 or wilddraw4 and drawAmount is 0");
     return [];
   }
 
@@ -155,18 +148,9 @@ async function getUserInRoom() {
     // Handle the response
     if (response.ok) {
       const result = await response.json();
-      console.log(JSON.stringify(result));
-      console.log(
-        "the user in this room:" + JSON.stringify(result.player_list)
-      );
       players = result.player_list;
       renderPlayerList();
       result.player_list.forEach((user) => {
-        // Access properties of each object
-        // console.log("user.isHost" + user.isHost);
-        // console.log("result.player_list.length" + result.player_list.length);
-        // console.log("result.max_player" + result.max_player);
-
         if (result.gamePlaying) {
           clearDeckMessage();
           clearStartButton();
@@ -187,9 +171,7 @@ async function getUserInRoom() {
         }
       });
       if(nextPlayer) {
-        console.log("------in this showturn?----------")
         showTurn(nextPlayer);
-        console.log("------end in this showturn?----------")
       }
       // Add any additional logic (e.g., redirecting the user, showing a success message)
     } else {
@@ -206,7 +188,6 @@ function leaveRoom() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get("roomId");
   socket.emit("leaveRoom", roomId);
-  console.log(`Leaving room ${roomId}`);
   //because we are changing the window to lobby.html the socket disconnects and goes through socket.on('disconnecting')
   window.location.href = "lobby.html"; // Change the URL accordingly
 }
@@ -217,14 +198,12 @@ async function stayRoom() {
   endGamePopup.style.display = "none";
   overlay.style.display = "none";
   await getUserInRoom();
-  //window.location.reload();
 }
 
 function startGame() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get("roomId");
   socket.emit("startGame", roomId);
-  console.log(`Starting game ${roomId}`);
   clearDeckMessage();
   clearStartButton();
 }
@@ -233,7 +212,6 @@ function endGame() {
   const urlParams = new URLSearchParams(window.location.search);
   const roomId = urlParams.get("roomId");
   socket.emit("cleanUpGame", roomId);
-  console.log(`Cleaning up game ${roomId}`);
 }
 
 const messageInput = document.getElementById("messageInput");
@@ -257,22 +235,15 @@ socket.on("connect", () => {
   }, 500); //needs short delay to make sure the socket is fully connected
 });
 
-// socket.emit("reconnectAttempt", userId);
-
-
-  socket.on("backToLobby", () => {
-    window.location.href = "lobby.html";
-  });
-
+socket.on("backToLobby", () => {
+  window.location.href = "lobby.html";
+});
 
 function reJoinGame() {
-  console.log("rejoining: " + roomId + " for user: " + userId);
   socket.emit("putUserInRoom", roomId);
-  console.log("after emitting");
 }
 
 socket.on("newRoomMessage", function (data) {
-  console.log("I am in newRoomMessage event");
   const messageElement = document.createElement("div");
   messageElement.textContent = `${data?.userName} @ ${data?.timeStamp}: ${data?.message}`;
   messages.appendChild(messageElement);
@@ -281,36 +252,27 @@ socket.on("newRoomMessage", function (data) {
 
 // Handling "userJoin" event
 socket.on("userJoin", async (data) => {
-  console.log("I am in userJoin event");
-  
-  // console.log("data.gamePlaying" + data.gamePlaying);
   await getUserInRoom();
 });
 
 socket.on("userReconnect", async () => {
-  console.log("I am in userReconnect event");
   await getUserInRoom();
   socket.emit("reconnected", roomId);
 });
 
 // Handling "userLeft" event
 socket.on("userLeft", () => {
-  console.log("I am in userLeft event");
   getUserInRoom();
 });
 
 // Handling "userLeft" event
 socket.on("drawnCards", (data) => {
-  console.log("I am in drawnCards event");
   data.forEach((card) => {
     hand.push(card);
   });
 });
 
 socket.on("getNextTurn", (data) => {
-  console.log("I am in getNextTrun")
-  console.log(data)
-  console.log(userId)
   if(data?.nextTurn) showTurn(data.nextTurn)
   if (data?.nextTurn == userId) {
     showDrawPlayButton();
@@ -322,7 +284,6 @@ socket.on("getNextTurn", (data) => {
 
 socket.on("nextTurn", (data) => {
   // check if it is your turn
-  console.log("I am in nextTurn event");
   nextPlayer = data?.nextTurn;
   if(data?.nextTurn) showTurn(data.nextTurn);
   if (data.nextTurn == userId) {
@@ -332,7 +293,6 @@ socket.on("nextTurn", (data) => {
     disappearDrawPlayButton();
   }
 
-  // showTurn();
   cardsToPlay = updataCardsToPlay();
   renderDeckCard();
   renderHand();
@@ -340,23 +300,16 @@ socket.on("nextTurn", (data) => {
 });
 
 socket.on("playedCard", (data) => {
-
-  console.log(
-    "I am in playedCard event,data.discardDesckTop: " + data.discardDesckTop
-  );
   topPlayedCard = data?.discardDesckTop;
-
 });
 
 //=========================startGame====================================
 function startGame() {
   socket.emit("startGame", roomId);
   isPlaying = true;
-  console.log("I am emit startGame event");
 }
 
 function disappearDrawPlayButton() {
-  console.log("I am in disappear draw play button");
   var divElement = document.getElementById("draw-card-container");
 
   // Set its display property to "none"
@@ -378,15 +331,6 @@ function showDrawPlayButton() {
 
   // Set its display property to "none"
   divElement.style.display = "inline";
-  // if (cardsToPlay.length == 0) {
-  //   playCardBtn.disabled = true;
-  // } else {
-  //   playCardBtn.disabled = false;
-  // }
-  // console.log(
-  //   "I am in show DrawPlay button funcion, and playcardbutton is: " +
-  //     playCardBtn.disabled
-  // );
 }
 
 function showCurrentColor(currentCard) {
@@ -399,9 +343,6 @@ socket.on("updateDrawAmount", (data) => {
 });
 
 socket.on("playersHand", (data) => {
-  console.log("I am in playersHand event");
-  console.log(JSON.stringify(data));
-
   hand = [];
 
   // cardsToPlay = checkCards(topPlayedCard, data.playersHand);
@@ -411,30 +352,16 @@ socket.on("playersHand", (data) => {
 });
 socket.on("gameStarted", (data) => {
   if (data) isPlaying = true;
-  console.log("I am in gameStarted event" + JSON.stringify(data));
-
-
   topPlayedCard = data?.discardDeckTopCard;
   showCurrentColor(topPlayedCard);
-
-  console.log("topPlayedCard: " + JSON.stringify(topPlayedCard));
-
-  // topPlayedCardUrl = getURL(topPlayedCard);
-  // console.log("topPlayedCardUrl: " + topPlayedCardUrl);
   cardsToPlay = updataCardsToPlay();
   renderHand();
 
-//   topPlayedCard = getURL(data.discardDeckTopCard);
   if(data?.nextTurn) showTurn(data.nextTurn);
 
   clearDeckMessage();
   renderDeckCard();
   clearStartButton();
-
-  console.log("I am in gameStarted socket evnet");
-  console.log("I am in nextTurn event");
-  console.log("data.nextTurn" + data?.nextTurn);
-  console.log("userId" + userId);
   if (data?.nextTurn == userId) {
     showDrawPlayButton();
   } else {
@@ -453,16 +380,13 @@ socket.on("getPlayersHandsCount", (data) => {
 })
 
 socket.on("gameEnded", (data) => {
-  console.log("gameEnded");
   showEndGame(data);
 })
 
 
 function showEndGame(data) {
-  console.log(data)
   let winnerName = "";
   for(const player of players) {
-    console.log(player.userId);
     if(Number(data) === player.userId) winnerName = player.userName;
   }
   const overlay = document.querySelector(".overlay");
@@ -478,7 +402,6 @@ function showEndGame(data) {
 }
 
 function showUno(userId) {
-  console.log('here', userId)
   const user = document.getElementById(userId);
   const unoText = document.createElement("span");
   unoText.id = "unoText"
@@ -488,8 +411,6 @@ function showUno(userId) {
 }
 
 function showTurn(currentPlayingUser) {
-  console.log("I am in showTrun ???")
-  console.log(players)
   const playerList = document.getElementById("playerList");
   playerList.innerHTML = "";
   if(!players) return;
@@ -508,7 +429,6 @@ function showTurn(currentPlayingUser) {
     } else {
       child.textContent = player.userName + cardCountInfo;
     }
-    console.log(playersCardcount)
     if(playersCardcount && playersCardcount[player.userId] === 1) {
       const unoText = document.createElement("span");
       unoText.id = "unoText"
@@ -521,14 +441,12 @@ function showTurn(currentPlayingUser) {
 }
 
 function renderPlayerCardsCount(data) {
-  console.log(data);
   const playerList = document.getElementById("playerList");
   const players = [...playerList.children];
   for(const player of players) {
     const text = player.innerHTML;
     if(text.includes('card count')) break;
     const textParts = text.split(' ');
-    console.log("here", player.id)
     textParts.splice(1, 0, `[card count : ${data[player.id]}]`);
     const finalText = textParts.join(" ");
     player.innerHTML = finalText;
@@ -564,14 +482,8 @@ function handleCardClick(cardImg) {
   cardImg.classList.toggle("expanded");
 }
 function renderHand() {
-  console.log("I am in renderhand function");
   const handDiv = document.getElementById("hand");
   handDiv.innerHTML = "";
-
-  console.log("hand: " + JSON.stringify(hand));
-  console.log("topPlayedCard " + JSON.stringify(topPlayedCard));
-
-  console.log("cardsToPlay: " + JSON.stringify(cardsToPlay));
 
   // Loop through the cardImages array and create img elements for each card
   hand.forEach((card) => {
@@ -582,7 +494,6 @@ function renderHand() {
       cardImg.addEventListener("click", () => {
         handleCardClick(cardImg);
         cardToPlay = card;
-        console.log("cardToPlay: " + JSON.stringify(cardToPlay));
       });
       handDiv.appendChild(cardImg);
     } else {
@@ -642,17 +553,12 @@ function closeWildAnimation() {
   modal.style.display = "none";
   // Hide the overlay
   overlay.style.display = "none";
-  console.log("i am in closeCreateForm function");
 }
 
 function chooseColor(color) {
   if (cardToPlay.type === "wild") {
     cardToPlay.color = color;
     topPlayedCard = cardToPlay;
-    console.log(
-      "after choosing the color, the cardToPlay is:" +
-        JSON.stringify(cardToPlay)
-    );
     socket.emit("playCard", roomId, userId, cardToPlay);
     showCurrentColor(topPlayedCard);
   } else {
@@ -661,10 +567,7 @@ function chooseColor(color) {
 }
 
 function playCard() {
-  console.log("I am in playCard function");
-
   if (cardToPlay.type === "wild") {
-    console.log("cardToPlay.type is wild and shows animation");
     let indexToRemove = hand.indexOf(cardToPlay);
     if (indexToRemove !== -1) {
       hand.splice(indexToRemove, 1);
