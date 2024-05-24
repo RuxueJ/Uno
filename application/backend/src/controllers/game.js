@@ -560,32 +560,34 @@ export async function getUserHandsCounts(roomId) {
 export async function endGame(roomId, winnerId) {
     const transaction = await db.transaction();
     try {
-        const roomUser = await db.models.roomUser.findOne( { where: { roomId, userId: winnerId }, transaction});
-        if(!roomUser) {
-            console.log('winner does not exist for: ' + roomId);
-            return null;
-        }
-        roomUser.score = roomUser.score + 100;
-        await roomUser.save( { transaction });
+        // delete gamestate
         const gameState = await db.models.gameState.findOne( { where: { roomId }, transaction});
         if(!gameState) {
             console.log('gameState does not exist for: ' + roomId);
             return null;
         }
         gameState.destroy({ transaction });
+        // delete playerstates
         const playerStates = await db.models.playerState.findAll( { where: { roomId }, transaction});
         if(!playerStates) {
             console.log('playerStates do not exist for: ' + roomId);
             return null;
         }
         await Promise.all(playerStates.map(playerState => playerState.destroy({ transaction })));
+        // delete roomusers
+        const roomUsers = await db.models.roomUser.findAll( { where: { roomId }, transaction});
+        if(!roomUsers) {
+            console.log('roomUsers do not exist for: ' + roomId);
+            return null;
+        }
+        await Promise.all(roomUsers.map(roomUser => roomUser.destroy({ transaction })));
+        // delete room
         const room = await db.models.room.findOne( { where: { roomId }, transaction});
         if(!room) {
             console.log('room does not exist: ' + roomId);
             return null;
         }
-        room.status = 'waiting';
-        await room.save( { transaction });
+        room.destroy({ transaction });
         await transaction.commit();
     } catch (err) {
         transaction.rollback();
