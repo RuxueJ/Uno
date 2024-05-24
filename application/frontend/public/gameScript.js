@@ -311,7 +311,7 @@ socket.on("getNextTurn", (data) => {
   console.log("I am in getNextTrun")
   console.log(data)
   console.log(userId)
-  if(data?.nextPlayer) showTurn(data.nextTurn)
+  if(data?.nextTurn) showTurn(data.nextTurn)
   if (data?.nextTurn == userId) {
     showDrawPlayButton();
   } else {
@@ -488,7 +488,7 @@ function showUno(userId) {
 }
 
 function showTurn(currentPlayingUser) {
-  console.log("I am in showTrun")
+  console.log("I am in showTrun ???")
   console.log(players)
   const playerList = document.getElementById("playerList");
   playerList.innerHTML = "";
@@ -508,8 +508,13 @@ function showTurn(currentPlayingUser) {
     } else {
       child.textContent = player.userName + cardCountInfo;
     }
-    if(playersCardcount[player.userId] === 1) {
-      cardCountInfo += "UNO !!!!!"
+    console.log(playersCardcount)
+    if(playersCardcount && playersCardcount[player.userId] === 1) {
+      const unoText = document.createElement("span");
+      unoText.id = "unoText"
+      unoText.innerHTML = "UNO!!!!!";
+      unoText.className = 'unoText';
+      child.appendChild(unoText);
     }
     playerList.appendChild(child)
   }
