@@ -28,9 +28,6 @@ Players take turns matching a card in their hand with the current card shown on 
 We will implement our project based on the basic uno game roles.
 
 
-## System Design
-
-
 ## UI screenshots 
 
 ### Sign In
