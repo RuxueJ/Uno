@@ -449,9 +449,6 @@ socket.on("getPlayersHandsCount", (data) => {
     for(const userId in data) {
       if(data[userId] === 0) socket.emit("endGame", roomId, userId);
     }
-    for(const userId in data) {
-      if(data[userId] === 1) showUno(userId);
-    }
   }
 })
 
@@ -499,7 +496,6 @@ function showTurn(currentPlayingUser) {
   for(let player of players) {
     let cardCountInfo = "";
     if(playersCardcount) {
-      console.log(playersCardcount)
       cardCountInfo = `[card count : ${playersCardcount[player.userId]}]`;
     }
     const child = document.createElement("li");
@@ -511,6 +507,9 @@ function showTurn(currentPlayingUser) {
       child.style.color = '#007bff';
     } else {
       child.textContent = player.userName + cardCountInfo;
+    }
+    if(playersCardcount[player.userId] === 1) {
+      cardCountInfo += "UNO !!!!!"
     }
     playerList.appendChild(child)
   }
