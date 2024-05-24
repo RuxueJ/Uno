@@ -124,6 +124,20 @@ const socket = io("http://localhost:3000", {
   reeconnectionDelayMax: 5000,
 });
 
+function renderPlayerList() {
+  if(!players) return;
+  const playerList = document.getElementById("playerList");
+  playerList.innerHTML = "";
+  for(const player of players) {
+    const userInfo = document.createElement("li");
+    userInfo.textContent = player.userName;
+    userInfo.id = player.userId;
+    playerList.appendChild(userInfo);
+  }
+  if(playersCardcount) renderPlayerCardsCount(playersCardcount);
+  if(nextPlayer) showTurn(nextPlayer);
+}
+
 async function getUserInRoom() {
   try {
     // Make the POST request to the server
@@ -146,20 +160,9 @@ async function getUserInRoom() {
         "the user in this room:" + JSON.stringify(result.player_list)
       );
       players = result.player_list;
-      const playerList = document.getElementById("playerList");
-      const playerListNeedtoBeUpdated = playerList.children.length === 0;
-      if(playerListNeedtoBeUpdated) playerList.innerHTML = "";
+      renderPlayerList();
       result.player_list.forEach((user) => {
         // Access properties of each object
-        if(playerListNeedtoBeUpdated) {
-          const userInfo = document.createElement("li");
-          // Set the text content of the li element
-          userInfo.textContent = user.userName;
-          userInfo.id = user.userId;
-          // Append the li element to the div container
-          playerList.appendChild(userInfo);
-        }
-
         // console.log("user.isHost" + user.isHost);
         // console.log("result.player_list.length" + result.player_list.length);
         // console.log("result.max_player" + result.max_player);
@@ -185,7 +188,7 @@ async function getUserInRoom() {
       });
       if(nextPlayer) {
         console.log("------in this showturn?----------")
-        showTurn();
+        showTurn(nextPlayer);
         console.log("------end in this showturn?----------")
       }
       // Add any additional logic (e.g., redirecting the user, showing a success message)
@@ -208,11 +211,13 @@ function leaveRoom() {
   window.location.href = "lobby.html"; // Change the URL accordingly
 }
 
-function stayRoom() {
-  window.location.reload();
+async function stayRoom() {
+  const overlay = document.querySelector(".overlay");
   const endGamePopup = document.querySelector(".endgame-popup");
   endGamePopup.style.display = "none";
   overlay.style.display = "none";
+  await getUserInRoom();
+  //window.location.reload();
 }
 
 function startGame() {
@@ -269,7 +274,7 @@ function reJoinGame() {
 socket.on("newRoomMessage", function (data) {
   console.log("I am in newRoomMessage event");
   const messageElement = document.createElement("div");
-  messageElement.textContent = `${data.userName} @ ${data.timeStamp}: ${data.message}`;
+  messageElement.textContent = `${data?.userName} @ ${data?.timeStamp}: ${data?.message}`;
   messages.appendChild(messageElement);
   messages.scrollTop = messages.scrollHeight;
 });
@@ -277,6 +282,7 @@ socket.on("newRoomMessage", function (data) {
 // Handling "userJoin" event
 socket.on("userJoin", async (data) => {
   console.log("I am in userJoin event");
+  
   // console.log("data.gamePlaying" + data.gamePlaying);
   await getUserInRoom();
 });
@@ -305,8 +311,8 @@ socket.on("getNextTurn", (data) => {
   console.log("I am in getNextTrun")
   console.log(data)
   console.log(userId)
-  showTurn(data.nextTurn)
-  if (data.nextTurn == userId) {
+  if(data?.nextPlayer) showTurn(data.nextTurn)
+  if (data?.nextTurn == userId) {
     showDrawPlayButton();
   } else {
     // Get the div element by its ID
@@ -317,8 +323,8 @@ socket.on("getNextTurn", (data) => {
 socket.on("nextTurn", (data) => {
   // check if it is your turn
   console.log("I am in nextTurn event");
-  nextPlayer = data.nextTurn;
-  showTurn(data.nextTurn);
+  nextPlayer = data?.nextTurn;
+  if(data?.nextTurn) showTurn(data.nextTurn);
   if (data.nextTurn == userId) {
     showDrawPlayButton();
   } else {
@@ -338,7 +344,7 @@ socket.on("playedCard", (data) => {
   console.log(
     "I am in playedCard event,data.discardDesckTop: " + data.discardDesckTop
   );
-  topPlayedCard = data.discardDesckTop;
+  topPlayedCard = data?.discardDesckTop;
 
 });
 
@@ -404,12 +410,11 @@ socket.on("playersHand", (data) => {
   });
 });
 socket.on("gameStarted", (data) => {
-  console.log(players)
   if (data) isPlaying = true;
   console.log("I am in gameStarted event" + JSON.stringify(data));
 
 
-  topPlayedCard = data.discardDeckTopCard;
+  topPlayedCard = data?.discardDeckTopCard;
   showCurrentColor(topPlayedCard);
 
   console.log("topPlayedCard: " + JSON.stringify(topPlayedCard));
@@ -420,7 +425,7 @@ socket.on("gameStarted", (data) => {
   renderHand();
 
 //   topPlayedCard = getURL(data.discardDeckTopCard);
-  showTurn(data.nextTurn);
+  if(data?.nextTurn) showTurn(data.nextTurn);
 
   clearDeckMessage();
   renderDeckCard();
@@ -428,9 +433,9 @@ socket.on("gameStarted", (data) => {
 
   console.log("I am in gameStarted socket evnet");
   console.log("I am in nextTurn event");
-  console.log("data.nextTurn" + data.nextTurn);
+  console.log("data.nextTurn" + data?.nextTurn);
   console.log("userId" + userId);
-  if (data.nextTurn == userId) {
+  if (data?.nextTurn == userId) {
     showDrawPlayButton();
   } else {
     // Get the div element by its ID
@@ -441,11 +446,11 @@ socket.on("getPlayersHandsCount", (data) => {
   if(Object.keys(data).length > 0) {
     playersCardcount = data;
     renderPlayerCardsCount(data);
-    for(userId in data) {
+    for(const userId in data) {
       if(data[userId] === 0) socket.emit("endGame", roomId, userId);
     }
-    for(userId in data) {
-      if(data[userId] === 1) showUno();
+    for(const userId in data) {
+      if(data[userId] === 1) showUno(userId);
     }
   }
 })
@@ -457,31 +462,32 @@ socket.on("gameEnded", (data) => {
 
 
 function showEndGame(data) {
+  console.log(data)
   let winnerName = "";
   for(const player of players) {
-    if(data === player.userId) winnerName = player.userName;
+    console.log(player.userId);
+    if(Number(data) === player.userId) winnerName = player.userName;
   }
   const overlay = document.querySelector(".overlay");
   const endGamePopup = document.querySelector(".endgame-popup");
   const endGameMessage = document.querySelector("#end-message");;
-  endGameMessage.innerHTML = `Game End! The winner is ${winnerName}`;
+  endGameMessage.innerHTML = `Game End! The winner is ${winnerName} You will be redirected to lobby page in 10 seconds.`;
   endGamePopup.style.display = "block";
   overlay.style.display = "block";
 
   setTimeout(() => {
-    stayRoom();
-  }, 3000)
+    leaveRoom();
+  }, 10000)
 }
 
-function showUno() {
-  const body = document.querySelector("body");
-  const unoText = document.createElement("div");
+function showUno(userId) {
+  console.log('here', userId)
+  const user = document.getElementById(userId);
+  const unoText = document.createElement("span");
+  unoText.id = "unoText"
   unoText.innerHTML = "UNO!!!!!";
   unoText.className = 'unoText';
-  body.appendChild(unoText);
-  setTimeout(() => {
-    unoText.className = 'hide';
-  }, [3000])
+  user.appendChild(unoText);
 }
 
 function showTurn(currentPlayingUser) {

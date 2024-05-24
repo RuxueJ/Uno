@@ -298,21 +298,20 @@ input[type="text"] {
 }
 
 .unoText {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  animation: uno-animation 3s;
-  color: #4caf50;
+  padding: 8px;
+  border-radius: 4px;
+  color: Red;
+  font-weight: 600;
   background-color: #ccc;
+  /* animation: uno-animation 2s; */
 }
 
 @keyframes uno-animation {
   0% {
-    font-size: 16rem;
+    opacity: 0;
   }
   100% {
-    font-size : 32rem;
+    opacity: 1;
   }
 }
 
